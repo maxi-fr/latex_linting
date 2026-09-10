@@ -183,3 +183,39 @@ def test_multiple_rules_suppression_leaves_others_active(tmp_path: Path) -> None
     root.write_text(source_with_same_line_ignore, encoding="utf-8")
     findings_with_ignore = check(root)
     assert {f.rule_id for f in findings_with_ignore} == {"PROSE-03", "PROSE-04", "CITE-04"}
+
+
+def test_ticket_06_suppressions(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\section{Methods in Machine Learning}\n"
+        "The relation is: % latex-lint:ignore=PROSE-07\n"
+        "% latex-lint:disable=MATH-13\n"
+        "\\begin{equation}\n"
+        "\n"
+        "  E = mc^2\n"
+        "\\end{equation} % latex-lint:ignore=MATH-01, STRUC-06\n"
+        "% latex-lint:enable=MATH-13\n"
+        "\\section{Results and Discussion}\n"
+        "We discuss results here.\n"
+    )
+    root.write_text(source, encoding="utf-8")
+    assert check(root) == []
+
+    # Without suppressions: all 4 rules trigger
+    raw_source = (
+        "\\section{Methods in Machine Learning}\n"
+        "The relation is:\n"
+        "\\begin{equation}\n"
+        "\n"
+        "  E = mc^2\n"
+        "\\end{equation}\n"
+        "\\section{Results and Discussion}\n"
+        "We discuss results here.\n"
+    )
+    root.write_text(raw_source, encoding="utf-8")
+    findings = check(root)
+    assert {f.rule_id for f in findings} == {"PROSE-07", "MATH-13", "MATH-01", "STRUC-06"}
+
+    # Invocation-wide exclusions
+    assert check(root, ignored_rules=["PROSE-07", "MATH-13", "MATH-01", "STRUC-06"]) == []

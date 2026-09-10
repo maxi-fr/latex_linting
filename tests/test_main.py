@@ -27,10 +27,10 @@ def test_inline_fraction(source: str, tmp_path: Path, capsys: pytest.CaptureFixt
     "source",
     [
         r"$a/b$ and $s^{-1}$",
-        r"$$\frac{a}{b}$$",
-        r"\[\frac{a}{b}\]",
-        r"\begin{equation}\frac{a}{b}\end{equation}",
-        r"\begin{align*}x &= \frac{a}{b}\end{align*}",
+        r"$$\frac{a}{b} \,,$$",
+        r"\[\frac{a}{b} \,,\]",
+        r"\begin{equation}\frac{a}{b} \,,\end{equation}",
+        r"\begin{align*}x &= \frac{a}{b} \,,\end{align*}",
         "% $\\frac{a}{b}$\nPlain text.",
         r"\verb|$\frac{a}{b}$|",
         r"\verb*+$\frac{a}{b}$+",
@@ -116,7 +116,7 @@ def test_input_errors(tmp_path: Path) -> None:
 def test_display_environments_restore_context(environment: str, tmp_path: Path) -> None:
     root = tmp_path / "display.tex"
     root.write_text(
-        rf"\begin{{{environment}}}\frac{{a}}{{b}}\end{{{environment}}}" + "\n$\\frac{a}{b}$",
+        rf"\begin{{{environment}}}\frac{{a}}{{b}} \,,\end{{{environment}}}" + "\n$\\frac{a}{b}$",
         encoding="utf-8",
     )
     assert [(finding.line, finding.column) for finding in check(root)] == [(2, 2)]
@@ -155,8 +155,8 @@ def test_catalogue_examples_match_evaluation(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     "prefix",
     [
-        r"$$\frac{a}{b}$$",
-        r"\[\frac{a}{b}\]",
+        r"$$\frac{a}{b} \,,$$",
+        r"\[\frac{a}{b} \,,\]",
         r"\verb|$\frac{a}{b}$|",
         r"\verb*+$\frac{a}{b}$+",
         r"\begin{verbatim}$\frac{a}{b}$\end{verbatim}",

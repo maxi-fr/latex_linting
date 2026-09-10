@@ -158,6 +158,22 @@ PROSE-04 is enabled by default and checks American headline capitalization in su
 
 CITE-04 is enabled by default and detects recognized citation commands (`\cite`, `\citep`, `\citet`, `\autocite`, etc., including optional arguments like `[p.~5]`) immediately following a sentence's terminal period in text mode, recommending moving the citation before the period. Common abbreviations like `et al.` are excluded from sentence-terminal detection. Findings attach to the citation command backslash.
 
+### MATH-01 support
+
+MATH-01 is enabled by default and checks for required terminal punctuation (`.`, `,`, `;`, `:`, `!`, `?`) preceded by thin spacing (`\,`) in supported displayed-math environments (`equation`, `align`, `gather`, `multline`, `alignat`, `flalign`, `eqnarray`, their starred forms, `displaymath`, `\[...\]`, and `$$...$$`). In multiline equations, the terminal position of the final line before closing is checked. Trailing labels, comments, whitespace, and line breaks (`\\`) are ignored. Findings attach to the closing delimiter or environment command, allowing same-line suppression. The rule does not infer grammatical appropriateness or rendered layout.
+
+### MATH-13 support
+
+MATH-13 is enabled by default and detects genuinely blank lines inside supported math environments (`equation`, `align`, `gather`, `multline`, `alignat`, `flalign`, `eqnarray`, their starred forms, `displaymath`, `\[...\]`, and `$$...$$`). Comment-only lines starting with `%` are explicitly permitted for visual code organization and are not flagged. Findings attach to column 1 of the blank line.
+
+### PROSE-07 support
+
+PROSE-07 is enabled by default and reports a colon in text mode immediately preceding a recognized displayed equation (`\[`, `$$`, or display math environments like `equation`, `align`, `gather`). Comments and whitespace between the colon and the equation are allowed. Findings attach to the colon, enabling same-line suppression. The rule checks the mechanical occurrence of the colon and does not claim to evaluate entire surrounding sentence grammar.
+
+### STRUC-06 support
+
+STRUC-06 is enabled by default and reports a chapter, section, subsection, or subsubsection ending directly on a recognized display math equation, list (`itemize`, `enumerate`, `description`), table (`table`, `tabular`, `tabularx`, etc.), or figure environment before the next heading or document end (`\end{document}` or EOF). Document reading order across included files is respected: a prose continuation in an included file satisfies the rule. Trailing labels, comments, whitespace, and page-break commands do not count as final prose. Findings attach to the ending block command, allowing same-line suppression.
+
 ## Code structure
 
 The public checking interface is `check(root)`; internal scanning and evaluation

@@ -56,12 +56,16 @@ def test_invalid_encoding(tmp_path: Path) -> None:
     "rule_id",
     [
         "CITE-04",
+        "MATH-01",
         "MATH-04",
+        "MATH-13",
         "PROSE-02",
         "PROSE-03",
         "PROSE-04",
+        "PROSE-07",
         "STRUC-02",
         "STRUC-03",
+        "STRUC-06",
         "WORK-03",
     ],
 )
@@ -86,6 +90,31 @@ def test_cli_ticket_05_rules_reporting(tmp_path: Path) -> None:
     result = run_cli("check", str(root))
     assert result.returncode == 1
     for finding in check(root):
+        assert f"{finding.filename}:{finding.line}:{finding.column}: {finding.rule_id}" in result.stdout
+        assert finding.explanation in result.stdout
+        assert finding.excerpt in result.stdout
+        assert finding.correction in result.stdout
+
+
+def test_cli_ticket_06_rules_reporting(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\section{Methods in Machine Learning}\n"
+        "The relation is:\n"
+        "\\begin{equation}\n"
+        "\n"
+        "  E = mc^2\n"
+        "\\end{equation}\n"
+        "\\section{Results and Discussion}\n"
+        "We discuss results here.\n"
+    )
+    root.write_text(source, encoding="utf-8")
+    result = run_cli("check", str(root))
+    assert result.returncode == 1
+    api_findings = check(root)
+    rule_ids = {f.rule_id for f in api_findings}
+    assert rule_ids == {"PROSE-07", "MATH-13", "MATH-01", "STRUC-06"}
+    for finding in api_findings:
         assert f"{finding.filename}:{finding.line}:{finding.column}: {finding.rule_id}" in result.stdout
         assert finding.explanation in result.stdout
         assert finding.excerpt in result.stdout

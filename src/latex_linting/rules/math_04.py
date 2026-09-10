@@ -18,7 +18,7 @@ RULE = Rule(
     rule_id="MATH-04",
     explanation=r"Avoid \frac in inline math; reserve fractions for displayed equations.",
     correction=r"Use a slash such as $a/b$, a negative exponent such as $s^{-1}$, \sfrac from the xfrac package or move the fraction to display math.",
-    passing_examples=(r"$a/b$", r"$s^{-1}$", r"\[\frac{a}{b}\]"),
+    passing_examples=(r"$a/b$", r"$s^{-1}$", r"\[\frac{a}{b} \,.\]"),
     failing_examples=(r"$\frac{a}{b}$", r"\(\frac{a}{b}\)"),
     limits=(
         r"Detects literal \frac commands in $...$, \(...\), and the math environment, "
