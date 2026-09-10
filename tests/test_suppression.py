@@ -152,3 +152,34 @@ def test_api_unknown_rule_id_in_ignored_rules(tmp_path: Path) -> None:
     root.write_text(r"$a/b$", encoding="utf-8")
     with pytest.raises(ValueError, match="UNKNOWN"):
         check(root, ignored_rules=["UNKNOWN"])
+
+
+def test_multiple_rules_suppression_leaves_others_active(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\section{methods in machine learning}\n"
+        "This is a standalone demonstrative.\n"
+        "We note, that the comma is present.\n"
+        "The method is effective. \\cite{smith2020}\n"
+    )
+    root.write_text(source, encoding="utf-8")
+
+    all_findings = check(root)
+    rule_ids = {f.rule_id for f in all_findings}
+    assert rule_ids == {"PROSE-02", "PROSE-03", "PROSE-04", "CITE-04"}
+
+    ignored_prose_02 = check(root, ignored_rules=["PROSE-02"])
+    assert {f.rule_id for f in ignored_prose_02} == {"PROSE-03", "PROSE-04", "CITE-04"}
+
+    ignored_two = check(root, ignored_rules=["PROSE-03", "CITE-04"])
+    assert {f.rule_id for f in ignored_two} == {"PROSE-02", "PROSE-04"}
+
+    source_with_same_line_ignore = (
+        "\\section{methods in machine learning}\n"
+        "This is a standalone demonstrative. % latex-lint:ignore=PROSE-02\n"
+        "We note, that the comma is present.\n"
+        "The method is effective. \\cite{smith2020}\n"
+    )
+    root.write_text(source_with_same_line_ignore, encoding="utf-8")
+    findings_with_ignore = check(root)
+    assert {f.rule_id for f in findings_with_ignore} == {"PROSE-03", "PROSE-04", "CITE-04"}

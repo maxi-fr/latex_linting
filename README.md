@@ -142,6 +142,22 @@ STRUC-03 is enabled by default and reports parents with exactly one numbered chi
 
 WORK-03 is enabled by default and detects explicitly forbidden document-class options (`draft`, `oneside`, `nohyperref`) inside `\documentclass[...]`. Options are recognized as comma-separated items rather than arbitrary substrings, so options like `draftcopy` or `myoneside` are not flagged, nor are disabled key-value options like `draft=false`. Multiline option declarations are supported and findings point to the forbidden option item, enabling same-line suppression on that line. WORK-03 does not establish class defaults, effective page dimensions, or complete submission compliance.
 
+### PROSE-02 support
+
+PROSE-02 is enabled by default and detects standalone "This" or "These" without an explicit referent noun at sentence start or after punctuation immediately followed by common verbs (`is`, `shows`, `demonstrates`, etc.). Demonstratives followed by a referent noun pass (e.g. "This approach", "These results"). Findings point to the demonstrative, enabling same-line suppression.
+
+### PROSE-03 support
+
+PROSE-03 is enabled by default and detects suspected comma-before-that constructions in English prose. It reports the comma, acknowledging grammatical ambiguity between restrictive clauses and parenthetical phrases or idioms. Comments, math mode, literal code, and command syntax arguments are excluded.
+
+### PROSE-04 support
+
+PROSE-04 is enabled by default and checks American headline capitalization in supported LaTeX headings (`\chapter`, `\section`, `\subsection`, etc., including starred forms). First and last words must be capitalized. Minor words (articles, conjunctions, short prepositions <= 4 letters) must be lowercase in interior positions. Hyphenated compound words, all-uppercase acronyms (e.g. `API`, `CNN`), math ($...$), and commands inside headings are handled without false flags. Findings attach to the heading command backslash.
+
+### CITE-04 support
+
+CITE-04 is enabled by default and detects recognized citation commands (`\cite`, `\citep`, `\citet`, `\autocite`, etc., including optional arguments like `[p.~5]`) immediately following a sentence's terminal period in text mode, recommending moving the citation before the period. Common abbreviations like `et al.` are excluded from sentence-terminal detection. Findings attach to the citation command backslash.
+
 ## Code structure
 
 The public checking interface is `check(root)`; internal scanning and evaluation

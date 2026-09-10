@@ -52,7 +52,19 @@ def test_invalid_encoding(tmp_path: Path) -> None:
     assert "Traceback" not in result.stderr
 
 
-@pytest.mark.parametrize("rule_id", ["MATH-04", "STRUC-02", "STRUC-03", "WORK-03"])
+@pytest.mark.parametrize(
+    "rule_id",
+    [
+        "CITE-04",
+        "MATH-04",
+        "PROSE-02",
+        "PROSE-03",
+        "PROSE-04",
+        "STRUC-02",
+        "STRUC-03",
+        "WORK-03",
+    ],
+)
 def test_rule_help(rule_id: str) -> None:
     result = run_cli("rule", rule_id)
     assert result.returncode == 0
@@ -60,6 +72,24 @@ def test_rule_help(rule_id: str) -> None:
     assert "Passing examples" in result.stdout
     assert "Failing examples" in result.stdout
     assert "Detection limits" in result.stdout
+
+
+def test_cli_ticket_05_rules_reporting(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\section{methods in machine learning}\n"
+        "This is a standalone demonstrative.\n"
+        "We note, that the comma is present.\n"
+        "The method is effective. \\cite{smith2020}\n"
+    )
+    root.write_text(source, encoding="utf-8")
+    result = run_cli("check", str(root))
+    assert result.returncode == 1
+    for finding in check(root):
+        assert f"{finding.filename}:{finding.line}:{finding.column}: {finding.rule_id}" in result.stdout
+        assert finding.explanation in result.stdout
+        assert finding.excerpt in result.stdout
+        assert finding.correction in result.stdout
 
 
 def test_cli_suppressed_violation_passes(tmp_path: Path) -> None:
