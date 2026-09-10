@@ -2,49 +2,94 @@
 
 Linting plus review agents for thesis writing
 
-## Check a document
+## Installation and Usage
 
-Requires Python 3.13 or later. From this checkout:
+Requires Python 3.13 or later.
+
+### Installation via uv
+
+To add `latex-linting` as a dependency to another thesis project using [uv](https://github.com/astral-sh/uv):
+
+```bash
+# Add from a local checkout:
+uv add /path/to/latex_linting
+
+# Or add from a git repository:
+uv add git+https://github.com/<user_name>/latex_linting.git
+```
+
+From within this repository checkout:
 
 ```bash
 uv sync
-uv run latex-lint check path/to/thesis.tex
-uv run latex-lint check --ignore MATH-04 path/to/thesis.tex
-uv run latex-lint rule MATH-04
 ```
 
-Installing this package also installs the `latex-lint` command. The root document
-is required and must be UTF-8. The checker follows literal `\input` and `\include`
-commands recursively from the supplied root. It never changes source files,
-compiles TeX, or expands macros.
+### Command-line interface
 
-Exit codes are `0` for a clean check or successful rule help, `1` for findings,
-and `2` for input errors such as unreadable files, missing included files, invalid UTF-8,
-missing arguments, or unknown rule IDs. Findings go to stdout; input errors go to stderr.
-This is a style checker, not a LaTeX syntax validator.
+Installing the package provides the `latex-lint` console command:
 
-### Python interface
+```bash
+# Check a thesis root document:
+latex-lint check path/to/thesis.tex
+
+# Check with invocation-wide rule exclusions:
+latex-lint check --ignore MATH-04,PROSE-02 path/to/thesis.tex
+
+# Inspect rule documentation, examples, and limits:
+latex-lint rule MATH-04
+```
+
+When running within a `uv` project without global installation, prefix commands with `uv run` (e.g. `uv run latex-lint check path/to/thesis.tex`).
+
+#### Explicit root selection
+
+The `check` command requires an explicit path to the root document (`.tex`). It never infers, searches, or guesses the root document from the current working directory. The root document and all included files must be UTF-8 encoded. The checker recursively follows literal `\input{...}` and `\include{...}` commands from the root. It never alters source files, compiles TeX, or expands macros.
+
+#### Exit codes and failure behavior
+
+- `0`: Clean check (no unsuppressed findings) or successful `rule` documentation output.
+- `1`: Check completed with unsuppressed findings. Findings are formatted and printed to `stdout`.
+- `2`: Input or configuration error. Diagnostics are printed to `stderr`. This includes:
+  - Missing or inaccessible root document (`FileNotFoundError` / `OSError`).
+  - Missing included file (`MissingIncludeError`).
+  - Invalid UTF-8 encoding (`UnicodeError`).
+  - Unknown rule ID passed to `--ignore` or used in an in-source directive (`ValueError`).
+  - Missing command-line arguments or invalid options.
+
+### Python API
+
+The public checking API is provided by `latex_linting.main`:
 
 ```python
-from latex_linting.main import check
+from latex_linting.main import Finding, check
 from latex_linting.rules.catalogue import get_rule
 
-findings = check("path/to/thesis.tex")
-findings_filtered = check("path/to/thesis.tex", ignored_rules=["MATH-04"])
+# Check a document:
+findings: list[Finding] = check("path/to/thesis.tex")
+
+# Check with invocation-wide exclusions:
+findings_filtered: list[Finding] = check(
+    "path/to/thesis.tex",
+    ignored_rules=["MATH-04", "PROSE-02"],
+)
+
+# Inspect rule details:
 rule = get_rule("MATH-04")
 ```
 
-`check` accepts a string or `pathlib.Path` along with an optional `ignored_rules`
-collection of rule IDs to exclude invocation-wide, returning a list of immutable `Finding`
-objects without printing. Each has `rule_id`, `filename`, `line`, `column`,
-`excerpt`, `explanation`, and `correction` fields. The filename retains the supplied
-path. Lines and columns are one-based; columns count Unicode characters, with a tab
-counting as one character. The excerpt is the original line without its line ending.
-Findings preserve document reading order across included files, and within each file are
-ordered by line, column, then rule ID. File and decoding errors propagate
-as `OSError` and `UnicodeError`; unresolved included files raise `MissingIncludeError`
-(a subclass of `FileNotFoundError`). Unknown rule IDs in `ignored_rules` or in-source
-directives raise `ValueError`. `get_rule` raises `KeyError` for an unknown ID.
+`check(root, ignored_rules=None)` accepts a string path or `pathlib.Path` and an optional collection of rule ID strings. It returns an immutable list of `Finding` objects without printing to terminal streams.
+
+Each `Finding` has the following attributes:
+
+- `rule_id`: The unique rule identifier (e.g. `"MATH-04"`).
+- `filename`: The path to the file containing the finding (retains the supplied path format).
+- `line`: One-based line number.
+- `column`: One-based column number (counts Unicode characters; tab counts as one character).
+- `excerpt`: The exact source line without trailing line endings.
+- `explanation`: Explanation of the rule violation.
+- `correction`: Actionable suggestion for resolving the violation.
+
+Findings preserve document inclusion order across multi-file documents, and within each file are sorted deterministically by `(line, column, rule_id)`.
 
 ### Rule suppressions
 
@@ -52,39 +97,43 @@ Authors can suppress specific rule violations using in-source comments or invoca
 
 #### Source directives
 
-Directives use the `latex-lint` namespace followed by a colon, an action (`ignore`, `disable`, or `enable`), an equals sign, and comma-separated rule IDs (optional whitespace is permitted around `:`, `=`, and `,`):
+Directives use the `latex-lint` namespace followed by a colon, an action (`ignore`, `disable`, or `enable`), an equals sign, and a comma-separated list of explicit rule IDs (whitespace around `:`, `=`, and `,` is tolerated):
 
-- `% latex-lint:ignore=MATH-04`: Suppresses findings reported on its own source line only. It does not suppress findings on the following line.
-- `% latex-lint:disable=MATH-04`: Disables the specified rules from the directive's position until a corresponding `enable` directive or the end of the source file.
-- `% latex-lint:enable=MATH-04`: Re-enables the specified rules from that position forward for file-local checks.
+- `% latex-lint:ignore=MATH-04,MATH-12`: Suppresses findings reported on its own source line only. It does not affect findings on subsequent lines.
+- `% latex-lint:disable=MATH-04,TYPO-06`: Disables the listed rules from the directive's location until a corresponding `enable` directive or the end of the file.
+- `% latex-lint:enable=MATH-04,TYPO-06`: Re-enables the listed rules from that point onward within the file.
 
-Directives must be actual LaTeX comments; directive-like text inside literal code (such as `verbatim`, `lstlisting`, or `\verb`) has no suppression effect. Unknown rule IDs in directives produce an error and cannot yield a successful check.
+Directives must appear as actual LaTeX comments. Text resembling directives inside literal code environments (`verbatim`, `lstlisting`, `minted`, `\verb`) has no suppression effect. Unknown rule IDs in directives produce a `ValueError` (exit code `2`) to prevent typos from silently hiding checks.
 
 #### Reported-location semantics
 
-Same-line `ignore` directives evaluate against each finding's reported source line. A finding is suppressed if an `ignore` directive naming its rule appears on that exact line. Findings reported on subsequent lines are not suppressed.
+Same-line `ignore` directives evaluate against each finding's reported source line. A finding is suppressed if an `ignore` directive naming its rule appears on that exact line. Targeted exclusions leave unrelated rules active on the same line.
+
+#### File isolation
+
+Source directives affect only their containing file. A parent file's disabled rules do not carry into included files, child file directives do not alter the parent file's suppression state, and returning from an include restores the parent file's state.
 
 #### Invocation-wide exclusions
 
-Pass `--ignore` with comma-separated IDs to the CLI `check` command or `ignored_rules` to `check(...)` in Python:
+Pass `--ignore` with comma-separated IDs to the CLI or `ignored_rules` to `check(...)` in Python:
 
 ```bash
-uv run latex-lint check --ignore MATH-04 path/to/thesis.tex
+latex-lint check --ignore MATH-04,PROSE-02 path/to/thesis.tex
 ```
 
-Invocation-wide exclusions apply across all files and cannot be undone by in-source `enable` directives.
+Invocation-wide exclusions apply across all files and cannot be overridden by in-source `enable` directives. Targeted exclusions leave all other rules active.
 
 #### Excluding German passages
 
-For passages written in German, such as the German abstract (*Zusammenfassung*), wrap the passage with file-local directives:
+For sections written in German, such as the German abstract (*Zusammenfassung*), wrap the passage with file-local directives:
 
 ```latex
-% latex-lint:disable=MATH-04
-% German abstract or chapter text
-% latex-lint:enable=MATH-04
+% latex-lint:disable=PROSE-02,PROSE-03,TYPO-03,TYPO-06
+% Deutsche Zusammenfassung...
+% latex-lint:enable=PROSE-02,PROSE-03,TYPO-03,TYPO-06
 ```
 
-If an entire file or chapter is in German, place the `disable` directive at the top of that file, or pass the rule IDs to `--ignore` across the check invocation.
+If an entire file is in German, place the `disable` directive at the top of that file, or pass the relevant rule IDs to `--ignore` across the invocation.
 
 ### Multi-file documents
 
@@ -359,3 +408,7 @@ uv run ruff format .
 ```bash
 uv run ty check .
 ```
+
+### Release verification
+
+Manual installation and verification in an external `uv` project is documented in [docs/latex-lint/release-verification.md](docs/latex-lint/release-verification.md).

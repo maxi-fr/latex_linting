@@ -29,7 +29,7 @@ RULE = Rule(
         "are excluded. Environment names must be literal, with no comments inside the begin/end command. "
         r"Does not expand macros, interpret text-mode command arguments, check \dfrac, \tfrac, "
         "or validate LaTeX syntax. Unclosed math continues to end of file; an unclosed literal "
-        "environment consumes the rest of the file. Includes are not followed yet."
+        "environment consumes the rest of the file."
     ),
     evaluate=_inline_fractions,
 )

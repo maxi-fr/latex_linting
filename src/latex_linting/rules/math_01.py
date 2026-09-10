@@ -161,7 +161,7 @@ RULE = Rule(
     ),
     limits=(
         "Checks terminal punctuation (., ,, ;, :, !, ?) and preceding thin space (\\,) in supported "
-        "displayed-math environments (equation, align, gather, multline, alipgnat, flalign, eqnarray, "
+        "displayed-math environments (equation, align, gather, multline, alignat, flalign, eqnarray, "
         "their starred forms, displaymath, \\[...\\], and $$...$$). Multiline equations are checked at "
         "the final line before closing. Trailing labels, comments, whitespace, and line breaks (\\\\) "
         "are ignored. Reports the closing delimiter or environment command. Does not verify grammatical "

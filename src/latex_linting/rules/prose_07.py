@@ -80,7 +80,7 @@ RULE = Rule(
     ),
     limits=(
         "Reports a colon in text mode immediately preceding a recognized displayed equation (equation, "
-        "align, gather, multline, alipgnat, flalign, eqnarray, their starred forms, displaymath, \\[...\\], "
+        "align, gather, multline, alignat, flalign, eqnarray, their starred forms, displaymath, \\[...\\], "
         "or $$...$$). Whitespace and comments between the colon and the equation are ignored. Reports the "
         "colon's location. Does not verify broader grammatical correctness or sentence structure."
     ),

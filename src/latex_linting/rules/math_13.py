@@ -95,7 +95,7 @@ RULE = Rule(
     ),
     limits=(
         "Detects genuinely blank lines (containing only whitespace) inside supported display math "
-        "environments (equation, align, gather, multline, alipgnat, flalign, eqnarray, their starred forms, "
+        "environments (equation, align, gather, multline, alignat, flalign, eqnarray, their starred forms, "
         "displaymath, \\[...\\], and $$...$$). Comment-only lines starting with % are permitted and not flagged. "
         "Reports the blank line at column 1. Does not check inline math ($...$ or \\(...\\))."
     ),
