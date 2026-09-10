@@ -40,6 +40,15 @@ latex-lint check --ignore MATH-04,PROSE-02 path/to/thesis.tex
 
 # Inspect rule documentation, examples, and limits:
 latex-lint rule MATH-04
+
+# Install bundled agent skills into project .agents/skills/:
+latex-lint install-skills
+
+# Install using a preset (local, global, claude, claude-global):
+latex-lint install-skills global
+
+# Install into a custom directory (use --force to overwrite existing):
+latex-lint install-skills --dest path/to/skills --force
 ```
 
 When running within a `uv` project without global installation, prefix commands with `uv run` (e.g. `uv run latex-lint check path/to/thesis.tex`).
