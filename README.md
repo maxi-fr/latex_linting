@@ -9,6 +9,7 @@ Requires Python 3.13 or later. From this checkout:
 ```bash
 uv sync
 uv run latex-lint check path/to/thesis.tex
+uv run latex-lint check --ignore MATH-04 path/to/thesis.tex
 uv run latex-lint rule MATH-04
 ```
 
@@ -29,16 +30,59 @@ from latex_linting.main import check
 from latex_linting.rules.catalogue import get_rule
 
 findings = check("path/to/thesis.tex")
+findings_filtered = check("path/to/thesis.tex", ignored_rules=["MATH-04"])
 rule = get_rule("MATH-04")
 ```
 
-`check` accepts a string or `pathlib.Path` and returns a list of immutable `Finding`
+`check` accepts a string or `pathlib.Path` along with an optional `ignored_rules`
+collection of rule IDs to exclude invocation-wide, returning a list of immutable `Finding`
 objects without printing. Each has `rule_id`, `filename`, `line`, `column`,
 `excerpt`, `explanation`, and `correction` fields. The filename retains the supplied
 path. Lines and columns are one-based; columns count Unicode characters, with a tab
 counting as one character. The excerpt is the original line without its line ending.
 Findings are ordered by line, column, then rule ID. File and decoding errors propagate
-as `OSError` and `UnicodeError`. `get_rule` raises `KeyError` for an unknown ID.
+as `OSError` and `UnicodeError`. Unknown rule IDs in `ignored_rules` or in-source
+directives raise `ValueError`. `get_rule` raises `KeyError` for an unknown ID.
+
+### Rule suppressions
+
+Authors can suppress specific rule violations using in-source comments or invocation-wide exclusions.
+
+#### Source directives
+
+Directives use the `latex-lint` namespace followed by a colon, an action (`ignore`, `disable`, or `enable`), an equals sign, and comma-separated rule IDs (optional whitespace is permitted around `:`, `=`, and `,`):
+
+- `% latex-lint:ignore=MATH-04`: Suppresses findings reported on its own source line only. It does not suppress findings on the following line.
+- `% latex-lint:disable=MATH-04`: Disables the specified rules from the directive's position until a corresponding `enable` directive or the end of the source file.
+- `% latex-lint:enable=MATH-04`: Re-enables the specified rules from that position forward for file-local checks.
+
+Directives must be actual LaTeX comments; directive-like text inside literal code (such as `verbatim`, `lstlisting`, or `\verb`) has no suppression effect. Unknown rule IDs in directives produce an error and cannot yield a successful check.
+
+#### Reported-location semantics
+
+Same-line `ignore` directives evaluate against each finding's reported source line. A finding is suppressed if an `ignore` directive naming its rule appears on that exact line. Findings reported on subsequent lines are not suppressed.
+
+#### Invocation-wide exclusions
+
+Pass `--ignore` with comma-separated IDs to the CLI `check` command or `ignored_rules` to `check(...)` in Python:
+
+```bash
+uv run latex-lint check --ignore MATH-04 path/to/thesis.tex
+```
+
+Invocation-wide exclusions apply across all files and cannot be undone by in-source `enable` directives.
+
+#### Excluding German passages
+
+For passages written in German, such as the German abstract (*Zusammenfassung*), wrap the passage with file-local directives:
+
+```latex
+% latex-lint:disable=MATH-04
+% German abstract or chapter text
+% latex-lint:enable=MATH-04
+```
+
+If an entire file or chapter is in German, place the `disable` directive at the top of that file, or pass the rule IDs to `--ignore` across the check invocation.
 
 ### MATH-04 support
 
@@ -80,6 +124,9 @@ interfaces can evolve as the remaining tickets are implemented.
   import the catalogue, so adding rules does not create circular imports.
 - `main.py` loads, scans, evaluates, and orders findings. It owns file I/O; the
   scanner and rules operate on in-memory values.
+- `suppression.py` parses in-source directives from comment tokens, validates rule IDs,
+  and filters findings according to same-line ignore, file-local disable/enable ranges,
+  and invocation-wide exclusions.
 - `cli.py` parses arguments, renders results, and maps errors to exit codes.
 
 For ticket 02, comment tokens allow suppression directives to be read without

@@ -12,6 +12,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     operations = parser.add_subparsers(dest="operation", required=True)
     check_parser = operations.add_parser("check", help="check an explicit UTF-8 root document")
     check_parser.add_argument("root")
+    check_parser.add_argument("--ignore", default=None, help="comma-separated rule IDs to ignore across the invocation")
     rule_parser = operations.add_parser("rule", help="show an implemented rule and examples")
     rule_parser.add_argument("rule_id")
     args = parser.parse_args(argv)
@@ -27,10 +28,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"Detection limits:\n{rule.limits}\n"
         )
         return 0
+    ignored_rules = [part.strip() for part in args.ignore.split(",")] if args.ignore is not None else None
     try:
-        findings = check(args.root)
+        findings = check(args.root, ignored_rules=ignored_rules)
     except (OSError, UnicodeError) as error:
         sys.stderr.write(f"latex-lint: {args.root}: {error}\n")
+        return 2
+    except ValueError as error:
+        sys.stderr.write(f"latex-lint: {error}\n")
         return 2
     for finding in findings:
         sys.stdout.write(

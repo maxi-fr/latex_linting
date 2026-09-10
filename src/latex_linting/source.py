@@ -28,9 +28,17 @@ class Source:
         starts = (0, *(offset + 1 for offset, char in enumerate(self.text) if char == "\n"))
         object.__setattr__(self, "_line_starts", starts)
 
+    def line_number(self, offset: int) -> int:
+        """Return the one-based line number for a character offset."""
+        return bisect_right(self._line_starts, offset)
+
+    def offset_of(self, line: int, column: int) -> int:
+        """Return the zero-based character offset for a one-based line and column."""
+        return self._line_starts[line - 1] + (column - 1)
+
     def finding(self, offset: int, rule_id: str, explanation: str, correction: str) -> Finding:
         """Locate a rule violation using an offset into the original text."""
-        line = bisect_right(self._line_starts, offset)
+        line = self.line_number(offset)
         start = self._line_starts[line - 1]
         end = self.text.find("\n", start)
         excerpt = self.text[start : end if end != -1 else len(self.text)].rstrip("\r")
