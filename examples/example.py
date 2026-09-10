@@ -1,3 +1,3 @@
-from latex_linting.main import hello
+from latex_linting.rules.catalogue import get_rule
 
-print(hello())
+print(get_rule("MATH-04").explanation)
