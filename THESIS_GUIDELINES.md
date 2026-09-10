@@ -36,6 +36,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### STRUC-02: Maximum Chapter Nesting Depth
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Nest sections no deeper than three numerical levels (`1.2.3`, i.e., `\chapter`, `\section`, `\subsection`). Do not use `\subsubsection` or `\paragraph` with numerical heading counters.
 - **Source**: `AGENTS.md` (Structure); IAT *Hinweise_Allgemein.tex*.
@@ -44,6 +45,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### STRUC-03: Rule of Subheadings (Minimum Two Per Level)
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Review Agent]`
 - **Rule**: If a section is divided into subsections, there must be at least two subsections on that level (never an isolated `1.2.1` without a `1.2.2`).
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Latex-Gliederung).
@@ -65,6 +67,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### STRUC-06: Clean Section Terminations
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Review Agent]`
 - **Rule**: End every chapter, section, subsection, and subsubsection on prose, never on an equation, list, table, or figure.
 - **Source**: `AGENTS.md` (Structure).
@@ -91,6 +94,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### PROSE-02: Forbid Standalone "This"
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Never let "This" or "These" stand alone as a grammatical subject or object. Always name the referent noun: "This method...", "This result...", not "This shows...".
 - **Source**: `AGENTS.md` (Prose).
@@ -99,6 +103,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### PROSE-03: Restrictive "That" Without Comma
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: In English, do not place a comma before a restrictive clause introduced by "that".
 - **Source**: `AGENTS.md` (Prose).
@@ -107,6 +112,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### PROSE-04: American Headline Capitalization in Headings
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Review Agent]`
 - **Rule**: Use American headline case for titles and headings (e.g., "A Really Awesome Thesis", "Closed-Loop Deep Brain Stimulation").
 - **Source**: `AGENTS.md` (Titles and headings).
@@ -128,6 +134,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### PROSE-07: Grammatical Integration of Equations
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Review Agent]`
 - **Rule**: Fold displayed equations into the grammatical syntax of the surrounding sentence. Never place a colon immediately before a displayed equation.
 - **Source**: `AGENTS.md` (Prose); IAT *Hinweise_Allgemein.tex* (sec:Latex-Gliederung, Mathematische Formeln).
@@ -168,6 +175,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### CITE-04: Precise Citation Placement and Scope
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Place `\cite` immediately adjacent to the specific clause it supports. If at the end of a sentence, place the citation before the terminal period: `...~\cite{ref}.`
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Latex-Zitieren).
@@ -208,6 +216,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### MATH-01: Grammatically Integrated Math Punctuation
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Every displayed formula is part of a sentence and must terminate with punctuation (comma, semicolon, or period) separated from the math by a thin space `\,`.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Mathematische Formeln); `AGENTS.md`.
@@ -216,6 +225,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### MATH-02: Conditional Equation Numbering
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Review Agent]`
 - **Rule**: Number an equation only if the text refers back to it later. Otherwise, use unnumbered environments (`equation*`, `align*`).
 - **Source**: `AGENTS.md` (Equations); IAT *Hinweise_Allgemein.tex*.
@@ -223,6 +233,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### MATH-03: Equation Referencing Syntax
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Reference numbered equations using `\eqref{...}`. Omit the word "equation" in running text (e.g. "as shown in (2.4)"), except at the beginning of a sentence ("Equation (2.4) describes...").
 - **Source**: `AGENTS.md` (Equations); IAT *Hinweise_Allgemein.tex*.
@@ -230,6 +241,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### MATH-04: Forbid Inline `\frac`
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Never use `\frac` in inline math (`$...$`). Reserve `\frac` for displayed equations. In inline math, use a slash (e.g. `$a/b$`) or negative exponent (`$s^{-1}$`).
 - **Source**: `AGENTS.md` (Equations).
@@ -245,6 +257,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### MATH-06: Thin Space for Formula Variables and Units
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Separate product variables within a formula with `\,` where juxtaposition is ambiguous. Separate physical values from their units with `\,` (or use `\si{...}` / `\unit{...}` from `siunitx`).
 - **Source**: `AGENTS.md` (Equations); IAT *Hinweise_Allgemein.tex*.
@@ -273,6 +286,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### MATH-09: Separate Code and Math Notation
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Keep programming language syntax and mathematical notation separate. Write $A^{-1}b$ in math, not Matlab syntax $A\backslash b$.
 - **Source**: `AGENTS.md` (Equations).
@@ -295,6 +309,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### MATH-12: Upright Standard Operators, Functions, and Constants
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Set standard mathematical functions ($\sin, \cos, \log, \exp, \max$), differential operators ($\mathrm{d}t$), imaginary unit ($\mathrm{j}$ or $\mathrm{i}$), and Euler's constant ($\mathrm{e}$) upright.
 - **Source**: IAT *Hinweise_Allgemein.tex* (DIN 1338).
@@ -302,6 +317,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### MATH-13: Forbid Blank Lines Inside Math Environments
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]`
 - **Rule**: Do not place empty lines inside math environments (`align`, `equation`). To visually format source code, use comment lines containing only `%`.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Latex-Gliederung, Mathematische Formeln).
@@ -309,6 +325,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### MATH-14: Decimal Separator Consistency
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]`
 - **Rule**: In English documents, use a decimal point ($2.5$). In German documents, use a decimal comma ($2{,}5$) wrapped in braces or managed by `icomma`.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Sonderzeichen).
@@ -334,6 +351,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### FIG-03: Floating Figures and Text Referencing
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Review Agent]`
 - **Rule**: All figures must float in a `figure` environment, must have a unique `\label{fig:...}`, and must be explicitly referenced in the body text using `\ref{fig:...}`.
 - **Source**: `AGENTS.md` (Figures); IAT *Hinweise_Allgemein.tex*, *Anhang.tex*.
@@ -355,6 +373,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### FIG-06: Self-Contained Long Captions Ending in a Full Stop
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Review Agent]`
 - **Rule**: Every figure must carry a comprehensive caption describing what the figure shows so the figure is understandable on its own without reading the main text. The caption must end with a full stop.
 - **Source**: `AGENTS.md` (Figures); IAT *Tipps.tex*, *Anhang.tex*.
@@ -363,6 +382,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### FIG-07: Caption Placement Below Figure
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]`
 - **Rule**: In `figure` environments, `\caption{...}` must be placed below the image (`\includegraphics` or `tikzpicture`), followed by `\label{fig:...}`.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Gleitobjekte).
@@ -370,6 +390,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### FIG-08: Centering of Figures
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]`
 - **Rule**: Center every figure using `\centering` inside the `figure` environment. Do not use the `\begin{center}` environment inside floats because it adds unwanted vertical whitespace.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Latex-Bilder).
@@ -395,6 +416,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### TAB-01: Professional Horizontal Rules (Booktabs Principle)
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Format tables following `booktabs`. Never use vertical lines (`|`). Use only horizontal rules: `\toprule`, `\midrule`, `\bottomrule`, and `\cmidrule`.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Tabellen).
@@ -403,6 +425,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### TAB-02: Caption Placement Above Table
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]`
 - **Rule**: In `table` environments, `\caption{...}` must be placed above the `tabular` environment, followed by `\label{tab:...}`.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Gleitobjekte, Tabellen), *Anhang.tex*.
@@ -410,6 +433,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### TAB-03: Centering of Tables
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]`
 - **Rule**: Center every table float using `\centering`.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Tabellen).
@@ -449,6 +473,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### TYPO-01: Non-Breaking Spaces Before References and Citations
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Always use a non-breaking space `~` before `\ref{...}`, `\eqref{...}`, `\pageref{...}`, and `\cite{...}` to prevent orphaned numbers across line breaks.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Gleitobjekte, Sonderzeichen); `AGENTS.md`.
@@ -456,6 +481,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### TYPO-02: Non-Breaking Spaces in Fixed Expressions
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Use a non-breaking space `~` in fixed multi-word entities: titles with names (`Dr.~Müller`), times (`3~Uhr` / `3~p.m.`), and values with units where not wrapped in `\si` / `\unit` (`10~V`).
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Sonderzeichen).
@@ -463,6 +489,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### TYPO-03: Thin Spaces in Abbreviations and Number-Unit Pairs
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Use a thin space `\,` between components of abbreviated phrases (in German: `z.\,B.\`, `d.\,h.\`, `u.\,a.\`; in English: `e.\,g.\,`, `i.\,e.\,`).
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Sonderzeichen).
@@ -470,6 +497,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### TYPO-04: Escaped Spaces After Parameterless LaTeX Commands
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Parameterless LaTeX macros swallow following whitespace. Terminate them with `\` or `{}` in running text (e.g. `\LaTeX\ is...` or `\LaTeX{} is...`).
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Sonderzeichen).
@@ -477,6 +505,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### TYPO-05: Typographical Dash Distinctions
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**:
   - Hyphen (`-`): Compound words (`closed-loop`), no space.
@@ -490,6 +519,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### TYPO-06: Language-Specific Quotation Marks
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Never use straight typewriter quotes (`"quote"`). In English, use ``` ``quote'' ```. In German, use `"`quote`"'` or `\glqq quote\grqq{}`.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Sonderzeichen).
@@ -497,6 +527,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### TYPO-07: Single Attribute Emphasis Rule
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Change only one font attribute for emphasis (prefer `\emph{...}`). Never combine bold, italics, and underlining. Underlining (`\underline`) and letter-spacing (`sperren`) are strictly forbidden.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Auszeichnungen und Hervorhebungen).
@@ -504,6 +535,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### TYPO-08: Forbid `\\` for Paragraph Breaks in Body Text
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Never use `\\` or `\newline` to create paragraph breaks in running text. Create paragraphs using blank lines in the source. Reserve `\\` for table rows and multiline equations.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Latex-Gliederung).
@@ -511,6 +543,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### TYPO-09: Standard Label Prefixes
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Every `\label` must start with its standard category prefix:
   - `cha:` for chapters
@@ -568,6 +601,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### WORK-03: Two-Sided Layout and Document Options
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]`
 - **Rule**: Final document must be set up for two-sided printing (`twoside` enabled, DIN A4: 210 mm x 297 mm). The options `draft`, `oneside`, and `nohyperref` must NOT be active in the final build.
 - **Source**: IAT *Anhang.tex* (Checkliste).
