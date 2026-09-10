@@ -246,6 +246,22 @@ TYPO-03 is enabled by default and enforces the prescribed thin space (`\,`) with
 
 TYPO-04 is enabled by default and detects swallowed whitespace after documented parameterless commands in text mode: `\LaTeX`, `\TeX`, `\BibTeX`, `\etal`, `\eg`, and `\ie`. When one of these commands is followed by whitespace (spaces, tabs, or newlines) without an explicit terminator (`{}`, `\`, or `~`), it is flagged. Occurrences followed immediately by punctuation (`.`, `,`, `:`, `;`, `!`, `?`, `)`, `]`, `}`, quotes, or dashes) or an explicit terminator pass. Findings attach to the command start, enabling same-line suppression. Comments, literal code, syntax arguments, and math mode are excluded.
 
+### TYPO-05 support
+
+TYPO-05 is enabled by default and detects single hyphens (`-`) used for numeric ranges (e.g. `10-20`, `pp. 5-10`, `pages 12-15`, `100-200`) and text negative numbers (e.g. `-5`, `-10`, `(-5)`) in text mode. It recommends en-dash `--` (e.g. `10--20`) for numeric ranges and math mode (e.g. `$-5$`) or en-dash for negative numbers. En-dashes (`--`), em-dashes (`---`), math mode minus (`$-5$`, `$x - y$`), and compound-word hyphens (`state-of-the-art`, `closed-loop`, `high-dimensional`, `COVID-19`, `ISO-9001`, `x86-64`, `10-fold`) pass. Findings attach to the hyphen character, enabling same-line suppression. Comments, literal code (`verbatim`, `lstlisting`, `minted`, `\verb`), and syntax command arguments (`\label{...}`, `\url{...}`) are excluded.
+
+### TYPO-06 support
+
+TYPO-06 is enabled by default and detects straight double quotation marks (`"`) and straight single quotes (`'`) used as quotation marks in text mode. It recommends standard LaTeX quotation marks (`` ``word'' ``or `\enquote{word}`) or backticks for single quotes (`` `word' ``). Apostrophes in English contractions (`don't`,`it's`) and possessives (`author's`,`students'`) pass. Escaped accent commands (`\"a`,`\"o`,`\"u`,`\'e`,`\`e`), literal code (`\verb`,`verbatim`,`lstlisting`,`minted`), math mode (such as prime`$f'(x)$`), comments, and syntax command arguments are excluded. Findings attach to the straight quotation mark, enabling same-line suppression.
+
+### TYPO-07 support
+
+TYPO-07 is enabled by default and enforces guidelines on emphasis and font attributes in academic writing. It detects `\underline{...}` anywhere in text mode, `\textbf{...}` used as emphasis in running prose outside tables and headings, and combinations of multiple font attributes, including nested commands (`\textbf{\textit{...}}`, `\textbf{\emph{...}}`, `\emph{\textbf{...}}`, `\underline{\emph{...}}`). It recommends `\emph{...}` for single textual emphasis. Bold formatting in table headers (`tabular`, `tabular*`, `tabularx`, `tabulary`, `longtable`), single emphasis commands (`\emph{...}`, `\textit{...}`), math mode, comments, and literal environments are permitted. Prose following a table or math environment is checked as running prose. Findings attach to the forbidden or nested command, enabling same-line suppression.
+
+### TYPO-08 support
+
+TYPO-08 is enabled by default and detects line-break commands (`\\`, `\newline`, `\linebreak`) used as paragraph breaks in running text mode. It recommends using an empty line in the source to start a new paragraph. Row breaks in supported tables (`tabular`, `tabular*`, `tabularx`, `tabulary`, `longtable`), multiline math environments (`align`, `gather`, `multline`, `equation`, etc.), and title or author macros (`\title`, `\author`, `\subtitle`, `\institute`, `\date`) are explicitly permitted. Comments and literal environments are excluded. Findings attach to the line-break command, enabling same-line suppression.
+
 ## Code structure
 
 The public checking interface is `check(root)`; internal scanning and evaluation

@@ -69,7 +69,7 @@ def test_comments_escapes_and_literals_preserve_context(tmp_path: Path) -> None:
         "$\\frac{5}{6}$\n"
     )
     root.write_text(source, encoding="utf-8")
-    findings = check(root)
+    findings = [item for item in check(root) if item.rule_id == "MATH-04"]
     assert [(item.line, item.column) for item in findings] == [(1, 7), (2, 27), (7, 2)]
 
 

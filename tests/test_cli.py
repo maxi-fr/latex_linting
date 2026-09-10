@@ -83,6 +83,10 @@ def test_invalid_encoding(tmp_path: Path) -> None:
         "TYPO-02",
         "TYPO-03",
         "TYPO-04",
+        "TYPO-05",
+        "TYPO-06",
+        "TYPO-07",
+        "TYPO-08",
         "TYPO-09",
         "WORK-03",
     ],
@@ -458,3 +462,42 @@ def test_cli_missing_included_file(tmp_path: Path) -> None:
     assert "missing.tex" in result.stderr
     assert "2" in result.stderr
     assert "Traceback" not in result.stderr
+
+
+def test_cli_ticket_12_rules_reporting(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\section{Methods}\n"
+        "Ranges from 10-20 with offset -5.\n"
+        'We include "quoted" text.\n'
+        "We emphasize \\underline{this text}.\n"
+        "Line breaks here.\\\\\n"
+        "Next paragraph.\n"
+    )
+    root.write_text(source, encoding="utf-8")
+    result = run_cli("check", str(root))
+    assert result.returncode == 1
+    api_findings = check(root)
+    rule_ids = {f.rule_id for f in api_findings}
+    assert rule_ids == {"TYPO-05", "TYPO-06", "TYPO-07", "TYPO-08"}
+    for finding in api_findings:
+        assert f"{finding.filename}:{finding.line}:{finding.column}: {finding.rule_id}" in result.stdout
+        assert finding.explanation in result.stdout
+        assert finding.excerpt in result.stdout
+        assert finding.correction in result.stdout
+
+
+def test_cli_ticket_12_all_ignored(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\section{Methods}\n"
+        "Ranges from 10-20 with offset -5.\n"
+        'We include "quoted" text.\n'
+        "We emphasize \\underline{this text}.\n"
+        "Line breaks here.\\\\\n"
+        "Next paragraph.\n"
+    )
+    root.write_text(source, encoding="utf-8")
+    result = run_cli("check", "--ignore", "TYPO-05,TYPO-06,TYPO-07,TYPO-08", str(root))
+    assert result.returncode == 0
+    assert result.stdout == ""
