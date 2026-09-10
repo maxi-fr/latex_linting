@@ -1,13 +1,15 @@
 from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from latex_linting.document import Document
 from latex_linting.rules.model import Rule
-from latex_linting.scanner import Token
-from latex_linting.source import Finding, Source
+from latex_linting.source import Finding
 
 
-def _inline_fractions(source: Source, tokens: tuple[Token, ...]) -> Iterable[Finding]:
-    """Report inline frac commands using this module's rule metadata."""
-    for token in tokens:
+def _inline_fractions(document: "Document") -> Iterable[Finding]:
+    """Report inline frac commands across the loaded document."""
+    for source, token in document.traverse():
         if token.kind == "command" and token.value == r"\frac" and token.math == "inline":
             yield source.finding(token.start, RULE.rule_id, RULE.explanation, RULE.correction)
 

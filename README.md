@@ -130,6 +130,18 @@ Unclosed math extends to the end of the file. An unclosed literal environment hi
 the remainder of the file, while an unclosed `\verb` ends at the line boundary.
 Rule help includes examples and these detection limits.
 
+### STRUC-02 support
+
+STRUC-02 is enabled by default and reports numbered headings deeper than subsection (`\subsubsection`, `\paragraph`, `\subparagraph`) at the command backslash. Use unnumbered headings (`\subsubsection*`, `\paragraph*`, `\subparagraph*`) or restructure the hierarchy to stay within three numbered levels (`\chapter`, `\section`, `\subsection`). Optional arguments (e.g. `\subsubsection[short]{Long}`) are supported. Comments and literal blocks are excluded.
+
+### STRUC-03 support
+
+STRUC-03 is enabled by default and reports parents with exactly one numbered child at the relevant level (e.g. a `\chapter` with only one `\section`, or a `\section` with only one `\subsection`). A second child satisfies the rule even when it appears in another included source file. Findings are attached to the isolated child heading command backslash, allowing same-line `% latex-lint:ignore=STRUC-03` suppressions in the child's source file. Starred headings are unnumbered and do not participate in numbered hierarchy counting.
+
+### WORK-03 support
+
+WORK-03 is enabled by default and detects explicitly forbidden document-class options (`draft`, `oneside`, `nohyperref`) inside `\documentclass[...]`. Options are recognized as comma-separated items rather than arbitrary substrings, so options like `draftcopy` or `myoneside` are not flagged, nor are disabled key-value options like `draft=false`. Multiline option declarations are supported and findings point to the forbidden option item, enabling same-line suppression on that line. WORK-03 does not establish class defaults, effective page dimensions, or complete submission compliance.
+
 ## Code structure
 
 The public checking interface is `check(root)`; internal scanning and evaluation

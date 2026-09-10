@@ -1,7 +1,10 @@
 from latex_linting.rules.math_04 import RULE as MATH_04
 from latex_linting.rules.model import Rule
+from latex_linting.rules.struc_02 import RULE as STRUC_02
+from latex_linting.rules.struc_03 import RULE as STRUC_03
+from latex_linting.rules.work_03 import RULE as WORK_03
 
-RULES = (MATH_04,)
+RULES = (MATH_04, STRUC_02, STRUC_03, WORK_03)
 
 
 def get_rule(rule_id: str) -> Rule:

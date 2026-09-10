@@ -203,9 +203,28 @@ def _traverse_node(node: DocumentNode) -> Iterable[tuple[Source, Token]]:
         token_idx += 1
 
 
-def ordered_findings(node: DocumentNode, ignored_rules: Collection[str] | None = None) -> list[Finding]:
-    """Collect and order findings across a document node and its children in reading order."""
-    file_findings = [finding for rule in RULES for finding in rule.evaluate(node.source, node.tokens)]
+def ordered_findings(document: Document, ignored_rules: Collection[str] | None = None) -> list[Finding]:
+    """Collect and order findings across a document and its children in reading order."""
+    all_findings: list[Finding] = []
+    for rule in RULES:
+        if ignored_rules is not None and rule.rule_id in ignored_rules:
+            continue
+        all_findings.extend(rule.evaluate(document))
+
+    findings_by_file: dict[str, list[Finding]] = {}
+    for finding in all_findings:
+        findings_by_file.setdefault(finding.filename, []).append(finding)
+
+    return _collect_node_findings(document.root_node, findings_by_file, ignored_rules)
+
+
+def _collect_node_findings(
+    node: DocumentNode,
+    findings_by_file: dict[str, list[Finding]],
+    ignored_rules: Collection[str] | None,
+) -> list[Finding]:
+    """Collect filtered findings for a node and recursively interleave child includes."""
+    file_findings = findings_by_file.get(node.source.filename, [])
     filtered = filter_findings(node.source, file_findings, node.directives, ignored_rules)
     sorted_filtered = sorted(filtered, key=lambda f: (f.line, f.column, f.rule_id))
 
@@ -220,7 +239,7 @@ def ordered_findings(node: DocumentNode, ignored_rules: Collection[str] | None =
                 finding_idx += 1
             else:
                 break
-        findings.extend(ordered_findings(child, ignored_rules))
+        findings.extend(_collect_node_findings(child, findings_by_file, ignored_rules))
 
     while finding_idx < len(sorted_filtered):
         findings.append(sorted_filtered[finding_idx])

@@ -12,4 +12,4 @@ def check(root: str | Path, ignored_rules: Collection[str] | None = None) -> lis
         for rule_id in ignored_rules:
             validate_rule_id(rule_id)
     document = load_document(root)
-    return ordered_findings(document.root_node, ignored_rules)
+    return ordered_findings(document, ignored_rules)

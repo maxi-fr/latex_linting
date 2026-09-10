@@ -52,11 +52,11 @@ def test_invalid_encoding(tmp_path: Path) -> None:
     assert "Traceback" not in result.stderr
 
 
-def test_rule_help() -> None:
-    result = run_cli("rule", "MATH-04")
+@pytest.mark.parametrize("rule_id", ["MATH-04", "STRUC-02", "STRUC-03", "WORK-03"])
+def test_rule_help(rule_id: str) -> None:
+    result = run_cli("rule", rule_id)
     assert result.returncode == 0
-    assert "MATH-04" in result.stdout
-    assert "inline" in result.stdout
+    assert rule_id in result.stdout
     assert "Passing examples" in result.stdout
     assert "Failing examples" in result.stdout
     assert "Detection limits" in result.stdout
