@@ -49,9 +49,12 @@ class Document:
 
     root_node: DocumentNode
     sources: tuple[Source, ...]
+    bib_nodes: tuple[DocumentNode, ...] = ()
 
     def traverse(self) -> Iterable[tuple[Source, Token]]:
         """Yield tokens and their originating source in document reading order."""
+        if self.root_node.source.filename.endswith(".bib"):
+            return ()
         return _traverse_node(self.root_node)
 
 
@@ -82,6 +85,38 @@ def resolve_include_path(target_str: str, including_path: Path, root_dir: Path) 
 
     for directory in directories:
         found = _find_candidate_file(directory / target_path)
+        if found is not None:
+            return found
+    return None
+
+
+def _find_candidate_bib_file(candidate: Path) -> Path | None:
+    """Return the candidate if it is a file, trying .bib extension if omitted."""
+    if candidate.is_file():
+        return candidate
+    if candidate.suffix != ".bib":
+        bib_path = Path(str(candidate) + ".bib")
+        if bib_path.is_file():
+            return bib_path
+    return None
+
+
+def resolve_bib_path(target_str: str, including_path: Path, root_dir: Path) -> Path | None:
+    """Resolve a bibliography target to a filesystem path relative to the file or root."""
+    target = target_str.strip()
+    if not target or target.startswith(("\\", "http://", "https://")):
+        return None
+    target_path = Path(target)
+    if target_path.is_absolute():
+        return _find_candidate_bib_file(target_path)
+
+    base_dir = including_path.parent
+    directories = [base_dir]
+    if base_dir.resolve() != root_dir.resolve():
+        directories.append(root_dir)
+
+    for directory in directories:
+        found = _find_candidate_bib_file(directory / target_path)
         if found is not None:
             return found
     return None
@@ -148,17 +183,84 @@ def _find_includes(source: Source, tokens: Sequence[Token]) -> list[IncludeComma
     return includes
 
 
+def _parse_bib_targets(tokens: Sequence[Token], start_idx: int) -> tuple[list[str], int, int]:
+    """Parse bibliography targets from command tokens, returning targets, end offset, next idx."""
+    idx = start_idx
+    while idx < len(tokens) and (
+        tokens[idx].kind == "comment" or (tokens[idx].kind == "text" and tokens[idx].value.isspace())
+    ):
+        idx += 1
+
+    if idx < len(tokens) and tokens[idx].kind == "text" and tokens[idx].value.startswith("["):
+        bracket_depth = 0
+        while idx < len(tokens):
+            val = tokens[idx].value
+            bracket_depth += val.count("[") - val.count("]")
+            idx += 1
+            if bracket_depth <= 0:
+                break
+        while idx < len(tokens) and (
+            tokens[idx].kind == "comment" or (tokens[idx].kind == "text" and tokens[idx].value.isspace())
+        ):
+            idx += 1
+
+    target_str, end_offset, next_idx = _parse_include_target(tokens, idx)
+    if end_offset == -1:
+        return [target_str] if target_str else [], -1, next_idx
+    targets = [t.strip() for t in target_str.split(",") if t.strip()]
+    return targets, end_offset, next_idx
+
+
+def _find_bib_commands(source: Source, tokens: Sequence[Token]) -> list[tuple[str, int]]:
+    """Identify targets and lines of bibliography commands in scanned tokens."""
+    bib_entries: list[tuple[str, int]] = []
+    idx = 0
+    bib_commands = frozenset({r"\addbibresource", r"\bibliography", r"\addglobalbib"})
+    while idx < len(tokens):
+        token = tokens[idx]
+        if token.kind != "command" or token.value not in bib_commands:
+            idx += 1
+            continue
+
+        line = source.line_number(token.start)
+        targets, cmd_end, idx = _parse_bib_targets(tokens, idx + 1)
+        if cmd_end == -1:
+            raw_target = targets[0] if targets else ""
+            raise MissingIncludeError(source.filename, line, raw_target)
+
+        bib_entries.extend((target, line) for target in targets)
+    return bib_entries
+
+
+def _load_bib_node(path: Path, filename: str) -> DocumentNode:
+    """Read one bibliography file, scan its tokens, and parse directives."""
+    with path.open(encoding="utf-8", newline="") as handle:
+        source = Source(filename, handle.read())
+    tokens = scan(source.text)
+    directives = parse_directives(source, tokens)
+    return DocumentNode(source, tokens, directives, ())
+
+
+@dataclass
+class _LoadContext:
+    """Retain document load state across recursive inclusion passes."""
+
+    root_dir: Path
+    loaded_sources: list[Source]
+    bib_nodes: list[DocumentNode]
+    loaded_bib_paths: set[Path]
+
+
 def _load_node(
     path: Path,
     filename: str,
-    root_dir: Path,
     active_chain: tuple[Path, ...],
-    loaded_sources: list[Source],
+    ctx: _LoadContext,
 ) -> DocumentNode:
-    """Read one source file, scan its tokens, and recursively load child includes."""
+    """Read one source file, scan tokens, load child includes, and collect bibliography nodes."""
     with path.open(encoding="utf-8", newline="") as handle:
         source = Source(filename, handle.read())
-    loaded_sources.append(source)
+    ctx.loaded_sources.append(source)
     tokens = scan(source.text)
     directives = parse_directives(source, tokens)
     include_cmds = _find_includes(source, tokens)
@@ -167,24 +269,38 @@ def _load_node(
     new_chain = (*active_chain, canonical)
 
     for cmd in include_cmds:
-        target_path = resolve_include_path(cmd.target, path, root_dir)
+        target_path = resolve_include_path(cmd.target, path, ctx.root_dir)
         if target_path is None:
             raise MissingIncludeError(source.filename, cmd.line, cmd.target)
         if target_path.resolve() in new_chain:
             msg = f"{source.filename}:{cmd.line}: circular inclusion of '{cmd.target}'"
             raise ValueError(msg)
-        child_node = _load_node(target_path, str(target_path), root_dir, new_chain, loaded_sources)
+        child_node = _load_node(target_path, str(target_path), new_chain, ctx)
         children.append((cmd, child_node))
+
+    bib_entries = _find_bib_commands(source, tokens)
+    for target, line in bib_entries:
+        target_path = resolve_bib_path(target, path, ctx.root_dir)
+        if target_path is None:
+            raise MissingIncludeError(source.filename, line, target)
+        canonical_bib = target_path.resolve()
+        if canonical_bib not in ctx.loaded_bib_paths:
+            ctx.loaded_bib_paths.add(canonical_bib)
+            ctx.bib_nodes.append(_load_bib_node(target_path, str(target_path)))
 
     return DocumentNode(source, tokens, directives, tuple(children))
 
 
 def load_document(root: str | Path) -> Document:
-    """Load the root document and recursively follow literal input and include commands."""
+    """Load root document and recursively follow input, include, and bibliography commands."""
     root_path = Path(root)
-    loaded_sources: list[Source] = []
-    root_node = _load_node(root_path, str(root), root_path.parent, (), loaded_sources)
-    return Document(root_node, tuple(loaded_sources))
+    if root_path.suffix == ".bib":
+        bib_node = _load_bib_node(root_path, str(root))
+        return Document(bib_node, (), (bib_node,))
+
+    ctx = _LoadContext(root_path.parent, [], [], set())
+    root_node = _load_node(root_path, str(root), (), ctx)
+    return Document(root_node, tuple(ctx.loaded_sources), tuple(ctx.bib_nodes))
 
 
 def _traverse_node(node: DocumentNode) -> Iterable[tuple[Source, Token]]:
@@ -204,7 +320,7 @@ def _traverse_node(node: DocumentNode) -> Iterable[tuple[Source, Token]]:
 
 
 def ordered_findings(document: Document, ignored_rules: Collection[str] | None = None) -> list[Finding]:
-    """Collect and order findings across a document and its children in reading order."""
+    """Collect and order findings across a document, included children, and bibliography files."""
     all_findings: list[Finding] = []
     for rule in RULES:
         if ignored_rules is not None and rule.rule_id in ignored_rules:
@@ -215,7 +331,17 @@ def ordered_findings(document: Document, ignored_rules: Collection[str] | None =
     for finding in all_findings:
         findings_by_file.setdefault(finding.filename, []).append(finding)
 
-    return _collect_node_findings(document.root_node, findings_by_file, ignored_rules)
+    findings: list[Finding] = []
+    if not document.root_node.source.filename.endswith(".bib"):
+        findings.extend(_collect_node_findings(document.root_node, findings_by_file, ignored_rules))
+
+    for bib_node in document.bib_nodes:
+        file_findings = findings_by_file.get(bib_node.source.filename, [])
+        filtered = filter_findings(bib_node.source, file_findings, bib_node.directives, ignored_rules)
+        sorted_filtered = sorted(filtered, key=lambda f: (f.line, f.column, f.rule_id))
+        findings.extend(sorted_filtered)
+
+    return findings
 
 
 def _collect_node_findings(

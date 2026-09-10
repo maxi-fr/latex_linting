@@ -32,6 +32,9 @@ Installing the package provides the `latex-lint` console command:
 # Check a thesis root document:
 latex-lint check path/to/thesis.tex
 
+# Or check a bibliography file directly:
+latex-lint check path/to/references.bib
+
 # Check with invocation-wide rule exclusions:
 latex-lint check --ignore MATH-04,PROSE-02 path/to/thesis.tex
 
@@ -43,7 +46,7 @@ When running within a `uv` project without global installation, prefix commands 
 
 #### Explicit root selection
 
-The `check` command requires an explicit path to the root document (`.tex`). It never infers, searches, or guesses the root document from the current working directory. The root document and all included files must be UTF-8 encoded. The checker recursively follows literal `\input{...}` and `\include{...}` commands from the root. It never alters source files, compiles TeX, or expands macros.
+The `check` command requires an explicit path to the root document (`.tex`) or bibliography file (`.bib`). It never infers, searches, or guesses the root document from the current working directory. The root document and all included files must be UTF-8 encoded. The checker recursively follows literal `\input{...}` and `\include{...}` commands from the root, as well as `\addbibresource{...}` and `\bibliography{...}` declarations. It never alters source files, compiles TeX, or expands macros.
 
 #### Exit codes and failure behavior
 
@@ -206,6 +209,10 @@ PROSE-04 is enabled by default and checks American headline capitalization in su
 ### CITE-04 support
 
 CITE-04 is enabled by default and detects recognized citation commands (`\cite`, `\citep`, `\citet`, `\autocite`, etc., including optional arguments like `[p.~5]`) immediately following a sentence's terminal period in text mode, recommending moving the citation before the period. Common abbreviations like `et al.` are excluded from sentence-terminal detection. Findings attach to the citation command backslash.
+
+### CITE-08 support
+
+CITE-08 is enabled by default and validates the completeness of mandatory BibLaTeX metadata fields per entry type in `.bib` files. It checks `author` (or `editor`, `organization`, or `institution` where appropriate), `title`, and `year` (or `date`/`urldate`) across all entry types; `journal` (or `journaltitle`), `volume`, `pages`, and `doi` for `@article`; `publisher` and `isbn` for `@book`; `booktitle`, `pages`, and `doi` or `isbn` for `@inproceedings`; and respective publication venues for other types. Non-citation entries (`@comment`, `@string`, `@preamble`) are ignored. Bibliography files are discovered automatically via `\addbibresource`, `\bibliography`, or `\addglobalbib` in the LaTeX document hierarchy, or can be checked directly by passing a `.bib` file to `latex-lint check`. Missing required fields are reported at the entry's `@` declaration, allowing same-line `% latex-lint: ignore=CITE-08` suppressions when DOI or ISBN identifiers are unassigned.
 
 ### MATH-01 support
 

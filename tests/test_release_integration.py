@@ -115,10 +115,23 @@ def _build_violating_thesis(tmp_path: Path) -> Path:
     # WORK-03: forbidden option 'draft'
     root.write_text(
         r"""\documentclass[draft,12pt]{report}
+\addbibresource{chapters_violating/violating.bib}
 \begin{document}
 \input{chapters_violating/ch_struc_prose.tex}
 \input{chapters_violating/ch_math_fig_tab.tex}
 \end{document}
+""",
+        encoding="utf-8",
+    )
+
+    # CITE-08: incomplete bibliography entry
+    bib = chapters_dir / "violating.bib"
+    bib.write_text(
+        r"""@article{bad_article,
+  author = {Author, A.},
+  title = {Incomplete Article},
+  year = {2020},
+}
 """,
         encoding="utf-8",
     )
