@@ -100,3 +100,29 @@ def test_cli_unknown_rule_in_source_directive(tmp_path: Path) -> None:
     assert result.returncode == 2
     assert "UNKNOWN" in result.stderr
     assert "Traceback" not in result.stderr
+
+
+def test_cli_multi_file_thesis(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    inc = tmp_path / "inc.tex"
+    root.write_text("$\\frac{1}{2}$\n\\input{inc.tex}\n", encoding="utf-8")
+    inc.write_text("$\\frac{3}{4}$\n", encoding="utf-8")
+    result = run_cli("check", str(root))
+    assert result.returncode == 1
+    assert result.stderr == ""
+    api_findings = check(root)
+    assert len(api_findings) == 2
+    for finding in api_findings:
+        assert f"{finding.filename}:{finding.line}:{finding.column}: {finding.rule_id}" in result.stdout
+        assert finding.excerpt in result.stdout
+        assert finding.correction in result.stdout
+
+
+def test_cli_missing_included_file(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    root.write_text("Intro\n\\input{missing.tex}\n", encoding="utf-8")
+    result = run_cli("check", str(root))
+    assert result.returncode == 2
+    assert "missing.tex" in result.stderr
+    assert "2" in result.stderr
+    assert "Traceback" not in result.stderr

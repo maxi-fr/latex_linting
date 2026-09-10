@@ -2,6 +2,7 @@ import argparse
 import sys
 from collections.abc import Sequence
 
+from latex_linting.document import MissingIncludeError
 from latex_linting.main import check
 from latex_linting.rules.catalogue import get_rule
 
@@ -31,6 +32,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     ignored_rules = [part.strip() for part in args.ignore.split(",")] if args.ignore is not None else None
     try:
         findings = check(args.root, ignored_rules=ignored_rules)
+    except MissingIncludeError as error:
+        sys.stderr.write(f"latex-lint: {error}\n")
+        return 2
     except (OSError, UnicodeError) as error:
         sys.stderr.write(f"latex-lint: {args.root}: {error}\n")
         return 2

@@ -1,21 +1,15 @@
 from collections.abc import Collection
 from pathlib import Path
 
-from latex_linting.rules.catalogue import RULES, validate_rule_id
-from latex_linting.scanner import scan
-from latex_linting.source import Finding, Source
-from latex_linting.suppression import filter_findings, parse_directives
+from latex_linting.document import load_document, ordered_findings
+from latex_linting.rules.catalogue import validate_rule_id
+from latex_linting.source import Finding
 
 
 def check(root: str | Path, ignored_rules: Collection[str] | None = None) -> list[Finding]:
-    """Check one UTF-8 source file for rule violations, applying suppressions."""
+    """Check a LaTeX root document and its included files, applying suppressions."""
     if ignored_rules is not None:
         for rule_id in ignored_rules:
             validate_rule_id(rule_id)
-    with Path(root).open(encoding="utf-8", newline="") as handle:
-        source = Source(str(root), handle.read())
-    tokens = scan(source.text)
-    directives = parse_directives(source, tokens)
-    findings = [finding for rule in RULES for finding in rule.evaluate(source, tokens)]
-    filtered = filter_findings(source, findings, directives, ignored_rules)
-    return sorted(filtered, key=lambda finding: (finding.line, finding.column, finding.rule_id))
+    document = load_document(root)
+    return ordered_findings(document.root_node, ignored_rules)

@@ -14,13 +14,13 @@ uv run latex-lint rule MATH-04
 ```
 
 Installing this package also installs the `latex-lint` command. The root document
-is required and must be UTF-8. The checker reads only that file in this version;
-it does not follow `\input` or `\include` yet. It never changes source files,
+is required and must be UTF-8. The checker follows literal `\input` and `\include`
+commands recursively from the supplied root. It never changes source files,
 compiles TeX, or expands macros.
 
 Exit codes are `0` for a clean check or successful rule help, `1` for findings,
-and `2` for input errors such as unreadable files, invalid UTF-8, missing arguments,
-or unknown rule IDs. Findings go to stdout; input errors go to stderr.
+and `2` for input errors such as unreadable files, missing included files, invalid UTF-8,
+missing arguments, or unknown rule IDs. Findings go to stdout; input errors go to stderr.
 This is a style checker, not a LaTeX syntax validator.
 
 ### Python interface
@@ -40,8 +40,10 @@ objects without printing. Each has `rule_id`, `filename`, `line`, `column`,
 `excerpt`, `explanation`, and `correction` fields. The filename retains the supplied
 path. Lines and columns are one-based; columns count Unicode characters, with a tab
 counting as one character. The excerpt is the original line without its line ending.
-Findings are ordered by line, column, then rule ID. File and decoding errors propagate
-as `OSError` and `UnicodeError`. Unknown rule IDs in `ignored_rules` or in-source
+Findings preserve document reading order across included files, and within each file are
+ordered by line, column, then rule ID. File and decoding errors propagate
+as `OSError` and `UnicodeError`; unresolved included files raise `MissingIncludeError`
+(a subclass of `FileNotFoundError`). Unknown rule IDs in `ignored_rules` or in-source
 directives raise `ValueError`. `get_rule` raises `KeyError` for an unknown ID.
 
 ### Rule suppressions
@@ -83,6 +85,27 @@ For passages written in German, such as the German abstract (*Zusammenfassung*),
 ```
 
 If an entire file or chapter is in German, place the `disable` directive at the top of that file, or pass the rule IDs to `--ignore` across the check invocation.
+
+### Multi-file documents
+
+The checker recursively follows literal `\input{...}` and `\include{...}` commands
+from the root document:
+
+- **Path resolution**: Relative paths resolve first against the directory of the file
+  containing the include command. If unresolved and different, resolution falls back
+  to the root document directory.
+- **Omitted extensions**: If a target has no `.tex` extension, the checker attempts
+  resolution with `.tex` appended when the path without extension does not exist.
+- **Dynamic targets**: Targets constructed by macros (e.g. `\input{\mychapter}`) are
+  not expanded and report an unresolved include error.
+- **Comments and literals**: Include commands inside comments or literal environments
+  (`verbatim`, `lstlisting`, `minted`, `\verb`) are ignored and do not load files.
+- **Suppression isolation**: Source directives affect only their containing file. A
+  parent's disabled rules do not carry into included files, child directives do not
+  alter the parent's state, and returning to the parent restores that file's own state.
+- **Missing targets**: Missing included files raise `MissingIncludeError` identifying
+  the include location and unresolved target. The CLI reports the error to stderr
+  and exits with code `2`.
 
 ### MATH-04 support
 
