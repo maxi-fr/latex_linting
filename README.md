@@ -190,6 +190,18 @@ MATH-12 is enabled by default and detects recognized standard mathematical funct
 
 MATH-14 is enabled by default and detects adjacent digits separated by a comma without whitespace (`\d+,\d+`) in math mode (e.g. `$3,14$`). In English math, a decimal period should be used (e.g. `$3.14$`). Decimal commas wrapped in braces (e.g. `$3{,}14$`) are accepted for localized notation. The diagnostic explains ambiguity where unspaced comma-separated lists or coordinates (e.g. `$(1,2)$`) resemble decimals, recommending spaces after commas. Findings attach to the comma, enabling same-line suppression. Comments, literal code, and nested non-math commands are excluded.
 
+### MATH-02 support
+
+MATH-02 is enabled by default and detects numbered display math equations (`equation`, `align`, `gather`, `multline`, `alignat`, `flalign`, `eqnarray`) declaring labels that are never referenced across the loaded document. Recognized reference commands include `\ref`, `\eqref`, `\autoref`, `\cref`, and `\Cref`, and references across included source files (forward and backward) satisfy the rule. Findings attach to the unreferenced `\label` command, allowing same-line suppression. Unnumbered environments (`equation*`, `align*`, `gather*`, `\[...\]`, `$$...$$`) do not require references. Unlabeled numbered equations are not flagged because equations are evaluated through declared `\label` keys. References and labels in comments or literal code are excluded.
+
+### MATH-03 support
+
+MATH-03 is enabled by default and detects redundant equation wording and incorrect equation-reference syntax in running text. It flags words like "equation", "eq.", "Equation", "Eq.", "Gleichung", and "Gl." immediately preceding `\eqref` or `\ref`, except when capitalized at sentence start (e.g. "Equation~\eqref{...}"). It also flags `\ref` used to reference equation labels and parenthesized references `(\ref{...})`, recommending `\eqref{...}`. Findings attach to the redundant word or the reference command, enabling same-line suppression. Comments, literal code, and math mode are excluded.
+
+### TYPO-09 support
+
+TYPO-09 is enabled by default and checks standard label prefixes in `\label{...}` commands based on structural context. In known contexts, labels must use standard prefixes: `fig:` inside figure environments (`figure`, `figure*`), `tab:` inside table environments (`table`, `table*`), `eq:` inside display math environments, `ch:` or `cha:` immediately following `\chapter`, and `sec:` immediately following `\section`, `\subsection`, or `\subsubsection` (with `app:` also permitted for appendix sections and chapters). In unknown contexts outside these environments and headings, labels must start with one of the standard prefixes (`ch:`, `cha:`, `sec:`, `fig:`, `tab:`, `eq:`, `app:`, `lst:`, `listing:`). Findings attach to the `\label` command, allowing same-line suppression. Comments and literal code are excluded.
+
 ## Code structure
 
 The public checking interface is `check(root)`; internal scanning and evaluation
