@@ -11,7 +11,7 @@ ALL_RULE_IDS = frozenset(rule.rule_id for rule in RULES)
 
 
 def _build_clean_thesis(tmp_path: Path) -> Path:
-    """Build a multi-file thesis fixture that complies with all 34 rules."""
+    """Build a multi-file thesis fixture that complies with all 36 rules."""
     root = tmp_path / "thesis.tex"
     chapters_dir = tmp_path / "chapters"
     chapters_dir.mkdir(parents=True, exist_ok=True)
@@ -107,7 +107,7 @@ The findings confirm the efficiency of our distributed scheduling design.
 
 
 def _build_violating_thesis(tmp_path: Path) -> Path:
-    """Build a multi-file thesis fixture containing violations of all 34 rules."""
+    """Build a multi-file thesis fixture containing violations of all 36 rules."""
     root = tmp_path / "thesis_violating.tex"
     chapters_dir = tmp_path / "chapters_violating"
     chapters_dir.mkdir(parents=True, exist_ok=True)
@@ -149,6 +149,7 @@ def _build_violating_thesis(tmp_path: Path) -> Path:
     # TYPO-06: '"quotes"' straight quotes
     # TYPO-07: '\underline{underlined}'
     # TYPO-08: '\\' as paragraph break in running text
+    # TYPO-10: reference without category noun
     # STRUC-02: '\subsubsection{Deep Heading}'
     # STRUC-03: isolated child (only 1 section in chapter, or only 1 subsection in section)
     # STRUC-06: section ending on equation/table/figure/list
@@ -191,6 +192,7 @@ Text in deep heading.
     # MATH-12: $sin(x)$ un-upright function
     # MATH-13: blank line in display math
     # MATH-14: $3,14$ decimal comma
+    # TYPO-11: forward reference to equation
     # FIG-03: unreferenced figure
     # FIG-06: caption without terminal dot
     # FIG-07: label before caption
@@ -205,6 +207,7 @@ Text in deep heading.
 \label{cha:math_floats}
 \section{Math Violations}
 \label{sec:math_violations}
+We preview equation~\eqref{eq:referenced_formula} before introducing it.
 \begin{equation}
 \label{eq:strictly_unreferenced}
   E = m \cdot c^2 \,.
@@ -271,7 +274,7 @@ def test_violating_multi_file_thesis_covers_all_rules(tmp_path: Path, capsys: py
     findings = check(root)
     reported_rule_ids = {f.rule_id for f in findings}
 
-    # Verify all 34 rules are triggered
+    # Verify all 36 rules are triggered
     missing_rules = ALL_RULE_IDS - reported_rule_ids
     assert not missing_rules, f"Rules not triggered in violating fixture: {missing_rules}"
 

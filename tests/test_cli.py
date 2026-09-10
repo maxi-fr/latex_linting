@@ -172,11 +172,11 @@ def test_cli_ticket_08_rules_reporting(tmp_path: Path) -> None:
     source = (
         "\\section{Methods in Machine Learning}\n"
         "\\label{methods_label}\n"
-        "We consider equation~\\eqref{eq:used}.\n"
         "\\begin{equation}\n"
         "  E = mc^2 \\,.\n"
         "  \\label{eq:used}\n"
         "\\end{equation}\n"
+        "We consider equation~\\eqref{eq:used}.\n"
         "\\begin{equation}\n"
         "  a = b \\,.\n"
         "  \\label{eq:unused}\n"
@@ -358,7 +358,7 @@ def test_cli_spacing_rules_all_ignored(tmp_path: Path) -> None:
     source = (
         "\\section{Overview of the System}\n"
         "\\label{sec:overview}\n"
-        "As seen in Figure \\ref{sec:overview}, results in Table 1 hold.\n"
+        "As seen in Section \\ref{sec:overview}, results in Table 1 hold.\n"
         "Consider e.g. how \\LaTeX is used here.\n"
         "This section concludes with narrative prose.\n"
     )

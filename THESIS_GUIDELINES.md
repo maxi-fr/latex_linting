@@ -17,23 +17,6 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ## 1. Document Structure and Hierarchy
 
-### STRUC-01: Standard Thesis Document Structure
-
-- **Layer**: `[Review Agent]` `[Writing Skill]`
-- **Rule**: Follow the prescribed academic structural sequence:
-  1. Title page (Thesis type, title, author, submission date).
-  2. Task assignment (*Aufgabenstellung* from supervisor).
-  3. Declaration of originality (*Selbstständigkeitserklärung* using current legal wording).
-  4. Abstract (German *Kurzfassung* and English *Abstract* fitting together on a single page).
-  5. Table of contents (`\tableofcontents`).
-  6. Symbols and abbreviations list (*Formelzeichen und Abkürzungen*).
-  7. Main body (Intro, State of the Art, Methodology, Implementation, Results, Discussion, Conclusion).
-  8. Appendix (Lengthy derivations, datasheets, code fragments).
-  9. Bibliography (`biblatex` + `biber`).
-  10. Separate project archive (Complete runnable code, CAD models, raw data).
-- **Source**: IAT *Tipps.tex*, *Hinweise_LaTeX.tex*.
-- **Review Criteria**: Check presence and ordering of all required sections in the root `.tex` file.
-
 ### STRUC-02: Maximum Chapter Nesting Depth
 
 - **Status**: Done
@@ -205,6 +188,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### CITE-08: Complete Bibliography Metadata
 
+- **Status**: Done
 - **Layer**: `[Regex Linter]`
 - **Rule**: Every bibliography entry in the `.bib` file must contain complete fields: author(s), title, publication venue (journal, conference, publisher), year, volume, page range, and DOI or ISBN where available.
 - **Source**: IAT *Anhang.tex*, *Hinweise_Allgemein.tex*.
@@ -556,17 +540,19 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### TYPO-10: Explicit Reference Categorization
 
-- **Layer**: `[Review Agent]` `[Writing Skill]`
+- **Status**: Done
+- **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Always specify the object type before a reference ("Figure~4.2", "Section~3.1", "Chapter~2"). Never write bare numbers like "see 4.2", except for equations referenced as `(4.2)` or `\eqref{...}`.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Gleitobjekte).
-- **Review Criteria**: Check that all `\ref{...}` calls are preceded by a descriptive category noun.
+- **Linter Check**: Check that all `\ref{...}` calls are preceded by a category noun matching the prefix, or a page word before `\pageref{...}`.
 
 ### TYPO-11: Chronological Referencing (No Forward References to Math)
 
-- **Layer**: `[Review Agent]` `[Writing Skill]`
+- **Status**: Done
+- **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: Introduce equations before or at the point of reference. Avoid referring forward to equations that have not yet appeared in the text.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Mathematische Formeln).
-- **Review Criteria**: Ensure equation references refer back to previously stated formulas.
+- **Linter Check**: Traverse document in reading order; flag equation references (via `\eqref` or `\ref` to equation labels) appearing before their `\label`.
 
 ### TYPO-12: Acronym and Symbol Table Maintenance
 

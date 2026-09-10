@@ -318,6 +318,14 @@ TYPO-07 is enabled by default and enforces guidelines on emphasis and font attri
 
 TYPO-08 is enabled by default and detects line-break commands (`\\`, `\newline`, `\linebreak`) used as paragraph breaks in running text mode. It recommends using an empty line in the source to start a new paragraph. Row breaks in supported tables (`tabular`, `tabular*`, `tabularx`, `tabulary`, `longtable`), multiline math environments (`align`, `gather`, `multline`, `equation`, etc.), and title or author macros (`\title`, `\author`, `\subtitle`, `\institute`, `\date`) are explicitly permitted. Comments and literal environments are excluded. Findings attach to the line-break command, enabling same-line suppression.
 
+### TYPO-10 support
+
+TYPO-10 is enabled by default and checks that `\ref{...}` and `\pageref{...}` commands in text mode specify the category noun of the referenced object (e.g. `Figure~\ref{fig:...}`, `Section~\ref{sec:...}`, `Table~\ref{tab:...}`). The category noun must match the referenced label's prefix (`Figure`/`Abbildung` for `fig:`, `Table`/`Tabelle` for `tab:`, `Section`/`Abschnitt` for `sec:`, `Chapter`/`Kapitel` for `ch:`/`cha:`, `page`/`Seite` for `\pageref`). Coordinated references (`Figures~\ref{...} and~\ref{...}`, `Figures~\ref{...}--\ref{...}`) and subfigure suffixes (`Figure~\ref{...}(a) and~\ref{...}(b)`) are supported. Commands with built-in categories (`\autoref`, `\eqref`, `\cref`, `\Cref`) and equation labels are excluded. Findings attach to the reference command token, enabling same-line suppression.
+
+### TYPO-11 support
+
+TYPO-11 is enabled by default and enforces chronological equation referencing across the document reading order (`Document.traverse()`). It detects forward references where an equation is cited via `\eqref` or `\ref` before its defining `\label` command inside a display math environment or with an `eq:` prefix. Forward references across multi-file `\input` and `\include` hierarchies are detected. Undefined equation references and non-equation floats are excluded. Findings attach to the forward reference command token, enabling same-line suppression.
+
 ## Code structure
 
 The public checking interface is `check(root)`; internal scanning and evaluation
