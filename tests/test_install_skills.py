@@ -154,6 +154,3 @@ def test_subprocess_cli_install_skills(tmp_path: Path) -> None:
     assert (target / "thesis-review" / "SKILL.md").is_file()
     assert "Installed thesis-writing" in result.stdout
     assert "Installed thesis-review" in result.stdout
-
-
-

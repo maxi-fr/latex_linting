@@ -6,7 +6,7 @@ authors = [
     {name = "Max Frankenberg", email = "frankenbergmax57@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = []
 
 [project.scripts]
@@ -36,7 +36,7 @@ module-name = ["latex_linting"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py313"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["ALL"]

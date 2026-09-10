@@ -4,7 +4,7 @@ Linting plus review agents for thesis writing
 
 ## Installation and Usage
 
-Requires Python 3.13 or later.
+Requires Python 3.10 or later.
 
 ### Installation via uv
 
@@ -15,7 +15,7 @@ To add `latex-linting` as a dependency to another thesis project using [uv](http
 uv add /path/to/latex_linting
 
 # Or add from a git repository:
-uv add git+https://github.com/<user_name>/latex_linting.git
+uv add git+https://github.com/maxi-fr/latex_linting.git
 ```
 
 From within this repository checkout:

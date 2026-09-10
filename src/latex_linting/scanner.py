@@ -1,8 +1,8 @@
 import re
 from dataclasses import dataclass, replace
-from typing import Literal
+from typing import Literal, TypeAlias
 
-type MathContext = Literal["text", "inline", "display"]
+MathContext: TypeAlias = Literal["text", "inline", "display"]
 
 _LEXEME = re.compile(
     r"(?P<comment>%[^\r\n]*)"
