@@ -1,0 +1,67 @@
+# latex-linting
+
+Linting plus review agents for thesis writing
+
+## Development
+
+This project uses [uv](https://github.com/astral-sh/uv) for dependency management, [ruff](https://github.com/astral-sh/ruff) for linting and formatting, and pre-commit hooks to automate code quality checks.
+
+### Setup
+
+1. Install `uv`:
+
+    ```bash
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
+
+2. Clone the repo:
+
+    ```bash
+    git clone https://github.com/<user_name>/latex_linting.git
+    ```
+
+    and navigate to it:
+
+    ```bash
+    cd latex_linting
+    ```
+
+3. Sync dependencies:
+
+    ```bash
+    uv sync
+    ```
+
+4. Set up pre-commit hooks (this will run linting, formatting, and tests on every commit):
+
+    ```bash
+    uv run pre-commit install
+    ```
+
+### Running Tests
+
+To run tests manually using `pytest` (otherwise pre-commit will run them):
+
+```bash
+uv run pytest
+```
+
+### Linting and Formatting
+
+To check for linting errors:
+
+```bash
+uv run ruff check .
+```
+
+To format code:
+
+```bash
+uv run ruff format .
+```
+
+### Type checking
+
+```bash
+uv run ty check .
+```
