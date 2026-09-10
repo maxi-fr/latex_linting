@@ -1,0 +1,116 @@
+\chapter{Checkliste}
+\label{cha:Checkliste}
+
+Aktuell ist von der Arbeit eine elektronische Version der Arbeit im PDF/A Format in \href{https://tubama.ulb.tu-darmstadt.de/}{\textsc{TUbama}} abzugeben.
+Zusätzlich ist die Arbeit in elektronischer Form (PDF) direkt an den Betreuer zu schicken.
+
+In Absprache mit dem Betreuer kann auch ein gedrucktes Exemplar (doppelseitig; gebunden mit dunkelblauem oder schwarzem Karton; vorne Klarsichtfolie; Klebe- oder Leimbindung, keine Spiralbindung, kein Hardcover) eingefordert werden.
+
+Zusätzlich ist mit dem Betreuer abzusprechen, welche weitere Daten in elektronischer Form abzugeben sind (Quelltext wie Matlab-Dateien und Simulinkmodelle, technische Zeichnungen und CAD-Modelle, Literatur).
+
+Zur Abgabe der Arbeit sollten folgende Punkte überprüft werden:
+
+% Der folgende Befehl ändert die Aufzählungszeichen in Kästen. Diese Definition
+% ist im gesamten restlichen Dokument wirksam.
+
+\renewcommand{\labelitemi}{%
+  \setlength{\fboxsep}{.6ex}\raisebox{.7ex}{\framebox{}}}
+
+\textbf{Im Quelltext}
+\begin{itemize}
+  \item Wurden alle der Literatur entnommenen Stellen mit Literaturverweisen belegt?
+  \item keine wörtlichen Zitate, falls doch müssen diese in Anführungszeichen!
+  \item Alle Literaturangaben im Literaturverzeichnis vollständig? (Autor(en), Titel, Verlag/Journal/Konferenzband/\etc, Jahr, \usw)
+  \item Alle Seitenangaben im Inhaltsverzeichnis korrekt?
+  \item Keine einzelnen Abschnitte/Unterabschnitte im Inhaltsverzeichnis?
+  \item Prägnante Kapitelnamen? (keine ganzen Sätze!)
+  \item Alle Bilder haben Bild\emph{unterschriften}, alle Tabellen haben \emph{Überschriften}?
+  \item Wurden die Hinweise aus \charef{cha:Hinweise_Allgemein} berücksichtigt (allgemeiner Aufbau, Abstände, Sonderzeichen, \ldots)?
+  \item Sind die Bilder gut erkennbar und alle Elemente beschriftet?
+    Passt die Schriftgröße in den Bildern zum Text?
+    Sitzen die Gleitobjekte an der richtigen Stelle?
+  \item Treten beim Aufruf von \TeX\ bzw.\ pdf\TeX\ Fehler oder Warnungen auf?
+    Sind \emph{alle} Bilder, Tabellen und Literaturstellen im  Text zitiert?
+    Sind falsche oder doppelte Referenzen vorhanden?
+    Dies lässt sich anhand der Log-Datei feststellen.
+\end{itemize}
+
+\textbf{In der PDF-Datei}
+\begin{itemize}
+  \item Die Datei ist im \textbf{doppelseitigen} Layout mit Hypertext-Elementen zu erstellen; die Optionen \verb|draft|, \verb|oneside| und \verb|nohyperref| sind \textbf{nicht} aktiviert.
+    Die Seitengröße des PDF-Dokuments überprüfen:
+    210\,mm $\times$ 297\,mm (DIN A4).
+  \item Sind die PDF-Bookmarks und Seitenzahlen vorhanden?
+    Zumindest im Vorspann sollte überprüft werden, ob die Bookmarks auf die richtige Seite verweisen.
+  \item Sind die PDF-Infofelder (in Acrobat Reader: Datei $\rightarrow$ Dokumenteigenschaften) richtig eingetragen?
+    Notfalls mit \verb|\hypersetup{...}| korrigieren.
+  \item In den Bookmarks und Infofeldern können nicht alle Zeichen dargestellt werden.
+    In einem solchen Fall \zB\ \verb|\texorpdfstring| (aus \verb|hyperref|) verwenden.
+  \item Ist die für \textsc{TUbama} erzeugte Datei eine gültige PDF/A Datei?
+\end{itemize}
+
+\textbf{Im Ausdruck (wenn gefordert)}
+\begin{itemize}
+  \item Die Arbeit ist \textbf{doppelseitig}, vorzugsweise schwarzweiß auf einem Laserdrucker auszudrucken.
+    Sind alle Grafiken gut zu erkennen (Farbe, Linienstärke, \etc)?
+    Wurden alle Sonderzeichen korrekt gedruckt?
+  \item Wurde eine Klebe- oder Leimbindung zum Binden verwendet?
+  \item Beim Ausdrucken aus dem Acrobat Reader darf die Seitenanpassung \textbf{nicht} aktiviert sein, da der Textblock sonst verkleinert wird.
+    Ränder müssen zum Binden geeignet eingestellt sein.
+  %\item Selbstständigkeitserklärung unterschreiben!
+  %\item Es ist eine zusätzliche eigenständige Selbstständigkeitserklärung auszudrucken und zu unterschreiben.
+\end{itemize}
+
+
+
+\chapter{Programme zur Erstellung von Grafiken}
+\label{cha:Anhang-Grafiken}
+
+\section{Vektorgrafiken}
+
+Vektorgrafiken bestehen aus geometrischen Formen, deren Beschreibung unabhängig von der Auflösung ist. Sie sind \zB\ für Diagramme und mathematische Plots sinnvoll und lassen sich aus vielen Programmen direkt als EPS oder PDF speichern.
+Es ist besonders darauf zu achten, dass die Schriften und Strichstärken zum Rest des Dokuments passen.
+
+\renewcommand{\labelitemi}{$\bullet$}
+
+\begin{itemize}
+  \item \LaTeX\ selbst bietet mit den Paketen \texttt{TikZ} und \texttt{pgfplots} zwei sehr mächtige Werkzeuge, um direkt in \LaTeX\ Vektorgrafiken, wie zum Beispiel Blockschaltbilder oder Plots zu erzeugen.
+    Schriftart und -größe sind automatisch identisch mit dem übrigen laufenden Text, so dass hier keine Anpassungen mehr vorgenommen werden müssen.
+    \begin{itemize}
+      \item \texttt{TikZ} eignet sich hervorragend für Blockschaltbilder.
+      \item Mit \texttt{pgfplots} können aus einer \texttt{.txt}-Datei mit den Variablenwerten Plots direkt in \LaTeX\ erzeugt werden, so dass sich ein einheitliches Gesamtbild ergibt.
+        Die benötigte \texttt{.txt}-Datei lässt sich mit \Matlab\ einfach erzeugen.
+        Achsenbeschriftungen, Legenden, \etc können mit \Matlab-ähnlichen Befehlen einfach hinzugefügt werden.
+      \item Für \Matlab\ gibt es die über den Mathworks File Exchange zu ladende Funktion \verb|matlab2tikz|, mit der Matlab-Plots in das \texttt{pgfplots}-Format konvertiert werden können.
+        Die dazugehörende Funktion \verb|cleanfigure| sorgt dabei für eine effektive Reduzierung der Plotpunkte, was die Bildgröße (Speicherbedarf) deutlich reduzieren kann.
+    \end{itemize}
+    Die Dokumentationen zu \texttt{TikZ}~\cite{TikZ} und \texttt{pgfplots}~\cite{pgfplots} sind sehr ausführlich und mit vielen Beispielen leicht verständlich erklärt.
+  \item Alternativ können Sie auch andere Zeichenprogramme verwenden, bei denen Sie "`wie gewohnt"' mit der Maus arbeiten können.
+    Ein solches Zeichenprogramm ist \zB Inkscape.
+    Inkscape ermöglicht auch den Export der Zeichungen in ein \LaTeX-Format.
+  \item Wenn Sie andere Programme verwenden, müssen Sie darauf achten, dass das Ergebnis möglichst als PDF exportiert werden kann, um es als Vektorgrafik einbinden zu können.
+    Ggf.\ ist der Umweg über den Export aus dem verwendeten Programm im EPS-Format und der anschließenden Konvertierung der EPS-Datei in ein PDF möglich.
+    Hierfür eignen sich der Acrobat Distiller oder Ghostscript in Verbindung mit EPSTOPDF (das in allen gängigen TeX-Distributionen enthalten ist).
+\end{itemize}
+
+
+
+\section{Pixelgrafiken}
+
+Pixelgrafiken besitzen eine feste Anzahl von Bildpunkten, \dah ihre Auflösung hängt von der Größe der Darstellung ab.
+Man benutzt Pixelformate \zB für Fotos, Screenshots oder eingescannte Grafiken.
+Hierbei ist die Wahl der Auflösung besonders wichtig.
+Die Bilder sollen einerseits eine gute Druckqualität ergeben, andererseits aber auch eine zügige Bildschirmdarstellung und kleine Dateigröße ermöglichen.
+Beim Scannen ist außerdem zu beachten, dass sich die Auflösung ändert, wenn die Grafiken nicht in Originalgröße eingebunden werden.
+\begin{itemize}
+\item Fotos liegen in der Regel im JPEG-Format vor; eine Auflösung von $100$--$\valunit{150}{dpi}$ ist häufig bereits ausreichend.
+  pdf\LaTeX\ und LuaLaTeX können JPEG-Grafiken direkt einlesen.
+\item Sonstige Farb- oder Graustufen-Grafiken (insb.\ wenn sie \glqq harte\grqq\ Farbübergänge besitzen) werden am besten im PNG-Format gespeichert.
+  Dieses Format wendet keine verlustbehaftete Komprimierung an.
+  Damit wird bei Screenshots oder bei anderen Grafiken mit harten Kanten verhindert, dass diese Kanten "`verschwimmen"'.
+  Die richtige Wahl der Farbtiefe hat großen Einfluss auf die spätere Dateigröße.
+  Bzgl.\ der Auflösung gibt es hier keine allgemeine Regel; oft liegt sie bereits fest (\zB bei Screenshots).
+  pdf\LaTeX\ und LuaLaTeX können PNG-Grafiken direkt verarbeiten.
+\item Schwarzweiße Strichzeichnungen müssen in relativ hoher Auflösung ($\ge \valunit{300}{dpi}$) vorliegen, um beim Drucken eine ausreichende Qualität zu gewährleisten.
+  Diese sollten im png-Format gespeichert werden.
+\end{itemize}

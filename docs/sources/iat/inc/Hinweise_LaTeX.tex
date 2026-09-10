@@ -1,0 +1,109 @@
+\chapter{Hinweise zur Verwendung von \LaTeX}
+\label{cha:Hinweise_Latex}
+
+Dieses Kapitel gibt allgemeine Hinweise zur Erstellung einer wissenschaftlichen Arbeit mit dem Textsatzprogramm \LaTeX.
+
+
+\section{Vorlagen}
+
+Die Arbeit soll auf dem Paket \verb|tuda-ci|, welches von der TU Darmstadt zur Verfügung gestellt wird, aufbauen.
+Dies erleichtert es, sich an die Layout-Vorgaben sowie an die formalen Vorgaben (Selbständigkeitserklärung in der aktuellen Fassung) zu halten.
+
+Basierend auf diesem Paket stellt das Fachgebiet rtm verschiedene Vorlagen zur Verfügung, um den Einstieg zu erleichtern:
+\begin{itemize}
+  \item \verb|tuda-ci_vorlage|\\
+    Minimalbeispiel und Startpunkt für die eigene Arbeit.
+    Bindet die notwendige Dokumentenklasse aus \verb|tuda-ci| ein, stellt das Fachgebietslogo zur Verfügung und gibt die minimale Grundstruktur der Arbeit vor.\\
+    Im Quelltext ist die Anpassung auf verschiedene Varianten einer studentischen Arbeit (Proseminar, externe Arbeit in Unternehmen) erläutert.
+  \item \verb|tuda-ci_thesisinfo|\\
+    Quelltext zu diesem Dokument.
+    Basiert ebenfalls auf \verb|tuda-ci| und zeigt exemplarisch, wie ein etwas größeres Dokument mit mehreren Dateien in einer Ordnerstruktur organisiert werden könnte.
+    Man kann sich hieran orientieren, es ist aber nicht als Grundlage der eigenen Arbeit vorgesehen.
+  \item \verb|tuda-ci_useful-packages|\\
+    Hier sind (minimale) Konfigurationen und die Verwendung ein paar wahrscheinlich nützlicher Pakete (\zB \verb|tikz|) demonstriert.
+\end{itemize}
+
+
+
+\section{\TeX-System}
+
+Ziel ist es, aus dem in \LaTeX{} geschriebenen "`Quelltext"' ein PDF zu erzeugen. Hierzu wird ein \TeX-Programm, quasi der "`Compiler"', benötigt.
+\begin{itemize}
+  \item pdflatex\\
+    Das meist am Institut verwendete Programm.
+    Erzeugt direkt eine \verb|pdf|-Datei und kann dabei direkt \verb|png|- und \verb|jpg|-Bilder verarbeiten.
+  \item lualatex\\
+    Etwas neueres Programm.
+    Erzeugt auch direkt eine \verb|pdf|-Datei.
+    Für große Dateien etwas langsamer.
+  \item xelatex\\
+    Weitere Alternative.
+    Erzeugt auch direkt eine \verb|pdf|-Datei.
+    (Kann direkt auf die Systemschriftarten zugreifen.)
+  \item latex\\
+    Das "`ursprüngliche"' Latex-Programm.
+    Erzeugt eine Ausgabe im \verb|dvi|-Format, welches dann erst in eine \verb|ps|-Datei und diese dann über Ghostscript in eine \verb|pdf|-Datei umgewandelt werden muss.
+    Sollte nicht mehr verwendet werden.
+\end{itemize}
+In der Anwendung sollten die ersten beiden Möglichkeiten kaum einen Unterschied machen.
+
+Neben dem eigentlichen \LaTeX-Programm werden im Allgemeinen noch weitere Programme benötigt, \zB \verb|biber| zur Erzeugung des Literaturverzeichnisses.
+
+Ein \LaTeX-Programm erzeugt bei einem Durchlauf (Aufruf) eine Menge an Hilfsdateien, die dann weitere Programme oder auch \LaTeX{} selber (in weiteren Durchläufen) verwenden, um beispielsweise Inhaltsverzeichnisse, Literaturverzeichnisse und Referenzierungen zu generieren.
+\Dah typischerweise wäre eine Aufrufreihenfolge
+\begin{verbatim}
+  pdflatex -> biber -> pdflatex -> pdflatex
+\end{verbatim}
+Um dies zu vereinfachen, kann ein geeigneter Editor und/oder das Programm \verb|latexmk| verwendet werden.
+
+Neben diesen auszuführenden Programmen existieren noch eine sehr große Menge an frei verfügbaren Paketen, die die verschiedensten Befehle zur Verfügung stellen.
+(Erzeugung von Grafiken, besonderer Formelsatz, besondere Tabellen, aufrechte griechische Kleinbuchstaben, \ldots)
+
+Zusammen bilden diese Bestandteile das \TeX-System.
+
+
+\section{\LaTeX-Distribution}
+\label{sec:Distribution}
+
+Damit nicht alle oben genannten Komponenten selber und einzeln geladen und installiert werden müssen, sollte auf sogenannte \LaTeX-Distributionen zurückgegriffen werden.
+Diese kümmern sich idealerweise um alles, und -- je nach Konfiguration -- laden diese auch noch fehlende Pakete automatisch herunter, wenn diese zum ersten Mal verwendet werden.
+
+Welche Distribution verwendet wird, hängt vom persönlichen Geschmack ab.
+Es besteht grundsätzlich die Wahl zwischen \Miktex{}, das vor allem unter Windows weit verbreitet ist und \texlive{}, das eher unter Linux und Mac Anwendung findet.
+Daneben gibt es mittlerweile auch Cloud-Lösungen (overleaf), die sich besonders für Gruppenarbeiten eignen, da mehrere Personen gleichzeitig am gleichen Dokument arbeiten können.
+
+Zuerst ist die Distribution herunterzuladen und zu installieren, wobei im Allgemeinen die Standardeinstellungen ausreichend sind.
+
+Das sollte dann eigentlich schon ausreichen, um aus den zur Verfügung gestellten (Minimal-)Beispielen und einem geeigneten Editor (siehe unten) die \verb|pdf|-Dateien zu erzeugen.
+
+
+\section{Editor}
+Für \LaTeX{} gibt es eine Vielzahl von freien und kommerziellen Texteditoren.
+Das \Texstudio ist ein freier open-source Editor, der sich bei uns am Institut bewährt hat.
+Alternativ kann beispielsweise auch Visual Studio Code mit der "`LaTeX Workshop"'-Erweiterung verwendet werden.
+
+Viele Editoren verfügen über eingebettete PDF-Reader \bzw arbeiten gut \zB mit SumatraPDF zusammen.
+\Dah das erzeugte PDF kann im Reader geöffnet bleiben%
+\footnote{Dies ist auch der Hauptgrund, weshalb von der Verwendung des Adobe-Acrobat-Readers abgeraten wird.}%
+, und man kann aus dem Quellcode an die entsprechende Stelle im PDF und umgekehrt springen.
+
+
+
+
+\section{Verwenden von \LaTeX-Paketen}
+
+Durch das Einbinden von Zusatzpaketen kann \LaTeX\ angepasst und erweitert werden.
+Die Pakete werden mit dem Befehl \verb|\usepackage{...}| eingebunden, \ggf können auch noch Optionen in \verb|[...]| angegeben werden.
+
+
+\section{Definition eigener Befehle}
+
+Die Möglichkeit eigene Befehle in \LaTeX{} zu definieren und zu verwenden erleichtert das Erstellen einer wissenschaftlichen Arbeit deutlich.
+So dient ein eigener Befehl oft dazu, häufig verwendete Befehlsfolgen kürzer und schneller schreiben zu können.
+Von zentraler Bedeutung ist außerdem, dass man diesen Befehl einfach ändern kann.
+Hat man \zB alle Matrizen mit einem eigenen Befehl versehen, der diese fett formatiert, so lässt sich dies auch schnell für alle Matrizen wieder ändern.
+Entscheidet man sich Matrizen mit einem Unterstrich zu kennzeichnen, so ist lediglich die Anpassung des entsprechenden Befehls notwendig.
+
+Dies lässt sich auch auf Variablennamen übertragen.
+Definiert man \zB für $\tilde{\hat{\mat{x}}}_\mathrm{b2}$ einen neuen Befehl \verb|\xb2|, so verkürzt sich zum einen der Schreibaufwand.
+Zum anderen lässt sich selbst in der Endphase der Arbeit die Variable umbenennen, \zB in $\mat{z}_2$, indem lediglich der Befehl verändert wird.
