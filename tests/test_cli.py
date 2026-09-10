@@ -56,6 +56,10 @@ def test_invalid_encoding(tmp_path: Path) -> None:
     "rule_id",
     [
         "CITE-04",
+        "FIG-03",
+        "FIG-06",
+        "FIG-07",
+        "FIG-08",
         "MATH-01",
         "MATH-02",
         "MATH-03",
@@ -179,6 +183,115 @@ def test_cli_ticket_08_rules_reporting(tmp_path: Path) -> None:
         assert finding.explanation in result.stdout
         assert finding.excerpt in result.stdout
         assert finding.correction in result.stdout
+
+
+def test_cli_ticket_09_rules_reporting(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\section{Methods in Machine Learning}\n"
+        "\\label{sec:methods}\n"
+        "\\includegraphics{figures/outside.pdf}\n"
+        "\\begin{figure}\n"
+        "  \\begin{center}\n"
+        "    \\caption{Figure caption without dot}\n"
+        "    \\includegraphics{figures/inside.pdf}\n"
+        "    \\label{fig:plot}\n"
+        "  \\end{center}\n"
+        "\\end{figure}\n"
+        "This section concludes with narrative prose.\n"
+    )
+    root.write_text(source, encoding="utf-8")
+    result = run_cli("check", str(root))
+    assert result.returncode == 1
+    api_findings = check(root)
+    rule_ids = {f.rule_id for f in api_findings}
+    assert {"FIG-03", "FIG-06", "FIG-07", "FIG-08"}.issubset(rule_ids)
+    for finding in api_findings:
+        assert f"{finding.filename}:{finding.line}:{finding.column}: {finding.rule_id}" in result.stdout
+        assert finding.explanation in result.stdout
+        assert finding.excerpt in result.stdout
+        assert finding.correction in result.stdout
+
+
+def test_cli_cross_file_figure_reference(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    child = tmp_path / "chapter.tex"
+    root.write_text(
+        "\\section{Overview of the Architecture}\n"
+        "\\label{sec:overview}\n"
+        "See Figure~\\ref{fig:cross_fig} for the flow.\n"
+        "\\input{chapter.tex}\n"
+        "This section concludes with narrative prose.\n",
+        encoding="utf-8",
+    )
+    child.write_text(
+        "\\begin{figure}\n"
+        "  \\centering\n"
+        "  \\includegraphics{figures/flow.pdf}\n"
+        "  \\caption{Flowchart of data processing.}\n"
+        "  \\label{fig:cross_fig}\n"
+        "\\end{figure}\n",
+        encoding="utf-8",
+    )
+    result = run_cli("check", str(root))
+    assert result.returncode == 0
+    assert result.stdout == ""
+    assert result.stderr == ""
+
+
+def test_cli_figure_duplicate_label(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\section{Overview of the Architecture}\n"
+        "\\label{sec:overview}\n"
+        "\\begin{figure}\n"
+        "  \\centering\n"
+        "  \\includegraphics{figures/a.pdf}\n"
+        "  \\caption{First figure.}\n"
+        "  \\label{fig:dup}\n"
+        "\\end{figure}\n"
+        "\\begin{figure}\n"
+        "  \\centering\n"
+        "  \\includegraphics{figures/b.pdf}\n"
+        "  \\caption{Second figure.}\n"
+        "  \\label{fig:dup}\n"
+        "\\end{figure}\n"
+        "This section concludes with narrative prose.\n"
+    )
+    root.write_text(source, encoding="utf-8")
+    result = run_cli("check", str(root))
+    assert result.returncode == 1
+    assert "Duplicate figure label 'fig:dup'" in result.stdout
+
+
+def test_cli_suppressing_missing_caption_or_label(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    bad_source = (
+        "\\section{Overview of the Architecture}\n"
+        "\\label{sec:overview}\n"
+        "\\begin{figure}\n"
+        "  \\centering\n"
+        "  \\includegraphics{figures/plot.pdf}\n"
+        "\\end{figure}\n"
+        "This section concludes with narrative prose.\n"
+    )
+    root.write_text(bad_source, encoding="utf-8")
+    assert run_cli("check", str(root)).returncode == 1
+
+    suppressed_source = (
+        "\\section{Overview of the Architecture}\n"
+        "\\label{sec:overview}\n"
+        "\\begin{figure} % latex-lint:ignore=FIG-03,FIG-06\n"
+        "  \\centering\n"
+        "  \\includegraphics{figures/plot.pdf}\n"
+        "\\end{figure}\n"
+        "This section concludes with narrative prose.\n"
+    )
+    root.write_text(suppressed_source, encoding="utf-8")
+    result = run_cli("check", str(root))
+    assert result.returncode == 0
+    assert result.stdout == ""
+    assert result.stderr == ""
 
 
 def test_cli_suppressed_violation_passes(tmp_path: Path) -> None:

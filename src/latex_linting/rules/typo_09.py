@@ -230,7 +230,15 @@ RULE = Rule(
     ),
     passing_examples=(
         "\\section{Methods}\n\\label{sec:methods}",
-        "\\begin{figure}\n  \\caption{Overview}\n  \\label{fig:overview}\n\\end{figure}",
+        (
+            "\\begin{figure}\n"
+            "  \\centering\n"
+            "  \\includegraphics{figures/plot.pdf}\n"
+            "  \\caption{Overview.}\n"
+            "  \\label{fig:overview}\n"
+            "\\end{figure}\n"
+            "See Figure~\\ref{fig:overview} for details."
+        ),
         (
             "\\begin{equation}\n  E = mc^2 \\,.\n  \\label{eq:einstein}\n\\end{equation}\n"
             "As seen in \\eqref{eq:einstein}, mass and energy are equivalent."

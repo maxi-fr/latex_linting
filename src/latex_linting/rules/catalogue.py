@@ -1,4 +1,8 @@
 from latex_linting.rules.cite_04 import RULE as CITE_04
+from latex_linting.rules.fig_03 import RULE as FIG_03
+from latex_linting.rules.fig_06 import RULE as FIG_06
+from latex_linting.rules.fig_07 import RULE as FIG_07
+from latex_linting.rules.fig_08 import RULE as FIG_08
 from latex_linting.rules.math_01 import RULE as MATH_01
 from latex_linting.rules.math_02 import RULE as MATH_02
 from latex_linting.rules.math_03 import RULE as MATH_03
@@ -21,6 +25,10 @@ from latex_linting.rules.work_03 import RULE as WORK_03
 
 RULES = (
     CITE_04,
+    FIG_03,
+    FIG_06,
+    FIG_07,
+    FIG_08,
     MATH_01,
     MATH_02,
     MATH_03,

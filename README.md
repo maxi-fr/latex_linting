@@ -202,6 +202,22 @@ MATH-03 is enabled by default and detects redundant equation wording and incorre
 
 TYPO-09 is enabled by default and checks standard label prefixes in `\label{...}` commands based on structural context. In known contexts, labels must use standard prefixes: `fig:` inside figure environments (`figure`, `figure*`), `tab:` inside table environments (`table`, `table*`), `eq:` inside display math environments, `ch:` or `cha:` immediately following `\chapter`, and `sec:` immediately following `\section`, `\subsection`, or `\subsubsection` (with `app:` also permitted for appendix sections and chapters). In unknown contexts outside these environments and headings, labels must start with one of the standard prefixes (`ch:`, `cha:`, `sec:`, `fig:`, `tab:`, `eq:`, `app:`, `lst:`, `listing:`). Findings attach to the `\label` command, allowing same-line suppression. Comments and literal code are excluded.
 
+### FIG-03 support
+
+FIG-03 is enabled by default and ensures that figure content (`\includegraphics`, `\begin{tikzpicture}`) floats in a `figure` or `figure*` float environment, that every figure declares a `\label`, that figure labels are unique across the entire document, and that declared figure labels are referenced in the body text using recognized reference commands (`\ref`, `\autoref`, `\cref`, `\Cref`). References collected from other included sources satisfy the check. References in comments and literal code do not count. Findings attach to the `\includegraphics` or `\begin{tikzpicture}` token when outside floats, to `\begin{figure}` or `\begin{figure*}` when missing a label, or to `\label` for duplicate or unreferenced labels, enabling same-line suppression.
+
+### FIG-06 support
+
+FIG-06 is enabled by default and checks that every `figure` and `figure*` float environment has a `\caption{...}` command, and that the caption text terminates with a full stop (`.`). Optional short captions (`\caption[short]{full text.}`), multiline captions, nested formatting, and nested `\label` declarations are supported. Findings attach to `\begin{figure}` when missing a caption, or to `\caption` when missing a terminal full stop, enabling same-line suppression. The rule does not evaluate caption comprehensiveness or semantic quality.
+
+### FIG-07 support
+
+FIG-07 is enabled by default and checks the standard ordering inside `figure` and `figure*` environments: image content (`\includegraphics`, `\begin{tikzpicture}`, or included graphics like `\input{...}`), followed by `\caption{...}`, followed or enclosed by `\label{...}`. Captions placed above any image content are flagged at `\caption`, and labels placed before `\caption` are flagged at `\label`. Labels placed inside `\caption{...}` are supported and accepted. Same-line suppressions are supported on the respective command lines.
+
+### FIG-08 support
+
+FIG-08 is enabled by default and enforces proper centering of figure floats. It rejects the `center` environment (`\begin{center}...\end{center}`) inside `figure` and `figure*` floats because it introduces unwanted vertical whitespace, recommending `\centering` instead. It also flags figure floats that lack a `\centering` declaration. Findings attach to `\begin{center}` when the environment is used, or to `\begin{figure}` or `\begin{figure*}` when `\centering` is missing, enabling same-line suppression.
+
 ## Code structure
 
 The public checking interface is `check(root)`; internal scanning and evaluation
