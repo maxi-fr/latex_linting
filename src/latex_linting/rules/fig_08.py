@@ -48,7 +48,7 @@ RULE = Rule(
             "  \\caption{Wide plot with centering.}\n"
             "  \\label{fig:wide}\n"
             "\\end{figure*}\n"
-            "See \\autoref{fig:wide} for details."
+            "See~\\autoref{fig:wide} for details."
         ),
     ),
     failing_examples=(

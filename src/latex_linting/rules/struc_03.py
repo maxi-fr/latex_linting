@@ -91,7 +91,7 @@ RULE = Rule(
     correction="Add at least one more sibling subheading at this level, or incorporate the content into the parent section without a subheading.",
     passing_examples=(
         "\\section{First}\n\\subsection{Sub A}\n\\subsection{Sub B}",
-        "\\chapter{Chapter One}\n\\section{Section 1.1}\n\\section{Section 1.2}",
+        "\\chapter{Chapter One}\n\\section{First Section}\n\\section{Second Section}",
     ),
     failing_examples=(
         "\\section{First}\n\\subsection{Only Subheading}",

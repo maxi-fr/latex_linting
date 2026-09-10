@@ -64,7 +64,7 @@ RULE = Rule(
     passing_examples=(
         r"This method was proven effective~\cite{smith2020}.",
         r"As shown in previous work~\citep[p.~5]{smith2020}.",
-        r"According to \citet{smith2020}, the bounds hold.",
+        r"According to~\citet{smith2020}, the bounds hold.",
     ),
     failing_examples=(
         r"This method was proven effective. \cite{smith2020}",

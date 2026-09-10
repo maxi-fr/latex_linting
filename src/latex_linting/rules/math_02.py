@@ -144,7 +144,7 @@ RULE = Rule(
     passing_examples=(
         (
             "\\begin{equation}\n  E = mc^2 \\,.\n  \\label{eq:einstein}\n\\end{equation}\n"
-            "As seen in \\eqref{eq:einstein}, mass and energy are equivalent."
+            "As seen in~\\eqref{eq:einstein}, mass and energy are equivalent."
         ),
         "\\begin{equation*}\n  E = mc^2 \\,.\n\\end{equation*}",
         "\\[\n  x = y \\,.\n\\]",

@@ -64,7 +64,7 @@ RULE = Rule(
             "  \\end{tikzpicture}\n"
             "  \\caption{Overview diagram.\\label{fig:overview}}\n"
             "\\end{figure*}\n"
-            "See \\autoref{fig:overview} for details."
+            "See~\\autoref{fig:overview} for details."
         ),
     ),
     failing_examples=(

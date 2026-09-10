@@ -46,7 +46,7 @@ RULE = Rule(
             "  \\includegraphics{figures/wide.pdf}\n"
             "  \\caption[Overview]{Comprehensive view of experimental outcomes.\\label{fig:wide}}\n"
             "\\end{figure*}\n"
-            "See \\autoref{fig:wide} for details."
+            "See~\\autoref{fig:wide} for details."
         ),
     ),
     failing_examples=(

@@ -79,6 +79,10 @@ def test_invalid_encoding(tmp_path: Path) -> None:
         "TAB-01",
         "TAB-02",
         "TAB-03",
+        "TYPO-01",
+        "TYPO-02",
+        "TYPO-03",
+        "TYPO-04",
         "TYPO-09",
         "WORK-03",
     ],
@@ -305,6 +309,57 @@ def test_cli_table_rules_ignore_option(tmp_path: Path) -> None:
     )
     root.write_text(source, encoding="utf-8")
     result = run_cli("check", "--ignore", "TAB-01,TAB-02,TAB-03", str(root))
+    assert result.returncode == 0
+    assert result.stdout == ""
+
+
+def test_cli_spacing_rules_reporting(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\section{Overview of the System}\n"
+        "\\label{sec:overview}\n"
+        "As seen in Figure \\ref{sec:overview}, results in Table 1 hold.\n"
+        "Consider e.g. how \\LaTeX is used here.\n"
+        "This section concludes with narrative prose.\n"
+    )
+    root.write_text(source, encoding="utf-8")
+    result = run_cli("check", str(root))
+    assert result.returncode == 1
+    assert "TYPO-01" in result.stdout
+    assert "TYPO-02" in result.stdout
+    assert "TYPO-03" in result.stdout
+    assert "TYPO-04" in result.stdout
+
+
+def test_cli_spacing_rules_targeted_ignore(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\section{Overview of the System}\n"
+        "\\label{sec:overview}\n"
+        "As seen in Figure \\ref{sec:overview}, results in Table 1 hold.\n"
+        "Consider e.g. how \\LaTeX is used here.\n"
+        "This section concludes with narrative prose.\n"
+    )
+    root.write_text(source, encoding="utf-8")
+    result = run_cli("check", "--ignore", "TYPO-01,TYPO-03", str(root))
+    assert result.returncode == 1
+    assert "TYPO-01" not in result.stdout
+    assert "TYPO-03" not in result.stdout
+    assert "TYPO-02" in result.stdout
+    assert "TYPO-04" in result.stdout
+
+
+def test_cli_spacing_rules_all_ignored(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\section{Overview of the System}\n"
+        "\\label{sec:overview}\n"
+        "As seen in Figure \\ref{sec:overview}, results in Table 1 hold.\n"
+        "Consider e.g. how \\LaTeX is used here.\n"
+        "This section concludes with narrative prose.\n"
+    )
+    root.write_text(source, encoding="utf-8")
+    result = run_cli("check", "--ignore", "TYPO-01,TYPO-02,TYPO-03,TYPO-04", str(root))
     assert result.returncode == 0
     assert result.stdout == ""
 

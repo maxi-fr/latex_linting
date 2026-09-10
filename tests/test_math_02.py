@@ -9,7 +9,7 @@ def test_valid_referenced_equation(tmp_path: Path) -> None:
     root = tmp_path / "thesis.tex"
     root.write_text(
         "\\begin{equation}\n  E = mc^2 \\,.\n  \\label{eq:einstein}\n\\end{equation}\n"
-        "As seen in \\eqref{eq:einstein}, mass and energy are equivalent.\n",
+        "As seen in~\\eqref{eq:einstein}, mass and energy are equivalent.\n",
         encoding="utf-8",
     )
     assert check(root) == []

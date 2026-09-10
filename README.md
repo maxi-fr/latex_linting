@@ -230,6 +230,22 @@ TAB-02 is enabled by default and verifies component ordering inside `table` and 
 
 TAB-03 is enabled by default and enforces proper centering of table floats. It rejects the `center` environment (`\begin{center}...\end{center}`) inside `table` and `table*` float environments because it introduces unwanted vertical whitespace, recommending `\centering` instead. It also flags table floats that lack a `\centering` declaration. Findings attach to `\begin{center}` when the environment is used, or to `\begin{table}` / `\begin{table*}` when centering is missing, enabling same-line suppression. Center environments in regular text outside table floats are not flagged.
 
+### TYPO-01 support
+
+TYPO-01 is enabled by default and checks for a nonbreaking space (`~`) before supported reference commands (`\ref`, `\eqref`, `\autoref`, `\cref`, `\Cref`, `\pageref`) and citation commands (`\cite`, `\citep`, `\citet`, `\autocite`, `\parencite`, `\textcite`, `\footcite`, `\fullcite`, `\nocite`, `\citeauthor`, `\citeyear`) where prose calls for a preceding space. It flags regular space (` `) or newline characters preceding the command without `~`. Commands at prose boundaries (beginning of line across sentence starts, beginning of sentence, or after opening parentheses, brackets, or braces like `(\ref{...})`, `[\cite{...}]`, `{\ref{...}}`) or already preceded by `~` pass. Optional arguments (`\cite[p.~5]{...}`) and multiline input are supported. Findings attach to the command start, enabling same-line suppression. Comments, literal code (`verbatim`, `lstlisting`, `minted`, `\verb`), syntax command arguments (`\label{...}`, `\url{...}`), and math mode are excluded.
+
+### TYPO-02 support
+
+TYPO-02 is enabled by default and checks for nonbreaking spaces in documented fixed expressions and recognizable number-unit forms in text mode. Fixed expressions include category nouns with numbers (`Figure 1`, `Table 1`, `Section 1`, `Chapter 1`, `Fig. 1`, `Tab. 1`, `Sec. 1`, `Ch. 1`, `Eq. 1`, `Page 1`, `p. 1`, and their plural forms), titles with names (`Dr. Smith`, `Prof. Jones`, `Mr. White`, `Mrs. White`, `Ms. Davis`), and times (`3 p.m.`, `10 a.m.`, `3 Uhr`). Recognizable number-unit forms in text mode include numbers followed by physical units (`m`, `km`, `cm`, `mm`, `kg`, `g`, `s`, `ms`, `V`, `mV`, `kV`, `A`, `mA`, `W`, `kW`, `Hz`, `kHz`, `MHz`, `GHz`, `Pa`, `bar`, `dB`, etc.) separated by regular whitespace instead of a nonbreaking space (`~`), thin space (`\,`), or unit command (`\SI`, `\qty`, `\unit`). Non-unit phrases like `10 apples` and years like `in 2020` pass. Findings attach to the start of the expression or number, enabling same-line suppression. Comments, literal code, syntax arguments, and math mode are excluded.
+
+### TYPO-03 support
+
+TYPO-03 is enabled by default and enforces the prescribed thin space (`\,`) within supported English abbreviations in text mode: `e.\,g.` and `i.\,e.` (including capitalized forms `E.\,g.` and `I.\,e.`). It flags occurrences written without spacing (`e.g.`, `i.e.`), with regular whitespace (`e. g.`, `i. e.`), or with a tilde (`e.~g.`, `i.~e.`). German abbreviation profiles are not introduced. Findings attach to the start of the abbreviation, enabling same-line suppression. Comments, literal code, syntax command arguments (`\url{...}`), command names (`\eg`, `\ie`), and math mode are excluded.
+
+### TYPO-04 support
+
+TYPO-04 is enabled by default and detects swallowed whitespace after documented parameterless commands in text mode: `\LaTeX`, `\TeX`, `\BibTeX`, `\etal`, `\eg`, and `\ie`. When one of these commands is followed by whitespace (spaces, tabs, or newlines) without an explicit terminator (`{}`, `\`, or `~`), it is flagged. Occurrences followed immediately by punctuation (`.`, `,`, `:`, `;`, `!`, `?`, `)`, `]`, `}`, quotes, or dashes) or an explicit terminator pass. Findings attach to the command start, enabling same-line suppression. Comments, literal code, syntax arguments, and math mode are excluded.
+
 ## Code structure
 
 The public checking interface is `check(root)`; internal scanning and evaluation

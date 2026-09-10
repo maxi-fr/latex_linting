@@ -45,7 +45,7 @@ def test_valid_with_trailing_label_and_comment(tmp_path: Path) -> None:
     root = tmp_path / "math.tex"
     root.write_text(
         "\\begin{equation}\n  E = mc^2 \\,. % Mass-energy equivalence\n  \\label{eq:einstein}\n\\end{equation}\n"
-        "See \\eqref{eq:einstein}.\n",
+        "See~\\eqref{eq:einstein}.\n",
         encoding="utf-8",
     )
     assert check(root) == []
@@ -148,7 +148,7 @@ def test_period_inside_nested_matrix_does_not_count_as_terminal(tmp_path: Path) 
 def test_period_in_trailing_label_does_not_count_as_terminal(tmp_path: Path) -> None:
     root = tmp_path / "math.tex"
     root.write_text(
-        "\\begin{equation}\n  E = mc^2\n  \\label{eq:sec1.1}\n\\end{equation}\nSee \\eqref{eq:sec1.1}.\n",
+        "\\begin{equation}\n  E = mc^2\n  \\label{eq:sec1.1}\n\\end{equation}\nSee~\\eqref{eq:sec1.1}.\n",
         encoding="utf-8",
     )
     findings = check(root)

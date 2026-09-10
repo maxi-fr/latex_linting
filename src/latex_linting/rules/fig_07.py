@@ -51,7 +51,7 @@ RULE = Rule(
             "  \\end{tikzpicture}\n"
             "  \\caption{A TikZ diagram.\\label{fig:diagram}}\n"
             "\\end{figure}\n"
-            "See \\autoref{fig:diagram} for details."
+            "See~\\autoref{fig:diagram} for details."
         ),
     ),
     failing_examples=(

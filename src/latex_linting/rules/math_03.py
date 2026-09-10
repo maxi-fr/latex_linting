@@ -206,7 +206,7 @@ RULE = Rule(
         "write 'Equation' only at sentence start."
     ),
     passing_examples=(
-        "As shown in \\eqref{eq:model}, the error decreases.",
+        "As shown in~\\eqref{eq:model}, the error decreases.",
         "Equation~\\eqref{eq:model} describes the system dynamics.",
         "According to Section~\\ref{sec:methods}, the setup is complete.",
     ),
