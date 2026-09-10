@@ -76,6 +76,9 @@ def test_invalid_encoding(tmp_path: Path) -> None:
         "STRUC-02",
         "STRUC-03",
         "STRUC-06",
+        "TAB-01",
+        "TAB-02",
+        "TAB-03",
         "TYPO-09",
         "WORK-03",
     ],
@@ -262,6 +265,48 @@ def test_cli_figure_duplicate_label(tmp_path: Path) -> None:
     result = run_cli("check", str(root))
     assert result.returncode == 1
     assert "Duplicate figure label 'fig:dup'" in result.stdout
+
+
+def test_cli_table_rules_reporting(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\begin{table}\n"
+        "  \\begin{center}\n"
+        "    \\begin{tabular}{|l|r|}\n"
+        "      \\hline\n"
+        "      A & B \\\\\n"
+        "    \\end{tabular}\n"
+        "    \\caption{Misplaced caption.}\n"
+        "    \\label{tab:misplaced}\n"
+        "  \\end{center}\n"
+        "\\end{table}\n"
+    )
+    root.write_text(source, encoding="utf-8")
+    result = run_cli("check", str(root))
+    assert result.returncode == 1
+    assert "TAB-01" in result.stdout
+    assert "TAB-02" in result.stdout
+    assert "TAB-03" in result.stdout
+
+
+def test_cli_table_rules_ignore_option(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\begin{table}\n"
+        "  \\begin{center}\n"
+        "    \\begin{tabular}{|l|r|}\n"
+        "      \\hline\n"
+        "      A & B \\\\\n"
+        "    \\end{tabular}\n"
+        "    \\caption{Misplaced caption.}\n"
+        "    \\label{tab:misplaced}\n"
+        "  \\end{center}\n"
+        "\\end{table}\n"
+    )
+    root.write_text(source, encoding="utf-8")
+    result = run_cli("check", "--ignore", "TAB-01,TAB-02,TAB-03", str(root))
+    assert result.returncode == 0
+    assert result.stdout == ""
 
 
 def test_cli_suppressing_missing_caption_or_label(tmp_path: Path) -> None:

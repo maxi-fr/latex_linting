@@ -218,6 +218,18 @@ FIG-07 is enabled by default and checks the standard ordering inside `figure` an
 
 FIG-08 is enabled by default and enforces proper centering of figure floats. It rejects the `center` environment (`\begin{center}...\end{center}`) inside `figure` and `figure*` floats because it introduces unwanted vertical whitespace, recommending `\centering` instead. It also flags figure floats that lack a `\centering` declaration. Findings attach to `\begin{center}` when the environment is used, or to `\begin{figure}` or `\begin{figure*}` when `\centering` is missing, enabling same-line suppression.
 
+### TAB-01 support
+
+TAB-01 is enabled by default and enforces booktabs conventions in table specifications. It detects vertical rules (`|`) in column specifications of supported tabular environments (`tabular`, `tabular*`, `tabularx`, `tabulary`, `longtable`), including nested repetition constructs (`*{...}{...}`) and optional placement arguments (`[t]`, `[b]`, `[c]`). It also flags forbidden horizontal rules inside tabular environments (`\hline` recommending `\toprule`, `\midrule`, or `\bottomrule`; and `\cline` recommending `\cmidrule`). Unrelated vertical bars outside column specifications—such as math-mode vertical bars (`$|x|$`), text-mode pipe characters, literal code, or comments—are never flagged. Findings attach to the `|` character or the `\hline` / `\cline` command token, enabling same-line suppression. The rule does not inspect semantic column units or rendered table layout.
+
+### TAB-02 support
+
+TAB-02 is enabled by default and verifies component ordering inside `table` and `table*` float environments. Table captions must precede tabular content (`tabular`, `tabular*`, `tabularx`, `tabulary`, `longtable`), and table labels must follow or be enclosed within `\caption{...}` (`\caption{... \label{...}}`). Captions placed after tabular content are flagged at `\caption`, and labels placed before captions are flagged at `\label`. Standalone tabulars outside floats are not checked. Findings attach to `\caption` or `\label`, enabling same-line suppression.
+
+### TAB-03 support
+
+TAB-03 is enabled by default and enforces proper centering of table floats. It rejects the `center` environment (`\begin{center}...\end{center}`) inside `table` and `table*` float environments because it introduces unwanted vertical whitespace, recommending `\centering` instead. It also flags table floats that lack a `\centering` declaration. Findings attach to `\begin{center}` when the environment is used, or to `\begin{table}` / `\begin{table*}` when centering is missing, enabling same-line suppression. Center environments in regular text outside table floats are not flagged.
+
 ## Code structure
 
 The public checking interface is `check(root)`; internal scanning and evaluation
