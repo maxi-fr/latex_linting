@@ -219,3 +219,37 @@ def test_ticket_06_suppressions(tmp_path: Path) -> None:
 
     # Invocation-wide exclusions
     assert check(root, ignored_rules=["PROSE-07", "MATH-13", "MATH-01", "STRUC-06"]) == []
+
+
+def test_ticket_07_suppressions(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    source_suppressed = (
+        "\\section{Methods in Machine Learning}\n"
+        "We consider the model\n"
+        "\\begin{equation}\n"
+        "  y = a * x + 10 kg \\,. % latex-lint:ignore=MATH-09, MATH-06\n"
+        "\\end{equation}\n"
+        "% latex-lint:disable=MATH-12, MATH-14\n"
+        "We note $sin(x) = 3,14$ holds here.\n"
+        "% latex-lint:enable=MATH-12, MATH-14\n"
+        "This section concludes with prose.\n"
+    )
+    root.write_text(source_suppressed, encoding="utf-8")
+    assert check(root) == []
+
+    # Without suppressions: all 4 rules trigger
+    raw_source = (
+        "\\section{Methods in Machine Learning}\n"
+        "We consider the model\n"
+        "\\begin{equation}\n"
+        "  y = a * x + 10 kg \\,.\n"
+        "\\end{equation}\n"
+        "We note $sin(x) = 3,14$ holds here.\n"
+        "This section concludes with prose.\n"
+    )
+    root.write_text(raw_source, encoding="utf-8")
+    findings = check(root)
+    assert {f.rule_id for f in findings} == {"MATH-06", "MATH-09", "MATH-12", "MATH-14"}
+
+    # Invocation-wide exclusions
+    assert check(root, ignored_rules=["MATH-06", "MATH-09", "MATH-12", "MATH-14"]) == []

@@ -1,7 +1,11 @@
 from latex_linting.rules.cite_04 import RULE as CITE_04
 from latex_linting.rules.math_01 import RULE as MATH_01
 from latex_linting.rules.math_04 import RULE as MATH_04
+from latex_linting.rules.math_06 import RULE as MATH_06
+from latex_linting.rules.math_09 import RULE as MATH_09
+from latex_linting.rules.math_12 import RULE as MATH_12
 from latex_linting.rules.math_13 import RULE as MATH_13
+from latex_linting.rules.math_14 import RULE as MATH_14
 from latex_linting.rules.model import Rule
 from latex_linting.rules.prose_02 import RULE as PROSE_02
 from latex_linting.rules.prose_03 import RULE as PROSE_03
@@ -16,7 +20,11 @@ RULES = (
     CITE_04,
     MATH_01,
     MATH_04,
+    MATH_06,
+    MATH_09,
+    MATH_12,
     MATH_13,
+    MATH_14,
     PROSE_02,
     PROSE_03,
     PROSE_04,

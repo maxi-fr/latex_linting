@@ -174,6 +174,22 @@ PROSE-07 is enabled by default and reports a colon in text mode immediately prec
 
 STRUC-06 is enabled by default and reports a chapter, section, subsection, or subsubsection ending directly on a recognized display math equation, list (`itemize`, `enumerate`, `description`), table (`table`, `tabular`, `tabularx`, etc.), or figure environment before the next heading or document end (`\end{document}` or EOF). Document reading order across included files is respected: a prose continuation in an included file satisfies the rule. Trailing labels, comments, whitespace, and page-break commands do not count as final prose. Findings attach to the ending block command, allowing same-line suppression.
 
+### MATH-06 support
+
+MATH-06 is enabled by default and reports number-unit spacing violations in math mode where a number is directly adjacent to or separated only by regular whitespace from recognized units (`\mathrm{...}`, `\text{...}`, or bare units like `kg`, `Hz`, `kHz`, `MHz`, `GHz`, `mm`, `cm`, `km`, `mV`, `mA`, `kW`, `MW`, `ms`, `rad`, `deg`, `dB`). Recommends inserting a thin space `\,` (e.g. `10\,\mathrm{kg}`, `10\,\text{m}`) or using `siunitx` commands (`\SI`, `\qty`, `\unit`). Does not infer ambiguous variable products (e.g. `2x`, `3a`, `4y`) or bare single-letter symbols (`10m`, `5s`) without `\mathrm` or `\text`. Findings attach to the number start, enabling same-line suppression. Comments, literal code, and nested non-math commands are excluded.
+
+### MATH-09 support
+
+MATH-09 is enabled by default and detects documented programming operators in math mode (`*`, `!=`, `==`, `&&`, `||`, `<=`, `>=`, `~=`, `.*`, `.^`, `./`, `**`) where LaTeX mathematical notation should be used (such as `\cdot`, `\neq`, `=`, `\land`, `\lor`, `\le`, `\ge`). Ordinary LaTeX command backslashes (e.g. `\cdot`, `\alpha`, `\frac`) and superscript/subscript asterisks (e.g. `x^*`, `x^{*}`) are accepted and never flagged. Findings attach to the operator, enabling same-line suppression. Comments, literal code, and nested non-math commands are excluded.
+
+### MATH-12 support
+
+MATH-12 is enabled by default and detects recognized standard mathematical functions and operators (`sin`, `cos`, `tan`, `exp`, `ln`, `log`, `min`, `max`, `sup`, `inf`, `lim`, `det`, `arg`, `deg`, etc.) written as italic text in math mode instead of standard LaTeX upright commands (e.g. `\sin`, `\cos`, `\exp`, `\lim`, `\min`). Upright macros and arguments of `\mathrm`, `\operatorname`, or `\text` are accepted. Arbitrary single-letter symbols (such as constants `e` or `i`) are not inferred. Findings attach to the function name, enabling same-line suppression. Comments, literal code, and nested non-math commands are excluded.
+
+### MATH-14 support
+
+MATH-14 is enabled by default and detects adjacent digits separated by a comma without whitespace (`\d+,\d+`) in math mode (e.g. `$3,14$`). In English math, a decimal period should be used (e.g. `$3.14$`). Decimal commas wrapped in braces (e.g. `$3{,}14$`) are accepted for localized notation. The diagnostic explains ambiguity where unspaced comma-separated lists or coordinates (e.g. `$(1,2)$`) resemble decimals, recommending spaces after commas. Findings attach to the comma, enabling same-line suppression. Comments, literal code, and nested non-math commands are excluded.
+
 ## Code structure
 
 The public checking interface is `check(root)`; internal scanning and evaluation
