@@ -66,6 +66,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     check_parser = operations.add_parser(
         "check",
         help="check an explicit UTF-8 root document (<root> [--ignore RULES])",
+        description="Check an explicit UTF-8 root document and all included files.",
+        epilog=(
+            "in-source rule suppression:\n"
+            "  Use LaTeX comments to suppress rules directly in the document:\n"
+            "    % latex-lint:ignore=RULE-ID       suppress on this line only\n"
+            "    % latex-lint:disable=RULE-ID      disable from this point onward\n"
+            "    % latex-lint:enable=RULE-ID       re-enable previously disabled rule\n"
+            "  Multiple comma-separated rule IDs are supported (e.g. % latex-lint:ignore=MATH-04,PROSE-02)."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     check_parser.add_argument("root", help="path to root .tex or .bib document")
     check_parser.add_argument("--ignore", default=None, help="comma-separated rule IDs to ignore across the invocation")

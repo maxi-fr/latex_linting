@@ -512,3 +512,11 @@ def test_cli_help_shows_subcommand_options() -> None:
     assert "install-skills" in result.stdout
     assert "--dest" in result.stdout
     assert "--force" in result.stdout
+
+
+def test_cli_check_help_shows_in_text_suppression() -> None:
+    result = run_cli("check", "--help")
+    assert result.returncode == 0
+    assert "latex-lint:disable" in result.stdout
+    assert "latex-lint:ignore" in result.stdout
+    assert "latex-lint:enable" in result.stdout
