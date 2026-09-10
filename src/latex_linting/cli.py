@@ -60,15 +60,24 @@ def _handle_check(args: argparse.Namespace) -> int:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Run CLI operations, returning 0 for success, 1 for findings, or 2 for errors."""
+    """Parse arguments and dispatch CLI operations, returning 0, 1, or 2."""
     parser = argparse.ArgumentParser(prog="latex-lint", description="Check LaTeX thesis source conventions.")
     operations = parser.add_subparsers(dest="operation", required=True)
-    check_parser = operations.add_parser("check", help="check an explicit UTF-8 root document")
-    check_parser.add_argument("root")
+    check_parser = operations.add_parser(
+        "check",
+        help="check an explicit UTF-8 root document (<root> [--ignore RULES])",
+    )
+    check_parser.add_argument("root", help="path to root .tex or .bib document")
     check_parser.add_argument("--ignore", default=None, help="comma-separated rule IDs to ignore across the invocation")
-    rule_parser = operations.add_parser("rule", help="show an implemented rule and examples")
-    rule_parser.add_argument("rule_id")
-    install_parser = operations.add_parser("install-skills", help="install bundled agent skills")
+    rule_parser = operations.add_parser(
+        "rule",
+        help="show an implemented rule and examples (<rule_id>)",
+    )
+    rule_parser.add_argument("rule_id", help="rule identifier to inspect (e.g. MATH-04)")
+    install_parser = operations.add_parser(
+        "install-skills",
+        help="install bundled agent skills ([preset] [-d/--dest PATH] [-f/--force])",
+    )
     install_parser.add_argument(
         "preset",
         nargs="?",

@@ -501,3 +501,14 @@ def test_cli_ticket_12_all_ignored(tmp_path: Path) -> None:
     result = run_cli("check", "--ignore", "TYPO-05,TYPO-06,TYPO-07,TYPO-08", str(root))
     assert result.returncode == 0
     assert result.stdout == ""
+
+
+def test_cli_help_shows_subcommand_options() -> None:
+    result = run_cli("--help")
+    assert result.returncode == 0
+    assert "<root>" in result.stdout
+    assert "--ignore" in result.stdout
+    assert "<rule_id>" in result.stdout
+    assert "install-skills" in result.stdout
+    assert "--dest" in result.stdout
+    assert "--force" in result.stdout
