@@ -21,6 +21,8 @@ from latex_linting.rules.prose_07 import RULE as PROSE_07
 from latex_linting.rules.struc_02 import RULE as STRUC_02
 from latex_linting.rules.struc_03 import RULE as STRUC_03
 from latex_linting.rules.struc_06 import RULE as STRUC_06
+from latex_linting.rules.supp_01 import RULE as SUPP_01
+from latex_linting.rules.supp_02 import RULE as SUPP_02
 from latex_linting.rules.tab_01 import RULE as TAB_01
 from latex_linting.rules.tab_02 import RULE as TAB_02
 from latex_linting.rules.tab_03 import RULE as TAB_03
@@ -60,6 +62,8 @@ RULES = (
     STRUC_02,
     STRUC_03,
     STRUC_06,
+    SUPP_01,
+    SUPP_02,
     TAB_01,
     TAB_02,
     TAB_03,

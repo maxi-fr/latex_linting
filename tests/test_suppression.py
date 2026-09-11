@@ -26,7 +26,7 @@ def test_ignore_multiple_violations_on_same_line(tmp_path: Path) -> None:
 def test_ignore_does_not_suppress_following_line(tmp_path: Path) -> None:
     root = tmp_path / "thesis.tex"
     root.write_text("% latex-lint:ignore=MATH-04\n$\\frac{a}{b}$", encoding="utf-8")
-    findings = check(root)
+    findings = [f for f in check(root) if f.rule_id == "MATH-04"]
     assert len(findings) == 1
     assert (findings[0].line, findings[0].column) == (2, 2)
 
@@ -142,7 +142,7 @@ def test_api_ignored_rules(tmp_path: Path) -> None:
 
 def test_api_ignored_rules_cannot_be_undone_by_enable_directive(tmp_path: Path) -> None:
     root = tmp_path / "thesis.tex"
-    source = "% latex-lint:enable=MATH-04\n$\\frac{a}{b}$\n"
+    source = "% latex-lint:disable=MATH-04\n$\\frac{a}{b}$\n% latex-lint:enable=MATH-04\n$\\frac{a}{b}$\n"
     root.write_text(source, encoding="utf-8")
     assert check(root, ignored_rules=["MATH-04"]) == []
 

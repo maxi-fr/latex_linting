@@ -88,6 +88,8 @@ def test_invalid_encoding(tmp_path: Path) -> None:
         "TYPO-07",
         "TYPO-08",
         "TYPO-09",
+        "SUPP-01",
+        "SUPP-02",
         "WORK-03",
     ],
 )

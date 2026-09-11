@@ -120,7 +120,7 @@ def test_suppression_isolation_parent_to_child(tmp_path: Path) -> None:
     child.write_text("$\\frac{a}{b}$\n", encoding="utf-8")
     root.write_text("% latex-lint:disable=MATH-04\n\\input{child.tex}\n", encoding="utf-8")
 
-    findings = check(root)
+    findings = [f for f in check(root) if f.rule_id == "MATH-04"]
     assert len(findings) == 1
     assert findings[0].filename == str(child)
 
@@ -148,7 +148,7 @@ def test_suppression_isolation_child_enable_does_not_affect_parent(tmp_path: Pat
         encoding="utf-8",
     )
 
-    findings = check(root)
+    findings = [f for f in check(root) if f.rule_id == "MATH-04"]
     assert len(findings) == 1
     assert findings[0].filename == str(child)
 

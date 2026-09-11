@@ -245,7 +245,8 @@ Here is inline fraction $\frac{1}{2}$ and unit $10 kg$ and function $sin(x)$ and
     \label{tab:misplaced}
   \end{center}
 \end{table}
-Ending text to prevent STRUC-06 in this section.
+% latex-lint:enable=MATH-04
+Ending text to prevent STRUC-06 in this section. % latex-lint:ignore=MATH-04
 """,
         encoding="utf-8",
     )
