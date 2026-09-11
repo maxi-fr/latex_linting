@@ -326,3 +326,48 @@ def test_invocation_wide_ignore(tmp_path: Path) -> None:
     )
     findings = check(root, ignored_rules=["FIG-03"])
     assert not any(f.rule_id == "FIG-03" for f in findings)
+
+
+def test_fig_03_title_macro_logo_allowed(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    root.write_text(
+        "\\addTitleBox{\\includegraphics[width=\\linewidth]{figures/CCPS_logo}}\n"
+        "\\titlehead{\\includegraphics{figures/logo.pdf}}\n",
+        encoding="utf-8",
+    )
+    findings = [f for f in check(root) if f.rule_id == "FIG-03"]
+    assert findings == []
+
+
+def test_fig_03_titlepage_environment_allowed(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    root.write_text(
+        "\\begin{titlepage}\n  \\centering\n  \\includegraphics{figures/logo.pdf}\n\\end{titlepage}\n",
+        encoding="utf-8",
+    )
+    findings = [f for f in check(root) if f.rule_id == "FIG-03"]
+    assert findings == []
+
+
+def test_fig_03_preamble_logo_allowed(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    root.write_text(
+        "\\documentclass{article}\n"
+        "\\newcommand{\\mylogo}{\\includegraphics{figures/logo.pdf}}\n"
+        "\\begin{document}\n"
+        "Some text.\n"
+        "\\end{document}\n",
+        encoding="utf-8",
+    )
+    findings = [f for f in check(root) if f.rule_id == "FIG-03"]
+    assert findings == []
+
+
+def test_fig_03_box_macro_allowed(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    root.write_text(
+        "\\savebox{\\mybox}{\\includegraphics{figures/logo.pdf}}\n\\parbox{5cm}{\\includegraphics{figures/logo.pdf}}\n",
+        encoding="utf-8",
+    )
+    findings = [f for f in check(root) if f.rule_id == "FIG-03"]
+    assert findings == []

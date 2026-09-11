@@ -105,6 +105,7 @@ RULE = Rule(
         "across the entire document, and figure labels never referenced by recognized commands "
         "(\\ref, \\autoref, \\cref, \\Cref). References collected from other included sources "
         "satisfy the check. References in comments or literal code (verbatim, listings) do not count. "
+        "Figure content in preamble, titlepage environments, and title/box/header macros is permitted. "
         "Actionable locations attach to \\includegraphics or \\begin{tikzpicture} when outside floats, "
         "to \\begin{figure} when missing labels, or to \\label for duplicate or unreferenced labels. "
         "Does not check file existence on disk, render output, or evaluate plot appearance."

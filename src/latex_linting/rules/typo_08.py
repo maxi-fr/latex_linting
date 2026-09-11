@@ -8,7 +8,29 @@ from latex_linting.rules.model import Rule
 from latex_linting.source import Finding, Source
 
 _TABLE_ENVIRONMENTS = frozenset({"tabular", "tabular*", "tabularx", "tabulary", "longtable"})
-_TITLE_AUTHOR_COMMANDS = frozenset({r"\title", r"\author", r"\subtitle", r"\institute", r"\date"})
+_TITLE_AUTHOR_COMMANDS = frozenset(
+    {
+        r"\title",
+        r"\subtitle",
+        r"\author",
+        r"\institute",
+        r"\date",
+        r"\lowertitleback",
+        r"\uppertitleback",
+        r"\publishers",
+        r"\dedication",
+        r"\extratitle",
+        r"\titlehead",
+        r"\subject",
+        r"\reviewer",
+        r"\supervisor",
+        r"\advisor",
+        r"\committee",
+        r"\submissiondate",
+        r"\department",
+        r"\addTitleBox",
+    }
+)
 _LINE_BREAK_COMMANDS = frozenset({r"\\", r"\newline", r"\linebreak"})
 
 
@@ -18,16 +40,22 @@ class _LineBreakScanner:
     def __init__(self) -> None:
         self.table_depth = 0
         self.title_depth = 0
+        self.titlepage_depth = 0
         self.expecting_title_brace = False
 
     def handle_environment(self, token: "Token") -> None:
-        """Update table depth when entering or leaving table environments."""
+        """Update table and titlepage depth when entering or leaving environments."""
         env_name = token.value[token.value.index("{") + 1 : -1]
         if token.value.startswith(r"\begin"):
             if env_name in _TABLE_ENVIRONMENTS:
                 self.table_depth += 1
-        elif token.value.startswith(r"\end") and env_name in _TABLE_ENVIRONMENTS:
-            self.table_depth = max(0, self.table_depth - 1)
+            elif env_name == "titlepage":
+                self.titlepage_depth += 1
+        elif token.value.startswith(r"\end"):
+            if env_name in _TABLE_ENVIRONMENTS:
+                self.table_depth = max(0, self.table_depth - 1)
+            elif env_name == "titlepage":
+                self.titlepage_depth = max(0, self.titlepage_depth - 1)
 
     def handle_command(self, source: Source, token: "Token") -> Finding | None:
         """Check for forbidden line breaks in running text and track title macros."""
@@ -40,6 +68,7 @@ class _LineBreakScanner:
             and token.value in _LINE_BREAK_COMMANDS
             and self.table_depth == 0
             and self.title_depth == 0
+            and self.titlepage_depth == 0
         ):
             return source.finding(
                 token.start,
@@ -51,10 +80,11 @@ class _LineBreakScanner:
         return None
 
     def handle_text(self, token: "Token") -> None:
-        """Consume whitespace or optional bracket arguments before title braces."""
+        """Consume whitespace, starred forms, or optional bracket arguments before title braces."""
         if not self.expecting_title_brace:
             return
-        if token.value.isspace() or token.value.strip().startswith("["):
+        stripped = token.value.strip()
+        if token.value.isspace() or stripped.startswith(("*", "[")):
             return
         self.expecting_title_brace = False
 
@@ -105,8 +135,9 @@ RULE = Rule(
     limits=(
         r"Detects '\\', '\newline', and '\linebreak' in running text mode. Allows row breaks in "
         r"supported tables (tabular, tabular*, tabularx, tabulary, longtable), multiline math "
-        r"(align, gather, equation, etc.), and title/author macros (\title, \author, \subtitle, "
-        r"\institute, \date). Comments and literal environments are excluded."
+        r"(align, gather, equation, etc.), titlepage environments, and title/metadata macros "
+        r"(\title, \author, \subtitle, \institute, \date, \lowertitleback, \uppertitleback, "
+        r"\publishers, \dedication, \reviewer, etc.). Comments and literal environments are excluded."
     ),
     evaluate=_evaluate,
 )

@@ -221,7 +221,7 @@ CITE-04 is enabled by default and detects recognized citation commands (`\cite`,
 
 ### CITE-08 support
 
-CITE-08 is enabled by default and validates the completeness of mandatory BibLaTeX metadata fields per entry type in `.bib` files. It checks `author` (or `editor`, `organization`, or `institution` where appropriate), `title`, and `year` (or `date`/`urldate`) across all entry types; `journal` (or `journaltitle`), `volume`, `pages`, and `doi` for `@article`; `publisher` and `isbn` for `@book`; `booktitle`, `pages`, and `doi` or `isbn` for `@inproceedings`; and respective publication venues for other types. Non-citation entries (`@comment`, `@string`, `@preamble`) are ignored. Bibliography files are discovered automatically via `\addbibresource`, `\bibliography`, or `\addglobalbib` in the LaTeX document hierarchy, or can be checked directly by passing a `.bib` file to `latex-lint check`. Missing required fields are reported at the entry's `@` declaration, allowing same-line `% latex-lint: ignore=CITE-08` suppressions when DOI or ISBN identifiers are unassigned.
+CITE-08 is enabled by default and validates the completeness of mandatory BibLaTeX metadata fields per entry type in `.bib` files. It checks `author` (or `editor`, `organization`, or `institution` where appropriate), `title`, and `year` (or `date`/`urldate`) across all entry types; `journal` (or `journaltitle`), `volume`, `pages`, and `doi` for `@article`; `publisher` and `doi` or `isbn` for `@book`; `booktitle`, `pages`, and `doi` or `isbn` for `@inproceedings`; and respective publication venues for other types. Non-citation entries (`@comment`, `@string`, `@preamble`) are ignored. Bibliography files are discovered automatically via `\addbibresource`, `\bibliography`, or `\addglobalbib` in the LaTeX document hierarchy, or can be checked directly by passing a `.bib` file to `latex-lint check`. Missing required fields are reported at the entry's `@` declaration, allowing same-line `% latex-lint: ignore=CITE-08` suppressions when DOI or ISBN identifiers are unassigned.
 
 ### MATH-01 support
 
@@ -237,7 +237,7 @@ PROSE-07 is enabled by default and reports a colon in text mode immediately prec
 
 ### STRUC-06 support
 
-STRUC-06 is enabled by default and reports a chapter, section, subsection, or subsubsection ending directly on a recognized display math equation, list (`itemize`, `enumerate`, `description`), table (`table`, `tabular`, `tabularx`, etc.), or figure environment before the next heading or document end (`\end{document}` or EOF). Document reading order across included files is respected: a prose continuation in an included file satisfies the rule. Trailing labels, comments, whitespace, and page-break commands do not count as final prose. Findings attach to the ending block command, allowing same-line suppression.
+STRUC-06 is enabled by default and reports a chapter, section, subsection, or subsubsection ending directly on a recognized display math equation, list (`itemize`, `enumerate`, `description`), table (`table`, `tabular`, `tabularx`, etc.), or figure environment before the next heading or document end (`\end{document}` or EOF). Floating environments (figure, table) trailing after prose in a section do not trigger violations. Frontmatter, appendix, unnumbered headings, and reference/symbol list sections are exempt. Document reading order across included files is respected: a prose continuation in an included file satisfies the rule. Trailing labels, comments, whitespace, and page-break commands do not count as final prose. Findings attach to the ending block command, allowing same-line suppression.
 
 ### MATH-06 support
 
@@ -253,7 +253,7 @@ MATH-12 is enabled by default and detects recognized standard mathematical funct
 
 ### MATH-14 support
 
-MATH-14 is enabled by default and detects adjacent digits separated by a comma without whitespace (`\d+,\d+`) in math mode (e.g. `$3,14$`). In English math, a decimal period should be used (e.g. `$3.14$`). Decimal commas wrapped in braces (e.g. `$3{,}14$`) are accepted for localized notation. The diagnostic explains ambiguity where unspaced comma-separated lists or coordinates (e.g. `$(1,2)$`) resemble decimals, recommending spaces after commas. Findings attach to the comma, enabling same-line suppression. Comments, literal code, and nested non-math commands are excluded.
+MATH-14 is enabled by default and detects adjacent digits separated by a comma without whitespace (`\d+,\d+`) in math mode (e.g. `$3,14$`). In English math, a decimal period should be used (e.g. `$3.14$`). Decimal commas wrapped in braces (e.g. `$3{,}14$`) are accepted for localized notation. Subscripts and superscripts (e.g. `$x_{1,1}$`) are excluded from decimal comma detection. The diagnostic explains ambiguity where unspaced comma-separated lists or coordinates (e.g. `$(1,2)$`) resemble decimals, recommending spaces after commas. Findings attach to the comma, enabling same-line suppression. Comments, literal code, and nested non-math commands are excluded.
 
 ### MATH-02 support
 
@@ -269,7 +269,7 @@ TYPO-09 is enabled by default and checks standard label prefixes in `\label{...}
 
 ### FIG-03 support
 
-FIG-03 is enabled by default and ensures that figure content (`\includegraphics`, `\begin{tikzpicture}`) floats in a `figure` or `figure*` float environment, that every figure declares a `\label`, that figure labels are unique across the entire document, and that declared figure labels are referenced in the body text using recognized reference commands (`\ref`, `\autoref`, `\cref`, `\Cref`). References collected from other included sources satisfy the check. References in comments and literal code do not count. Findings attach to the `\includegraphics` or `\begin{tikzpicture}` token when outside floats, to `\begin{figure}` or `\begin{figure*}` when missing a label, or to `\label` for duplicate or unreferenced labels, enabling same-line suppression.
+FIG-03 is enabled by default and ensures that figure content (`\includegraphics`, `\begin{tikzpicture}`) floats in a `figure` or `figure*` float environment, that every figure declares a `\label`, that figure labels are unique across the entire document, and that declared figure labels are referenced in the body text using recognized reference commands (`\ref`, `\autoref`, `\cref`, `\Cref`). Figure content inside preamble, titlepage environments, and title/box/header macros is permitted outside floats. References collected from other included sources satisfy the check. References in comments and literal code do not count. Findings attach to the `\includegraphics` or `\begin{tikzpicture}` token when outside floats, to `\begin{figure}` or `\begin{figure*}` when missing a label, or to `\label` for duplicate or unreferenced labels, enabling same-line suppression.
 
 ### FIG-06 support
 
@@ -325,7 +325,7 @@ TYPO-07 is enabled by default and enforces guidelines on emphasis and font attri
 
 ### TYPO-08 support
 
-TYPO-08 is enabled by default and detects line-break commands (`\\`, `\newline`, `\linebreak`) used as paragraph breaks in running text mode. It recommends using an empty line in the source to start a new paragraph. Row breaks in supported tables (`tabular`, `tabular*`, `tabularx`, `tabulary`, `longtable`), multiline math environments (`align`, `gather`, `multline`, `equation`, etc.), and title or author macros (`\title`, `\author`, `\subtitle`, `\institute`, `\date`) are explicitly permitted. Comments and literal environments are excluded. Findings attach to the line-break command, enabling same-line suppression.
+TYPO-08 is enabled by default and detects line-break commands (`\\`, `\newline`, `\linebreak`) used as paragraph breaks in running text mode. It recommends using an empty line in the source to start a new paragraph. Row breaks in supported tables (`tabular`, `tabular*`, `tabularx`, `tabulary`, `longtable`), multiline math environments (`align`, `gather`, `multline`, `equation`, etc.), titlepage environments, and title or author macros (`\title`, `\author`, `\subtitle`, `\institute`, `\date`, `\lowertitleback`, `\uppertitleback`, `\publishers`, `\dedication`, `\reviewer`, etc.) are explicitly permitted. Comments and literal environments are excluded. Findings attach to the line-break command, enabling same-line suppression.
 
 ### TYPO-10 support
 

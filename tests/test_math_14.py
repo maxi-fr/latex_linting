@@ -99,3 +99,12 @@ def test_math_14_context_boundaries(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     assert [f for f in check(root) if f.rule_id == "MATH-14"] == []
+
+
+def test_valid_multi_index_subscripts_and_superscripts(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "$x_{1,1}$ and $x_{i,1}$ and $x_{1,2,3}$ and $A^{1,2}$ and $y_{1,1}^{(k)}$\n",
+        encoding="utf-8",
+    )
+    assert [f for f in check(root) if f.rule_id == "MATH-14"] == []

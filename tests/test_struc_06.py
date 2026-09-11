@@ -176,3 +176,85 @@ def test_same_line_ignore_suppression_for_struc_06(tmp_path: Path) -> None:
     )
     findings = check(root)
     assert not any(f.rule_id == "STRUC-06" for f in findings)
+
+
+def test_section_ending_on_floating_figure_after_prose_passes(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    root.write_text(
+        "\\section{Methods}\n"
+        "Here is some prose explaining the method.\n"
+        "\\begin{figure}[tb]\n"
+        "  \\caption{Test caption.}\n"
+        "\\end{figure}\n"
+        "\\section{Results}\n"
+        "We discuss our results here.\n",
+        encoding="utf-8",
+    )
+    findings = [f for f in check(root) if f.rule_id == "STRUC-06"]
+    assert findings == []
+
+
+def test_section_ending_on_floating_table_after_prose_passes(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    root.write_text(
+        "\\section{Methods}\n"
+        "Here is some prose explaining the method.\n"
+        "\\begin{table}[tb]\n"
+        "  \\caption{Test caption.}\n"
+        "\\end{table}\n"
+        "\\section{Results}\n"
+        "We discuss our results here.\n",
+        encoding="utf-8",
+    )
+    findings = [f for f in check(root) if f.rule_id == "STRUC-06"]
+    assert findings == []
+
+
+def test_symbols_section_ending_on_tabular_passes(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    root.write_text(
+        "\\chapter{List of Symbols and Acronyms}\n"
+        "\\section*{Symbols}\n"
+        "Matrices are set bold.\n"
+        "\\begin{tabular}{lll}\n"
+        "  $x$ & State & -- \\\\\n"
+        "\\end{tabular}\n"
+        "\\section*{Acronyms}\n"
+        "Acronym definitions follow.\n",
+        encoding="utf-8",
+    )
+    findings = [f for f in check(root) if f.rule_id == "STRUC-06"]
+    assert findings == []
+
+
+def test_frontmatter_section_ending_on_tabular_passes(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    root.write_text(
+        "\\frontmatter\n"
+        "\\section*{Task Description}\n"
+        "Provided by supervisor.\n"
+        "\\begin{tabular}{ll}\n"
+        "  Start date: & 2026 \\\\\n"
+        "\\end{tabular}\n"
+        "\\mainmatter\n"
+        "\\section{Introduction}\n"
+        "Prose here.\n",
+        encoding="utf-8",
+    )
+    findings = [f for f in check(root) if f.rule_id == "STRUC-06"]
+    assert findings == []
+
+
+def test_appendix_section_ending_on_tabular_passes(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    root.write_text(
+        "\\appendix\n"
+        "\\section{Measurement Data}\n"
+        "Raw measurements:\n"
+        "\\begin{tabular}{ll}\n"
+        "  A & B \\\\\n"
+        "\\end{tabular}\n",
+        encoding="utf-8",
+    )
+    findings = [f for f in check(root) if f.rule_id == "STRUC-06"]
+    assert findings == []

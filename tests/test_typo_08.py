@@ -188,3 +188,30 @@ def test_disable_enable_suppression(tmp_path: Path) -> None:
     findings = [f for f in check(root) if f.rule_id == "TYPO-08"]
     assert len(findings) == 1
     assert findings[0].line == 6
+
+
+def test_koma_and_university_title_macros_pass(tmp_path: Path) -> None:
+    """Permit line breaks in KOMA-Script and university title macros."""
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\lowertitleback{TU Darmstadt\\\\\nInstitut für Automatisierungstechnik\\\\\n}\n"
+        "\\uppertitleback{Upper line 1\\\\\nUpper line 2}\n"
+        "\\dedication{To my family\\\\\nand friends}\n"
+        "\\publishers{Publisher 1\\\\\nPublisher 2}\n"
+        "\\reviewer{Reviewer 1\\\\\nReviewer 2}\n"
+        "\\reviewer*[Supervisor]{Examiner 1\\\\\nExaminer 2}\n"
+        "\\supervisor{Supervisor 1\\\\\nSupervisor 2}\n"
+        "\\titlehead{Head 1\\\\\nHead 2}\n"
+    )
+    root.write_text(source, encoding="utf-8")
+    findings = [f for f in check(root) if f.rule_id == "TYPO-08"]
+    assert findings == []
+
+
+def test_titlepage_environment_breaks_pass(tmp_path: Path) -> None:
+    """Permit line breaks inside titlepage environment."""
+    root = tmp_path / "thesis.tex"
+    source = "\\begin{titlepage}\nTitle line 1\\\\\nTitle line 2\\\\\n\\end{titlepage}\n"
+    root.write_text(source, encoding="utf-8")
+    findings = [f for f in check(root) if f.rule_id == "TYPO-08"]
+    assert findings == []

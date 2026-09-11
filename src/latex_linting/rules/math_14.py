@@ -14,7 +14,7 @@ _DECIMAL_COMMA = re.compile(r"(?<!\d)(\d+),(\d+)(?!\d)")
 def _evaluate(document: "Document") -> Iterable[Finding]:
     """Report suspected decimal commas in English math mode across the document."""
     for source, token, ctx in iter_math_tokens(document):
-        if not ctx.in_math or ctx.in_non_math:
+        if not ctx.in_math or ctx.in_non_math or ctx.in_index:
             continue
         if token.kind != "text":
             continue
@@ -40,6 +40,7 @@ RULE = Rule(
         "$3.14$",
         "$3{,}14$",
         "$(1, 2)$",
+        "$x_{1,1}$",
         r"\[ x = 0.05 \,.\]",
     ),
     failing_examples=(
@@ -51,8 +52,8 @@ RULE = Rule(
         r"Detects adjacent digits separated by a comma without whitespace (\d+,\d+) in inline "
         "and display math. Wrapped commas such as 3{,}14 are accepted. Coordinates and lists "
         "without whitespace (e.g. (1,2)) are flagged due to ambiguity with decimals; add spaces "
-        "after commas to disambiguate. Comments, literal code, and nested non-math commands "
-        "are excluded. Does not verify document language."
+        "after commas to disambiguate. Subscripts and superscripts (e.g. x_{1,1}), comments, "
+        "literal code, and nested non-math commands are excluded. Does not verify document language."
     ),
     evaluate=_evaluate,
 )

@@ -163,24 +163,78 @@ class _FloatBuilder:
         )
 
 
+_TITLE_OR_METADATA_COMMANDS = frozenset(
+    {
+        r"\title",
+        r"\subtitle",
+        r"\author",
+        r"\institute",
+        r"\date",
+        r"\titlehead",
+        r"\subject",
+        r"\publishers",
+        r"\uppertitleback",
+        r"\lowertitleback",
+        r"\dedication",
+        r"\extratitle",
+        r"\reviewer",
+        r"\supervisor",
+        r"\advisor",
+        r"\committee",
+        r"\submissiondate",
+        r"\department",
+        r"\addTitleBox",
+        r"\savebox",
+        r"\sbox",
+        r"\parbox",
+        r"\makebox",
+        r"\mbox",
+        r"\framebox",
+        r"\newsavebox",
+        r"\fancyhead",
+        r"\fancyfoot",
+        r"\ihead",
+        r"\ohead",
+        r"\chead",
+        r"\cfoot",
+        r"\ofoot",
+        r"\ifoot",
+    }
+)
+_TWO_ARG_BOX_COMMANDS = frozenset({r"\savebox", r"\sbox", r"\parbox"})
+
+
 class _SourceFigureScanner:
     """Scan tokens of a single source file to extract figure floats and outside images."""
 
     def __init__(self, source: Source, tokens: Sequence[Token]) -> None:
+        """Initialize figure float scanner with source, tokens, and metadata context tracking."""
         self.source = source
         self.tokens = tokens
         self.floats: list[FigureFloat] = []
         self.outside_images: list[tuple[Source, Token]] = []
         self.env_stack: list[str] = []
         self.current_builder: _FloatBuilder | None = None
+        self.has_begin_document = any(t.kind == "environment" and t.value == r"\begin{document}" for t in tokens)
+        self.in_preamble = self.has_begin_document
+        self.box_depth = 0
+        self.pending_box_args = 0
+        self.expecting_box_brace = False
 
     @property
     def in_figure_float(self) -> bool:
         """Return True if currently inside a figure or figure* environment."""
         return any(env in _FIGURE_ENVIRONMENTS for env in self.env_stack)
 
+    @property
+    def in_exempt_graphic_context(self) -> bool:
+        """Return True if currently inside preamble, titlepage, or title/box macro."""
+        return self.in_preamble or self.box_depth > 0 or "titlepage" in self.env_stack
+
     def _handle_begin(self, name: str, token: Token) -> None:
-        """Process an environment opening token."""
+        """Process environment opening tokens and track document, float, or graphic environments."""
+        if name == "document":
+            self.in_preamble = False
         if name in _FIGURE_ENVIRONMENTS:
             if not self.in_figure_float:
                 self.current_builder = _FloatBuilder(self.source, token, name)
@@ -188,7 +242,7 @@ class _SourceFigureScanner:
             if self.current_builder is not None:
                 self.current_builder.center_env_tokens.append(token)
         elif name == "tikzpicture":
-            if not self.in_figure_float:
+            if not self.in_figure_float and not self.in_exempt_graphic_context:
                 self.outside_images.append((self.source, token))
             elif self.current_builder is not None:
                 self.current_builder.image_tokens.append(token)
@@ -244,10 +298,14 @@ class _SourceFigureScanner:
         return idx + 1
 
     def _handle_command(self, token: Token, idx: int) -> int:
-        """Process command token within or outside figure float context."""
+        """Process command tokens for metadata boxes, active floats, or outside graphics."""
         cmd = token.value
+        if cmd in _TITLE_OR_METADATA_COMMANDS:
+            self.pending_box_args = 2 if cmd in _TWO_ARG_BOX_COMMANDS else 1
+            self.expecting_box_brace = True
+
         if cmd == r"\includegraphics":
-            if not self.in_figure_float:
+            if not self.in_figure_float and not self.in_exempt_graphic_context:
                 self.outside_images.append((self.source, token))
             elif self.current_builder is not None:
                 self.current_builder.image_tokens.append(token)
@@ -255,8 +313,30 @@ class _SourceFigureScanner:
 
         return self._handle_float_command(cmd, token, idx)
 
+    def _handle_text(self, token: Token) -> None:
+        """Consume text and validate pending metadata box brace expectations."""
+        if self.expecting_box_brace:
+            stripped = token.value.strip()
+            if not (token.value.isspace() or stripped.startswith(("*", "["))):
+                self.expecting_box_brace = False
+                self.pending_box_args = 0
+
+    def _handle_brace(self, token: Token) -> None:
+        """Update box nesting depth and consume expected box arguments on braces."""
+        if token.value == "{":
+            if self.expecting_box_brace:
+                self.box_depth += 1
+                self.expecting_box_brace = False
+                self.pending_box_args = max(0, self.pending_box_args - 1)
+            elif self.box_depth > 0:
+                self.box_depth += 1
+        elif token.value == "}" and self.box_depth > 0:
+            self.box_depth -= 1
+            if self.box_depth == 0 and self.pending_box_args > 0:
+                self.expecting_box_brace = True
+
     def scan(self) -> tuple[list[FigureFloat], list[tuple[Source, Token]]]:
-        """Execute token scan and return collected figure floats and outside images."""
+        """Execute token scan, tracking figure floats, outside images, and metadata contexts."""
         idx = 0
         while idx < len(self.tokens):
             token = self.tokens[idx]
@@ -267,6 +347,12 @@ class _SourceFigureScanner:
                 idx += 1
             elif token.kind == "command":
                 idx = self._handle_command(token, idx)
+            elif token.kind == "text":
+                self._handle_text(token)
+                idx += 1
+            elif token.kind == "brace":
+                self._handle_brace(token)
+                idx += 1
             else:
                 idx += 1
 

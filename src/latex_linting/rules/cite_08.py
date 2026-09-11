@@ -211,8 +211,8 @@ def _missing_book_fields(entry_type: str, fields: dict[str, str]) -> list[str]:
     if entry_type == "book":
         if "publisher" not in fields:
             missing.append("publisher")
-        if "isbn" not in fields:
-            missing.append("isbn")
+        if not any(f in fields for f in ("doi", "isbn")):
+            missing.append("doi or isbn")
     else:
         if "booktitle" not in fields and (entry_type != "inbook" or "title" not in fields):
             missing.append("booktitle")
@@ -360,7 +360,7 @@ RULE = Rule(
     limits=(
         "Validates completeness of required BibLaTeX metadata fields per entry type in .bib files. "
         "Checks author/editor, title, and year/date for all entries; journal, volume, pages, and doi for @article; "
-        "publisher and isbn for @book; booktitle, pages, and doi/isbn for @inproceedings. "
+        "publisher and doi/isbn for @book; booktitle, pages, and doi/isbn for @inproceedings. "
         "Does not query remote DOI/ISBN databases or verify the factual accuracy of citations. "
         "Entries lacking assigned DOI/ISBN can be suppressed with '% latex-lint: ignore=CITE-08'."
     ),

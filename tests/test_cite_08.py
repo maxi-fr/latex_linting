@@ -132,6 +132,23 @@ def test_cite_08_book_missing_isbn(tmp_path: Path) -> None:
     assert "isbn" in f.correction.lower()
 
 
+def test_cite_08_book_with_doi_no_isbn_passes(tmp_path: Path) -> None:
+    bib = tmp_path / "refs.bib"
+    bib.write_text(
+        r"""@book{monograph_doi,
+  author = {Smith, John},
+  title = {Electronic Monograph},
+  publisher = {Springer},
+  year = {2021},
+  doi = {10.1007/978-3-030-12345-6},
+}
+""",
+        encoding="utf-8",
+    )
+    findings = check(bib)
+    assert [f for f in findings if f.rule_id == "CITE-08"] == []
+
+
 def test_cite_08_inproceedings_missing_doi_and_isbn(tmp_path: Path) -> None:
     bib = tmp_path / "refs.bib"
     bib.write_text(

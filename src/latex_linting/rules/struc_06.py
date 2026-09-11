@@ -41,7 +41,10 @@ _NON_PROSE_ENVIRONMENTS = frozenset(
     }
 )
 
-_HEADING_COMMANDS = frozenset({r"\chapter", r"\section", r"\subsection", r"\subsubsection"})
+_FLOATING_ENVIRONMENTS = frozenset({"figure", "figure*", "table", "table*"})
+_HEADING_COMMANDS = frozenset({r"\chapter", r"\section", r"\subsection", r"\subsubsection", r"\addchap", r"\addsec"})
+_DIVISION_COMMANDS = frozenset({r"\frontmatter", r"\mainmatter", r"\backmatter", r"\appendix"})
+_REFERENCE_KEYWORDS = frozenset({"symbol", "acronym", "notation", "abbreviation", "nomenclature"})
 
 _NON_PROSE_COMMANDS = frozenset(
     {
@@ -68,6 +71,9 @@ class _TraverseState:
 
     candidate: tuple[Source, Token] | None = None
     in_section: bool = False
+    has_prose: bool = False
+    in_frontmatter: bool = False
+    in_appendix: bool = False
     non_prose_stack: list[str] = field(default_factory=list)
     in_bracket_math: bool = False
     in_dollar_math: bool = False
@@ -114,13 +120,74 @@ def _skip_brackets(tokens: tuple[tuple[Source, Token], ...], start_idx: int) -> 
     return idx
 
 
-def _skip_heading_args(tokens: tuple[tuple[Source, Token], ...], start_idx: int) -> int:
-    """Skip starred form, optional short title, and mandatory title argument of a heading."""
+def _extract_heading_info(tokens: tuple[tuple[Source, Token], ...], start_idx: int) -> tuple[bool, str, int]:
+    """Extract whether a heading is starred, its title text, and the next token index."""
     idx = _skip_whitespace_and_comments(tokens, start_idx)
+    is_starred = False
     if idx < len(tokens) and tokens[idx][1].kind == "text" and tokens[idx][1].value.startswith("*"):
+        is_starred = True
         idx += 1
     idx = _skip_brackets(tokens, idx)
-    return _skip_braces(tokens, idx)
+    idx = _skip_whitespace_and_comments(tokens, idx)
+    title_parts: list[str] = []
+    if idx < len(tokens) and tokens[idx][1].kind == "brace" and tokens[idx][1].value == "{":
+        depth = 1
+        idx += 1
+        while idx < len(tokens) and depth > 0:
+            cur = tokens[idx][1]
+            if cur.kind == "brace":
+                depth += 1 if cur.value == "{" else -1
+            if depth > 0 and cur.kind != "comment":
+                title_parts.append(cur.value)
+            idx += 1
+    return is_starred, "".join(title_parts).strip(), idx
+
+
+def _is_exempt_heading(state: _TraverseState, cmd: str, *, is_starred: bool, title: str) -> bool:
+    """Check if a heading is exempt from prose termination rules."""
+    if state.in_frontmatter or state.in_appendix:
+        return True
+    if is_starred or cmd in {r"\addchap", r"\addsec"}:
+        return True
+    title_lower = title.lower()
+    return any(keyword in title_lower for keyword in _REFERENCE_KEYWORDS)
+
+
+def _handle_division_command(state: _TraverseState, token: Token, findings: list[Finding]) -> None:
+    """Update document division state upon frontmatter, mainmatter, or appendix commands."""
+    if state.candidate is not None:
+        findings.append(
+            state.candidate[0].finding(state.candidate[1].start, RULE.rule_id, RULE.explanation, RULE.correction)
+        )
+        state.candidate = None
+    if token.value == r"\frontmatter":
+        state.in_frontmatter = True
+    elif token.value == r"\mainmatter":
+        state.in_frontmatter = False
+    elif token.value in (r"\backmatter", r"\appendix"):
+        state.in_appendix = True
+        state.in_frontmatter = False
+    state.in_section = False
+    state.has_prose = False
+
+
+def _handle_heading_command(
+    state: _TraverseState, tokens: tuple[tuple[Source, Token], ...], idx: int, findings: list[Finding]
+) -> int:
+    """Process sectioning heading, report preceding violations, and update section state."""
+    token = tokens[idx][1]
+    if state.candidate is not None:
+        findings.append(
+            state.candidate[0].finding(state.candidate[1].start, RULE.rule_id, RULE.explanation, RULE.correction)
+        )
+        state.candidate = None
+    is_starred, title, next_idx = _extract_heading_info(tokens, idx + 1)
+    if _is_exempt_heading(state, token.value, is_starred=is_starred, title=title):
+        state.in_section = False
+    else:
+        state.in_section = True
+    state.has_prose = False
+    return next_idx
 
 
 def _handle_environment(state: _TraverseState, source: Source, token: Token, findings: list[Finding]) -> None:
@@ -142,7 +209,11 @@ def _handle_environment(state: _TraverseState, source: Source, token: Token, fin
         elif state.non_prose_stack and state.non_prose_stack[-1] == name:
             state.non_prose_stack.pop()
             if not state.non_prose_stack and state.in_section:
-                state.candidate = (source, token)
+                if name in _FLOATING_ENVIRONMENTS:
+                    if not state.has_prose and state.candidate is None:
+                        state.candidate = (source, token)
+                else:
+                    state.candidate = (source, token)
 
 
 def _handle_delimiters(state: _TraverseState, source: Source, token: Token) -> bool:
@@ -170,6 +241,7 @@ def _handle_prose_command(state: _TraverseState, tokens: tuple[tuple[Source, Tok
         return _skip_braces(tokens, idx + 1)
     if token.value not in _NON_PROSE_COMMANDS and token.value not in {r"\input", r"\include"}:
         state.candidate = None
+        state.has_prose = True
     return idx + 1
 
 
@@ -183,16 +255,13 @@ def _evaluate(document: "Document") -> Iterable[Finding]:
     while idx < len(tokens):
         source, token = tokens[idx]
 
+        if token.kind == "command" and token.value in _DIVISION_COMMANDS and token.math == "text":
+            _handle_division_command(state, token, findings)
+            idx += 1
+            continue
+
         if token.kind == "command" and token.value in _HEADING_COMMANDS and token.math == "text":
-            if state.candidate is not None:
-                findings.append(
-                    state.candidate[0].finding(
-                        state.candidate[1].start, RULE.rule_id, RULE.explanation, RULE.correction
-                    )
-                )
-                state.candidate = None
-            state.in_section = True
-            idx = _skip_heading_args(tokens, idx + 1)
+            idx = _handle_heading_command(state, tokens, idx, findings)
             continue
 
         if token.kind == "environment":
@@ -214,6 +283,7 @@ def _evaluate(document: "Document") -> Iterable[Finding]:
 
         if token.kind == "delimiter" or (token.kind == "text" and re.search(r"\w", token.value)):
             state.candidate = None
+            state.has_prose = True
 
         idx += 1
 
@@ -242,6 +312,8 @@ RULE = Rule(
         "display math equation, list (itemize, enumerate, description), table (table, tabular, tabularx, "
         "etc.), or figure environment before the next heading or document end. Whitespace, comments, "
         "trailing labels, and formatting commands (e.g. \\newpage, \\clearpage) do not count as prose. "
+        "Floating environments (figure, table) trailing after prose in a section do not trigger violations. "
+        "Frontmatter, appendix, unnumbered headings, and reference/symbol list sections are exempt. "
         "A prose continuation in an included file satisfies the rule. Does not check whether the final "
         "prose is grammatically complete or a well-formed sentence."
     ),
