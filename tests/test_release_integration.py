@@ -7,7 +7,7 @@ from latex_linting.document import MissingIncludeError
 from latex_linting.main import Finding, check
 from latex_linting.rules.catalogue import RULES
 
-ALL_RULE_IDS = frozenset(rule.rule_id for rule in RULES)
+ALL_RULE_IDS = frozenset(rule.rule_id for rule in RULES if rule.enabled_by_default)
 
 
 def _build_clean_thesis(tmp_path: Path) -> Path:

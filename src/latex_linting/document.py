@@ -1,7 +1,10 @@
 from collections.abc import Collection, Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from latex_linting.rules.model import Rule
 from latex_linting.rules.catalogue import RULES
 from latex_linting.scanner import Token, scan
 from latex_linting.source import Finding, Source
@@ -319,27 +322,51 @@ def _traverse_node(node: DocumentNode) -> Iterable[tuple[Source, Token]]:
         token_idx += 1
 
 
-def ordered_findings(document: Document, ignored_rules: Collection[str] | None = None) -> list[Finding]:
+def ordered_findings(
+    document: Document,
+    ignored_rules: Collection[str] | None = None,
+    rule_filter: Collection[str] | None = None,
+    enabled_rules: Collection[str] | None = None,
+) -> list[Finding]:
     """Collect and order findings across a document, included children, and bibliography files."""
-    all_findings: list[Finding] = []
+    ignored_set = frozenset(ignored_rules) if ignored_rules is not None else frozenset()
+    filter_set = frozenset(rule_filter) if rule_filter is not None else None
+    enabled_set = frozenset(enabled_rules) if enabled_rules is not None else frozenset()
+
+    rules_to_run: list[Rule] = []
     for rule in RULES:
-        if ignored_rules is not None and rule.rule_id in ignored_rules:
-            continue
+        if filter_set is not None:
+            if rule.rule_id in filter_set and rule.rule_id not in ignored_set:
+                rules_to_run.append(rule)
+        else:
+            is_active = rule.enabled_by_default or (rule.rule_id in enabled_set)
+            if is_active and rule.rule_id not in ignored_set:
+                rules_to_run.append(rule)
+
+    all_findings: list[Finding] = []
+    for rule in rules_to_run:
         all_findings.extend(rule.evaluate(document))
 
     findings_by_file: dict[str, list[Finding]] = {}
     for finding in all_findings:
         findings_by_file.setdefault(finding.filename, []).append(finding)
 
+    active_ids = {r.rule_id for r in rules_to_run}
+    all_rule_ids = {r.rule_id for r in RULES}
+    effective_ignored = (all_rule_ids - active_ids) | ignored_set
+
     findings: list[Finding] = []
     if not document.root_node.source.filename.endswith(".bib"):
-        findings.extend(_collect_node_findings(document.root_node, findings_by_file, ignored_rules))
+        findings.extend(_collect_node_findings(document.root_node, findings_by_file, effective_ignored))
 
     for bib_node in document.bib_nodes:
         file_findings = findings_by_file.get(bib_node.source.filename, [])
-        filtered = filter_findings(bib_node.source, file_findings, bib_node.directives, ignored_rules)
+        filtered = filter_findings(bib_node.source, file_findings, bib_node.directives, effective_ignored)
         sorted_filtered = sorted(filtered, key=lambda f: (f.line, f.column, f.rule_id))
         findings.extend(sorted_filtered)
+
+    if filter_set is not None:
+        findings = [f for f in findings if f.rule_id in filter_set]
 
     return findings
 

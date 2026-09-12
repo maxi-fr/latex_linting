@@ -72,11 +72,7 @@ def test_disable_to_eof_without_violation_fails(tmp_path: Path) -> None:
 
 def test_disable_multi_rule_one_unused(tmp_path: Path) -> None:
     root = tmp_path / "thesis.tex"
-    source = (
-        "% latex-lint:disable=MATH-04,PROSE-02\n"
-        "$\\frac{a}{b}$\n"
-        "% latex-lint:enable=MATH-04,PROSE-02\n"
-    )
+    source = "% latex-lint:disable=MATH-04,PROSE-02\n$\\frac{a}{b}$\n% latex-lint:enable=MATH-04,PROSE-02\n"
     root.write_text(source, encoding="utf-8")
     findings = check(root)
     assert len(findings) == 1
@@ -94,11 +90,7 @@ def test_supp_01_self_suppression_same_line(tmp_path: Path) -> None:
 
 def test_supp_01_self_suppression_disable(tmp_path: Path) -> None:
     root = tmp_path / "thesis.tex"
-    source = (
-        "% latex-lint:disable=SUPP-01\n"
-        "$a/b$ % latex-lint:ignore=MATH-04\n"
-        "% latex-lint:enable=SUPP-01\n"
-    )
+    source = "% latex-lint:disable=SUPP-01\n$a/b$ % latex-lint:ignore=MATH-04\n% latex-lint:enable=SUPP-01\n"
     root.write_text(source, encoding="utf-8")
     assert check(root) == []
 

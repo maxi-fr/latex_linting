@@ -1,5 +1,6 @@
 from latex_linting.rules.cite_04 import RULE as CITE_04
 from latex_linting.rules.cite_08 import RULE as CITE_08
+from latex_linting.rules.cite_09 import RULE as CITE_09
 from latex_linting.rules.fig_03 import RULE as FIG_03
 from latex_linting.rules.fig_06 import RULE as FIG_06
 from latex_linting.rules.fig_07 import RULE as FIG_07
@@ -42,6 +43,7 @@ from latex_linting.rules.work_03 import RULE as WORK_03
 RULES = (
     CITE_04,
     CITE_08,
+    CITE_09,
     FIG_03,
     FIG_06,
     FIG_07,

@@ -146,10 +146,10 @@ def test_catalogue_examples_match_evaluation(tmp_path: Path) -> None:
         assert get_rule(rule.rule_id) is rule
         for example in rule.passing_examples:
             root.write_text(example, encoding="utf-8")
-            assert check(root) == []
+            assert check(root, enabled_rules=[rule.rule_id]) == []
         for example in rule.failing_examples:
             root.write_text(example, encoding="utf-8")
-            assert rule.rule_id in {finding.rule_id for finding in check(root)}
+            assert rule.rule_id in {finding.rule_id for finding in check(root, enabled_rules=[rule.rule_id])}
 
 
 @pytest.mark.parametrize(

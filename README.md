@@ -38,6 +38,12 @@ latex-lint check path/to/references.bib
 # Check with invocation-wide rule exclusions:
 latex-lint check --ignore MATH-04,PROSE-02 path/to/thesis.tex
 
+# Run a specific rule exclusively (e.g. CITE-09 to locate unchecked citations):
+latex-lint check --rule CITE-09 path/to/thesis.tex
+
+# Enable off-by-default rules alongside standard checks:
+latex-lint check --enable CITE-09 path/to/thesis.tex
+
 # Inspect rule documentation, examples, and limits:
 latex-lint rule MATH-04
 
@@ -222,6 +228,10 @@ CITE-04 is enabled by default and detects recognized citation commands (`\cite`,
 ### CITE-08 support
 
 CITE-08 is enabled by default and validates the completeness of mandatory BibLaTeX metadata fields per entry type in `.bib` files. It checks `author` (or `editor`, `organization`, or `institution` where appropriate), `title`, and `year` (or `date`/`urldate`) across all entry types; `journal` (or `journaltitle`), `volume`, `pages`, and `doi` for `@article`; `publisher` and `doi` or `isbn` for `@book`; `booktitle`, `pages`, and `doi` or `isbn` for `@inproceedings`; and respective publication venues for other types. Non-citation entries (`@comment`, `@string`, `@preamble`) are ignored. Bibliography files are discovered automatically via `\addbibresource`, `\bibliography`, or `\addglobalbib` in the LaTeX document hierarchy, or can be checked directly by passing a `.bib` file to `latex-lint check`. Missing required fields are reported at the entry's `@` declaration, allowing same-line `% latex-lint: ignore=CITE-08` suppressions when DOI or ISBN identifiers are unassigned.
+
+### CITE-09 support
+
+CITE-09 is **off by default** and checks whether all in-text citation commands (`\cite`, `\citep`, `\citet`, `\autocite`, `\parencite`, `\textcite`, `\footcite`, `\fullcite`, `\nocite`, `\citeauthor`, `\citeyear`) have been annotated with a trailing `% cite-checked:` verification comment. For multi-key citations, each key must be marked (e.g. `% cite-checked: key1=SUPPORTED, key2=NOT_FOUND` or a shared verdict like `% cite-checked: SUPPORTED`). Citations marked with any valid verdict (`SUPPORTED`, `NUANCED`, `CONTRADICTED`, `NOT_FOUND`) pass as verified. Activate this rule exclusively with `latex-lint check --rule CITE-09 path/to/thesis.tex` or alongside standard rules with `--enable CITE-09`.
 
 ### MATH-01 support
 

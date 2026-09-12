@@ -16,9 +16,7 @@ RULE = Rule(
     rule_id="SUPP-02",
     explanation="Directive attempts to enable a rule that is not disabled, or disable a rule that is already disabled.",
     correction="Remove the redundant enable or disable directive.",
-    passing_examples=(
-        "% latex-lint:disable=MATH-04\n$\\frac{a}{b}$\n% latex-lint:enable=MATH-04",
-    ),
+    passing_examples=("% latex-lint:disable=MATH-04\n$\\frac{a}{b}$\n% latex-lint:enable=MATH-04",),
     failing_examples=(
         "% latex-lint:enable=MATH-04\n$\\frac{a}{b}$",
         "% latex-lint:disable=MATH-04\n% latex-lint:disable=MATH-04",

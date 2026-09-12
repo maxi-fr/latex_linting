@@ -52,11 +52,12 @@ def test_install_skills_copies_files(tmp_path: Path) -> None:
     dest = tmp_path / "skills"
     installed = install_skills(dest)
     installed_names = {p.name for p in installed}
-    assert installed_names == {"thesis-writing", "thesis-review"}
-    for skill_name in ["thesis-writing", "thesis-review"]:
+    assert installed_names == {"thesis-writing", "thesis-review", "citation-checker"}
+    for skill_name in ["thesis-writing", "thesis-review", "citation-checker"]:
         skill_file = dest / skill_name / "SKILL.md"
         assert skill_file.is_file()
-        assert "name: thesis-" in skill_file.read_text(encoding="utf-8")
+        content = skill_file.read_text(encoding="utf-8")
+        assert f"name: {skill_name}" in content or "name: thesis-" in content
 
 
 def test_install_skills_fails_if_exists_without_force(tmp_path: Path) -> None:
@@ -80,7 +81,7 @@ def test_install_skills_force_overwrites(tmp_path: Path) -> None:
     old_file.write_text("old content", encoding="utf-8")
 
     installed = install_skills(dest, force=True)
-    assert len(installed) == 2
+    assert len(installed) == 3
     assert "old content" not in old_file.read_text(encoding="utf-8")
 
 
@@ -93,8 +94,10 @@ def test_cli_install_skills_default(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     assert exit_code == 0
     assert (tmp_path / ".agents" / "skills" / "thesis-writing" / "SKILL.md").is_file()
     assert (tmp_path / ".agents" / "skills" / "thesis-review" / "SKILL.md").is_file()
+    assert (tmp_path / ".agents" / "skills" / "citation-checker" / "SKILL.md").is_file()
     assert "Installed thesis-writing" in out.getvalue()
     assert "Installed thesis-review" in out.getvalue()
+    assert "Installed citation-checker" in out.getvalue()
 
 
 def test_cli_install_skills_preset_claude(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -152,5 +155,7 @@ def test_subprocess_cli_install_skills(tmp_path: Path) -> None:
     assert result.returncode == 0
     assert (target / "thesis-writing" / "SKILL.md").is_file()
     assert (target / "thesis-review" / "SKILL.md").is_file()
+    assert (target / "citation-checker" / "SKILL.md").is_file()
     assert "Installed thesis-writing" in result.stdout
     assert "Installed thesis-review" in result.stdout
+    assert "Installed citation-checker" in result.stdout

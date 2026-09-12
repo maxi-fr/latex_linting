@@ -7,7 +7,11 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "fonttools>=4.65.0",
+    "httpx>=0.28.1",
+    "pypdf>=6.18.1",
+]
 
 [project.scripts]
 latex-lint = "latex_linting.cli:main"

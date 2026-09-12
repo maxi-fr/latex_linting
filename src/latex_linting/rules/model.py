@@ -18,3 +18,4 @@ class Rule:
     failing_examples: tuple[str, ...]
     limits: str
     evaluate: Callable[["Document"], Iterable[Finding]]
+    enabled_by_default: bool = True

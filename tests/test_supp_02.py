@@ -24,12 +24,7 @@ def test_enable_without_disable_fails(tmp_path: Path) -> None:
 
 def test_duplicate_disable_fails(tmp_path: Path) -> None:
     root = tmp_path / "thesis.tex"
-    source = (
-        "% latex-lint:disable=MATH-04\n"
-        "% latex-lint:disable=MATH-04\n"
-        "$\\frac{a}{b}$\n"
-        "% latex-lint:enable=MATH-04\n"
-    )
+    source = "% latex-lint:disable=MATH-04\n% latex-lint:disable=MATH-04\n$\\frac{a}{b}$\n% latex-lint:enable=MATH-04\n"
     root.write_text(source, encoding="utf-8")
     findings = check(root)
     assert len(findings) == 1
@@ -41,11 +36,7 @@ def test_duplicate_disable_fails(tmp_path: Path) -> None:
 
 def test_multi_rule_enable_partially_redundant(tmp_path: Path) -> None:
     root = tmp_path / "thesis.tex"
-    source = (
-        "% latex-lint:disable=MATH-04\n"
-        "$\\frac{a}{b}$\n"
-        "% latex-lint:enable=MATH-04,PROSE-02\n"
-    )
+    source = "% latex-lint:disable=MATH-04\n$\\frac{a}{b}$\n% latex-lint:enable=MATH-04,PROSE-02\n"
     root.write_text(source, encoding="utf-8")
     findings = check(root)
     assert len(findings) == 1
@@ -56,12 +47,7 @@ def test_multi_rule_enable_partially_redundant(tmp_path: Path) -> None:
 
 def test_supp_02_self_suppression_disable(tmp_path: Path) -> None:
     root = tmp_path / "thesis.tex"
-    source = (
-        "% latex-lint:disable=SUPP-02\n"
-        "% latex-lint:enable=MATH-04\n"
-        "% latex-lint:enable=SUPP-02\n"
-        "$\\frac{a}{b}$\n"
-    )
+    source = "% latex-lint:disable=SUPP-02\n% latex-lint:enable=MATH-04\n% latex-lint:enable=SUPP-02\n$\\frac{a}{b}$\n"
     root.write_text(source, encoding="utf-8")
     findings = check(root)
     assert not any(f.rule_id == "SUPP-02" for f in findings)
