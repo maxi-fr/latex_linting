@@ -235,7 +235,7 @@ CITE-09 is **off by default** and checks whether all in-text citation commands (
 
 ### MATH-01 support
 
-MATH-01 is enabled by default and checks for required terminal punctuation (`.`, `,`, `;`, `:`, `!`, `?`) preceded by thin spacing (`\,`) in supported displayed-math environments (`equation`, `align`, `gather`, `multline`, `alignat`, `flalign`, `eqnarray`, their starred forms, `displaymath`, `\[...\]`, and `$$...$$`). In multiline equations, the terminal position of the final line before closing is checked. Trailing labels, comments, whitespace, and line breaks (`\\`) are ignored. Findings attach to the closing delimiter or environment command, allowing same-line suppression. The rule does not infer grammatical appropriateness or rendered layout.
+MATH-01 is enabled by default and checks for required terminal punctuation (`.`, `,`, `;`, `:`, `!`, `?`) preceded by thin spacing (`\,`) in supported displayed-math environments (`equation`, `align`, `gather`, `multline`, `alignat`, `flalign`, `eqnarray`, their starred forms, `displaymath`, `\[...\]`, and `$$...$$`). In multiline equations, the terminal position of the final line before closing is checked. Trailing labels, comments, whitespace, and line breaks (`\\`) are ignored. Inner alignment environments (e.g. `aligned`, `split`, `gathered`, `alignat`, `cases`) are checked at their terminal position. Findings attach to the closing delimiter or environment command, allowing same-line suppression. The rule does not infer grammatical appropriateness or rendered layout.
 
 ### MATH-13 support
 

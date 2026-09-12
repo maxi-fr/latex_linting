@@ -28,6 +28,22 @@ _DISPLAY_ENVIRONMENTS = frozenset(
 )
 
 _TERMINAL_PUNCTUATION = frozenset({".", ",", ";", ":", "!", "?"})
+_INNER_DISPLAY_ENVIRONMENTS = frozenset(
+    {
+        "aligned",
+        "split",
+        "gathered",
+        "alignedat",
+        "cases",
+        "cases*",
+        "dcases",
+        "dcases*",
+        "rcases",
+        "rcases*",
+        "drcases",
+        "drcases*",
+    }
+)
 
 
 def _is_display_open(token: Token) -> str | None:
@@ -78,9 +94,46 @@ def _trim_trailing_tokens(inner_tokens: list[Token]) -> int:
     return idx
 
 
+def _find_matching_begin(inner_tokens: list[Token], end_idx: int, env_name: str) -> int:
+    """Return the index of the matching begin environment token, or -1 if unmatched."""
+    depth = 1
+    scan_idx = end_idx - 1
+    while scan_idx >= 0 and depth > 0:
+        cur = inner_tokens[scan_idx]
+        if cur.kind == "environment":
+            cur_name = cur.value[cur.value.index("{") + 1 : -1]
+            if cur_name == env_name:
+                if cur.value.startswith(r"\end"):
+                    depth += 1
+                elif cur.value.startswith(r"\begin"):
+                    depth -= 1
+        scan_idx -= 1
+    return scan_idx + 1 if depth == 0 else -1
+
+
+def _find_terminal_token(inner_tokens: list[Token]) -> int:
+    """Return the index of the terminal token candidate, unwrapping supported inner environments."""
+    idx = _trim_trailing_tokens(inner_tokens)
+    while idx >= 0:
+        token = inner_tokens[idx]
+        if token.kind == "environment" and token.value.startswith(r"\end"):
+            env_name = token.value[token.value.index("{") + 1 : -1]
+            if env_name in _INNER_DISPLAY_ENVIRONMENTS:
+                begin_idx = _find_matching_begin(inner_tokens, idx, env_name)
+                if begin_idx < 0:
+                    return -1
+                trimmed = _trim_trailing_tokens(inner_tokens[:idx])
+                if trimmed <= begin_idx:
+                    return -1
+                idx = trimmed
+                continue
+        break
+    return idx
+
+
 def _check_terminal_punctuation(inner_tokens: list[Token]) -> bool:
     """Return True if the equation ends with terminal punctuation preceded by thin space."""
-    idx = _trim_trailing_tokens(inner_tokens)
+    idx = _find_terminal_token(inner_tokens)
     if idx < 0:
         return False
 
@@ -164,8 +217,9 @@ RULE = Rule(
         "displayed-math environments (equation, align, gather, multline, alignat, flalign, eqnarray, "
         "their starred forms, displaymath, \\[...\\], and $$...$$). Multiline equations are checked at "
         "the final line before closing. Trailing labels, comments, whitespace, and line breaks (\\\\) "
-        "are ignored. Reports the closing delimiter or environment command. Does not verify grammatical "
-        "appropriateness of the chosen punctuation."
+        "are ignored. Inner alignment environments (e.g. aligned, split, gathered, alignat, cases) are "
+        "checked at their terminal position. Reports the closing delimiter or environment command. "
+        "Does not verify grammatical appropriateness of the chosen punctuation."
     ),
     evaluate=_evaluate,
 )

@@ -78,6 +78,90 @@ def test_valid_nested_environment_with_punctuation_outside(tmp_path: Path) -> No
     assert check(root) == []
 
 
+def test_valid_inner_aligned_environment(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n"
+        "    \\begin{aligned}\n"
+        "        \\min_{\\mathbf{x}_{0:H|k},\\,\\mathbf{u}_{0:H-1|k}} \\quad\n"
+        "        & J_H\\!\\left(\\mathbf{x}_{0:H|k}, \\mathbf{u}_{0:H-1|k}\\right) \\\\\n"
+        "        \\text{s.t.} \\quad\n"
+        "        & \\mathbf{x}_{0|k} = \\hat{\\mathbf{x}}_k, \\\\\n"
+        "        & \\mathbf{x}_{j+1|k}\n"
+        "          = \\mathbf{f}\\!\\left(\\mathbf{x}_{j|k}, \\mathbf{u}_{j|k}\\right),\n"
+        "          \\qquad j = 0, \\dots, H-1, \\\\\n"
+        "        & \\mathbf{x}_{j|k} \\in \\mathbb{X}, \\quad\n"
+        "          \\mathbf{u}_{j|k} \\in \\mathbb{U},\n"
+        "          \\qquad j = 0, \\dots, H-1, \\\\\n"
+        "        & \\mathbf{x}_{H|k} \\in \\mathbb{X}_\\mathrm{f} \\,.\n"
+        "    \\end{aligned}\n"
+        "    \\label{eq:ocp}\n"
+        "\\end{equation}\n"
+        "See~\\eqref{eq:ocp}.\n",
+        encoding="utf-8",
+    )
+    assert check(root) == []
+
+
+def test_valid_inner_split_environment(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n  \\begin{split}\n    a &= b \\\\\n    c &= d \\,.\n  \\end{split}\n\\end{equation}\n",
+        encoding="utf-8",
+    )
+    assert check(root) == []
+
+
+def test_valid_inner_cases_environment(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n"
+        "  f(x) = \\begin{cases}\n"
+        "    1 & x > 0, \\\\\n"
+        "    0 & \\text{otherwise} \\,.\n"
+        "  \\end{cases}\n"
+        "\\end{equation}\n",
+        encoding="utf-8",
+    )
+    assert check(root) == []
+
+
+def test_valid_inner_aligned_with_trailing_linebreak(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n"
+        "  \\begin{aligned}\n"
+        "    a &= b \\\\\n"
+        "    c &= d \\,. \\\\\n"
+        "  \\end{aligned}\n"
+        "\\end{equation}\n",
+        encoding="utf-8",
+    )
+    assert check(root) == []
+
+
+def test_missing_punctuation_inside_aligned(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n  \\begin{aligned}\n    a &= b \\\\\n    c &= d\n  \\end{aligned}\n\\end{equation}\n",
+        encoding="utf-8",
+    )
+    findings = check(root)
+    assert len(findings) == 1
+    assert findings[0].rule_id == "MATH-01"
+
+
+def test_punctuation_without_thin_space_inside_aligned(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n  \\begin{aligned}\n    a &= b \\\\\n    c &= d.\n  \\end{aligned}\n\\end{equation}\n",
+        encoding="utf-8",
+    )
+    findings = check(root)
+    assert len(findings) == 1
+    assert findings[0].rule_id == "MATH-01"
+
+
 @pytest.mark.parametrize(
     "env",
     [
