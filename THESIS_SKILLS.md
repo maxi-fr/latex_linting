@@ -154,9 +154,3 @@ The reviewer skill evaluates all points from the **Writing Skill** above, plus t
 - **Rule**: Every physical quantity in a table must include its unit in the column header or in a dedicated unit column (e.g. "$m$ in `\unit{kg}`").
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Tabellen).
 - **Review Criteria**: Check table headers for unambiguous physical units.
-
-### FIG-10: Black-and-White Print Legibility
-
-- **Rule**: Graphics must remain legible when printed in grayscale. Pure RGB green `(0, 1, 0)` is forbidden. Differentiate curves using line patterns (solid, dashed, dotted) or markers in addition to color.
-- **Source**: IAT *Hinweise_Allgemein.tex* (sec:Latex-Bilder), *Anhang.tex*.
-- **Review Criteria**: Inspect plot scripts for line styles, markers, and color palettes that survive monochrome conversion.

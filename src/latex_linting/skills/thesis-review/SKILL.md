@@ -43,8 +43,3 @@ In addition to all core rules in [`thesis-writing`](../thesis-writing/SKILL.md),
 
 - **Rule**: Every physical quantity in a table must include its unit in the column header or in a dedicated unit column (e.g. "$m$ in `\unit{kg}`").
 - **Review check**: Verify that table headers specify measurement units for all numerical columns presenting physical quantities.
-
-### FIG-10: Black-and-white print legibility
-
-- **Rule**: Graphics must remain legible when printed in grayscale. Pure RGB green `(0, 1, 0)` is forbidden. Differentiate curves using line patterns (solid, dashed, dotted) or markers in addition to color.
-- **Review check**: Verify that plot curves differentiate by line styles or markers in addition to color, and that pure saturated green is not used.
