@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from latex_linting.document import MissingIncludeError
+from latex_linting.formatter import format_files
 from latex_linting.main import check
 from latex_linting.refs import (
     extract_citations_from_project,
@@ -41,6 +42,11 @@ def _handle_rule(args: argparse.Namespace, parser: argparse.ArgumentParser) -> i
         f"Detection limits:\n{rule.limits}\n"
     )
     return 0
+
+
+def _handle_format(args: argparse.Namespace) -> int:
+    """Handle the format subcommand."""
+    return format_files(args.paths)
 
 
 def _handle_check(args: argparse.Namespace) -> int:
@@ -219,7 +225,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     extract_parser.add_argument("--force", "-f", action="store_true", help="re-extract even if text file exists")
 
+    format_parser = operations.add_parser(
+        "format",
+        help="format LaTeX files with one sentence per line (<paths>...)",
+        description="Format explicit LaTeX files putting a newline after each sentence.",
+    )
+    format_parser.add_argument(
+        "paths",
+        nargs="+",
+        type=Path,
+        help="path(s) to .tex file(s) to format in-place",
+    )
+
     args = parser.parse_args(argv)
+    if args.operation == "format":
+        return _handle_format(args)
     if args.operation == "install-skills":
         return _handle_install_skills(args)
     if args.operation == "rule":

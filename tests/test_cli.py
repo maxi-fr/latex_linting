@@ -522,3 +522,17 @@ def test_cli_check_help_shows_in_text_suppression() -> None:
     assert "latex-lint:disable" in result.stdout
     assert "latex-lint:ignore" in result.stdout
     assert "latex-lint:enable" in result.stdout
+
+
+def test_cli_format(tmp_path: Path) -> None:
+    tex_file = tmp_path / "paper.tex"
+    tex_file.write_text("First sentence. Second sentence.\n", encoding="utf-8")
+    result = run_cli("format", str(tex_file))
+    assert result.returncode == 0
+    assert tex_file.read_text(encoding="utf-8") == "First sentence.\nSecond sentence.\n"
+
+
+def test_cli_format_missing_file(tmp_path: Path) -> None:
+    result = run_cli("format", str(tmp_path / "missing.tex"))
+    assert result.returncode == 2
+    assert "cannot find file" in result.stderr
