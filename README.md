@@ -354,6 +354,10 @@ TYPO-10 is enabled by default and checks that `\ref{...}` and `\pageref{...}` co
 
 TYPO-11 is enabled by default and enforces chronological equation referencing across the document reading order (`Document.traverse()`). It detects forward references where an equation is cited via `\eqref` or `\ref` before its defining `\label` command inside a display math environment or with an `eq:` prefix. Forward references across multi-file `\input` and `\include` hierarchies are detected. Undefined equation references and non-equation floats are excluded. Findings attach to the forward reference command token, enabling same-line suppression.
 
+### TYPO-12 support
+
+TYPO-12 is enabled by default and enforces acronym and abbreviation management via the `acro` package. It detects manual acronym introductions in running text parentheses (such as `Model Predictive Control (MPC)` or `(SoC)`), bare occurrences of declared acronym short forms bypassing `\ac`, and `acro` commands (`\ac`, `\acs`, `\acl`, `\acf`, `\acp`, etc.) referencing undeclared keys. Excludes Roman numerals (e.g. `(II)`, `(IV)`), universal format and standard terms (e.g. `(PDF)`, `(URL)`, `(IEEE)`), math mode, comments, verbatim code environments, and syntax command arguments. Findings attach to the violation location, enabling same-line suppression.
+
 ## Code structure
 
 The public checking interface is `check(root)`; internal scanning and evaluation

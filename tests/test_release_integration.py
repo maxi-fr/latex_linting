@@ -150,6 +150,7 @@ def _build_violating_thesis(tmp_path: Path) -> Path:
     # TYPO-07: '\underline{underlined}'
     # TYPO-08: '\\' as paragraph break in running text
     # TYPO-10: reference without category noun
+    # TYPO-12: manual acronym introduction
     # STRUC-02: '\subsubsection{Deep Heading}'
     # STRUC-03: isolated child (only 1 section in chapter, or only 1 subsection in section)
     # STRUC-06: section ending on equation/table/figure/list
@@ -165,7 +166,9 @@ Sentence terminal period.\cite{ref:bad_cite}
 Reference without nonbreaking space \ref{sec:isolated}.
 Fixed expression Figure 1 needs a tilde.
 Abbreviation e.g. needs thin space.
+Model Predictive Control (MPC) introduced manually.
 The \LaTeX is swallowed.
+
 Range 10-20 uses single hyphen.
 Here are "straight quotes" in text.
 Here is \underline{underlined text} in prose.

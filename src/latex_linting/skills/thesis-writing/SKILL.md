@@ -90,9 +90,3 @@ Provide an explicit legend or direct on-curve text labels on every plot that dis
 ### FIG-09: Vector format preference and font consistency
 
 Render all plots and diagrams as vector graphics (PDF, TikZ, or pgfplots). Ensure that fonts, font sizes, and weight in generated vector figures match the typography of the surrounding LaTeX document.
-
-## Terminology and abbreviations
-
-### TYPO-12: Acronym and symbol table maintenance
-
-Manage abbreviations using the `acro` package. Spell out acronyms on first usage, abbreviate thereafter. Update the thesis symbol and acronym tables whenever introducing new notation or abbreviations.

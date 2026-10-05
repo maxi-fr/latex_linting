@@ -38,6 +38,7 @@ from latex_linting.rules.typo_08 import RULE as TYPO_08
 from latex_linting.rules.typo_09 import RULE as TYPO_09
 from latex_linting.rules.typo_10 import RULE as TYPO_10
 from latex_linting.rules.typo_11 import RULE as TYPO_11
+from latex_linting.rules.typo_12 import RULE as TYPO_12
 from latex_linting.rules.work_03 import RULE as WORK_03
 
 RULES = (
@@ -80,6 +81,7 @@ RULES = (
     TYPO_09,
     TYPO_10,
     TYPO_11,
+    TYPO_12,
     WORK_03,
 )
 

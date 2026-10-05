@@ -556,25 +556,26 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### TYPO-12: Acronym and Symbol Table Maintenance
 
-- **Layer**: `[Review Agent]` `[Writing Skill]`
-- **Rule**: Manage abbreviations using the `acro` package (or `glossaries`). Define acronyms on first use, abbreviate thereafter. Synchronize and update the symbols and acronyms table for every new notation added.
+- **Layer**: `[Regex Linter]`
+- **Rule**: Manage abbreviations using the `acro` package. Define acronyms with `\DeclareAcronym` on first use, abbreviate thereafter via `\ac`. Synchronize and update the symbols and acronyms table for every new notation added.
 - **Source**: `AGENTS.md` (Equations); IAT *Tipps.tex*.
+- **Linter Check**: Flag manual acronym introductions in running text parentheses (e.g. `Model Predictive Control (MPC)`), bare occurrences of declared acronym short forms bypassing `\ac`, and undefined `\ac` references.
 - **Review Criteria**: Verify all acronyms appearing in the text are defined in the acronyms list.
 
 ---
 
-## 8. Workflow, Verification, and Submission Checklist
+## 8. Workflow, Verification
 
 ### WORK-01: Standard TeX Compilation Pipeline
 
-- **Layer**: `[Regex Linter]`
+- **Layer**: `[Writing Skill]`
 - **Rule**: Compile the document using the standard engine sequence:
 
-  ```bash
+  ```text
   pdflatex -> biber -> pdflatex -> pdflatex
   ```
 
-  targeting the `out/` build directory, or use `latexmk -pdf -outdir=out`.
+  targeting the `out/` build directory.
 - **Source**: `AGENTS.md` (Latex); IAT *Hinweise_LaTeX.tex*.
 - **Review Criteria**: Verify build scripts or Makefiles follow this multi-pass sequence.
 
@@ -584,35 +585,3 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 - **Rule**: Compilation log must be clean. Resolve all `LaTeX Warning: There were undefined references`, `multiply defined labels`, and float placement warnings.
 - **Source**: IAT *Anhang.tex* (Checkliste).
 - **Review Criteria**: Parse `.log` file during build. Fail if undefined citations, broken references, or unresolved labels exist.
-
-### WORK-03: Two-Sided Layout and Document Options
-
-- **Status**: Done
-- **Layer**: `[Regex Linter]`
-- **Rule**: Final document must be set up for two-sided printing (`twoside` enabled, DIN A4: 210 mm x 297 mm). The options `draft`, `oneside`, and `nohyperref` must NOT be active in the final build.
-- **Source**: IAT *Anhang.tex* (Checkliste).
-- **Regex Pattern**: `\\documentclass\[[^\]]*(draft|oneside|nohyperref)[^\]]*\]`
-
-### WORK-04: PDF/A Compliance and Metadata Verification
-
-- **Layer**: `[Review Agent]`
-- **Rule**: The generated PDF must be a valid PDF/A document for submission to TUbama. Document properties (title, author, subject) must be populated via `\hypersetup{...}`.
-- **Source**: IAT *Anhang.tex* (Checkliste).
-- **Review Criteria**: Check PDF document properties and verify PDF/A conformance.
-
-### WORK-05: Git Version Control and External Backup
-
-- **Layer**: `[Review Agent]`
-- **Rule**: Version all thesis files and code in Git from project start. Back up regularly to remote university storage (Hessenbox).
-- **Source**: IAT *Tipps.tex* (Phase 2).
-- **Review Criteria**: Verify `.git` tracking and clean directory hygiene.
-
-### WORK-06: Oral Defense Preparation Standards
-
-- **Layer**: `[Writing Skill]`
-- **Rule**:
-  - Defense talk duration: 20 minutes (hard cutoff at 25 minutes).
-  - Reduce thesis to approximately 10 core slides (1-2 minutes per slide).
-  - Slide design: bullet points only (no full sentences), emphasize diagrams over text.
-  - Practice presentations and conduct a mandatory rehearsal with the supervisor.
-- **Source**: IAT *Tipps.tex* (sec:Verteidigung), *Beurteilung.tex*.
