@@ -162,3 +162,19 @@ def test_disable_enable_suppression(tmp_path: Path) -> None:
     findings = [f for f in check(root) if f.rule_id == "TYPO-05"]
     assert len(findings) == 1
     assert findings[0].line == 5
+
+
+def test_tikzpicture_coordinates_and_shifts_pass(tmp_path: Path) -> None:
+    """Permit negative coordinates and offsets inside tikzpicture environments."""
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\begin{tikzpicture}\n"
+        "  \\node[sum] (s1) at (-1.4, 2.6) {$\\sum$};\n"
+        "  \\coordinate (in_bg) at (-2.6, 3.8);\n"
+        "  \\node at ([xshift=-6pt, yshift=2pt]s1.north) {Label};\n"
+        "  \\draw (-4.8, -2.6) -- (0, 0);\n"
+        "\\end{tikzpicture}\n"
+    )
+    root.write_text(source, encoding="utf-8")
+    findings = [f for f in check(root) if f.rule_id == "TYPO-05"]
+    assert findings == []

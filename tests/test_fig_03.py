@@ -371,3 +371,45 @@ def test_fig_03_box_macro_allowed(tmp_path: Path) -> None:
     )
     findings = [f for f in check(root) if f.rule_id == "FIG-03"]
     assert findings == []
+
+
+def test_fig_03_input_tikzpicture_in_figure_passes(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    fig_dir = tmp_path / "figures"
+    fig_dir.mkdir()
+    fig_file = fig_dir / "diagram.tex"
+    fig_file.write_text(
+        "\\begin{tikzpicture}\n  \\draw (0,0) -- (1,1);\n\\end{tikzpicture}\n",
+        encoding="utf-8",
+    )
+    root.write_text(
+        "\\begin{figure}\n"
+        "  \\centering\n"
+        "  \\input{figures/diagram}\n"
+        "  \\caption{An included diagram.}\n"
+        "  \\label{fig:diag}\n"
+        "\\end{figure}\n"
+        "See Figure~\\ref{fig:diag}.\n",
+        encoding="utf-8",
+    )
+    findings = [f for f in check(root) if f.rule_id == "FIG-03"]
+    assert findings == []
+
+
+def test_fig_03_input_tikzpicture_outside_figure_fails(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    fig_dir = tmp_path / "figures"
+    fig_dir.mkdir()
+    fig_file = fig_dir / "diagram.tex"
+    fig_file.write_text(
+        "\\begin{tikzpicture}\n  \\draw (0,0) -- (1,1);\n\\end{tikzpicture}\n",
+        encoding="utf-8",
+    )
+    root.write_text(
+        "Here is a naked diagram:\n\\input{figures/diagram}\n",
+        encoding="utf-8",
+    )
+    findings = [f for f in check(root) if f.rule_id == "FIG-03"]
+    assert len(findings) == 1
+    assert findings[0].filename == str(fig_file)
+    assert findings[0].line == 1

@@ -215,3 +215,17 @@ def test_titlepage_environment_breaks_pass(tmp_path: Path) -> None:
     root.write_text(source, encoding="utf-8")
     findings = [f for f in check(root) if f.rule_id == "TYPO-08"]
     assert findings == []
+
+
+def test_tikzpicture_node_line_breaks_pass(tmp_path: Path) -> None:
+    """Permit line breaks inside TikZ nodes."""
+    root = tmp_path / "thesis.tex"
+    source = (
+        "\\begin{tikzpicture}\n"
+        "  \\node[align=center] (n1) at (0, 0) {Sigmoid $S$\\\\\n \\scriptsize (wave-to-pulse)};\n"
+        "  \\node[block] (n2) at (2, 0) {$h_\\mathrm{e}(t)$\\\\\n \\scriptsize Gain $A_i,\\, a$};\n"
+        "\\end{tikzpicture}\n"
+    )
+    root.write_text(source, encoding="utf-8")
+    findings = [f for f in check(root) if f.rule_id == "TYPO-08"]
+    assert findings == []

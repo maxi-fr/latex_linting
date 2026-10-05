@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from latex_linting.document import Document, DocumentNode
 from latex_linting.rules.model import Rule
+from latex_linting.rules.prose_context import _ACRO_COMMANDS, _SYNTAX_COMMANDS
 from latex_linting.scanner import Token
 from latex_linting.source import Finding
 
@@ -103,6 +104,57 @@ def _extract_heading_tokens(tokens: Sequence[Token], start_idx: int) -> tuple[li
     return _extract_braced_tokens(tokens, idx)
 
 
+def _extract_braced_argument(tokens: Sequence[Token], cmd_idx: int) -> tuple[str, int]:
+    """Extract braced argument text following a command, skipping comments and whitespace."""
+    idx = _skip_ignorable(tokens, cmd_idx + 1)
+    if idx < len(tokens) and tokens[idx].kind == "text" and tokens[idx].value.lstrip().startswith("["):
+        while idx < len(tokens):
+            if "]" in tokens[idx].value:
+                idx += 1
+                break
+            idx += 1
+        idx = _skip_ignorable(tokens, idx)
+    if idx >= len(tokens) or tokens[idx].kind != "brace" or tokens[idx].value != "{":
+        return "", idx
+    brace_depth = 1
+    idx += 1
+    parts: list[str] = []
+    while idx < len(tokens) and brace_depth > 0:
+        cur = tokens[idx]
+        if cur.kind == "brace":
+            brace_depth += 1 if cur.value == "{" else -1
+        if brace_depth > 0 and cur.kind != "comment":
+            parts.append(cur.value)
+        idx += 1
+    return "".join(parts).strip(), idx
+
+
+def _extract_heading_words(tokens: Sequence[Token]) -> list[str]:
+    """Extract prose words from heading tokens, handling acronym macros and skipping syntax arguments."""
+    words: list[str] = []
+    idx = 0
+    while idx < len(tokens):
+        token = tokens[idx]
+        if token.kind == "command" and token.math == "text":
+            if token.value in _ACRO_COMMANDS:
+                target, next_idx = _extract_braced_argument(tokens, idx)
+                if target:
+                    words.append(target.upper())
+                idx = next_idx
+                continue
+            if token.value in _SYNTAX_COMMANDS:
+                _, next_idx = _extract_braced_argument(tokens, idx)
+                idx = next_idx
+                continue
+            idx += 1
+        elif token.kind == "text" and token.math == "text":
+            words.extend(m.group() for m in _WORD_PATTERN.finditer(token.value))
+            idx += 1
+        else:
+            idx += 1
+    return words
+
+
 def _is_headline_case(words: Sequence[str]) -> bool:
     """Check whether a list of words follows American headline capitalization."""
     if not words:
@@ -144,10 +196,7 @@ def _headline_capitalization(document: "Document") -> Iterable[Finding]:
             token = tokens[idx]
             if token.kind == "command" and token.math == "text" and token.value in _SUPPORTED_HEADINGS:
                 heading_tokens, next_idx = _extract_heading_tokens(tokens, idx + 1)
-                words: list[str] = []
-                for t in heading_tokens:
-                    if t.kind == "text" and t.math == "text":
-                        words.extend(m.group() for m in _WORD_PATTERN.finditer(t.value))
+                words = _extract_heading_words(heading_tokens)
                 if not _is_headline_case(words):
                     yield source.finding(token.start, RULE.rule_id, RULE.explanation, RULE.correction)
                 idx = next_idx

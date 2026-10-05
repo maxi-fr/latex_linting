@@ -1,11 +1,28 @@
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from latex_linting.document import Document
 from latex_linting.scanner import Token
 from latex_linting.source import Source
+
+_NON_PROSE_ENVIRONMENTS = frozenset(
+    {
+        "tikzpicture",
+        "pgfpicture",
+        "pgfplots",
+        "axis",
+        "circuitikz",
+        "quantikz",
+        "tikzcd",
+        "forest",
+        "picture",
+        "asy",
+        "filecontents",
+        "filecontents*",
+    }
+)
 
 _ACRO_COMMANDS = frozenset(
     {
@@ -90,10 +107,27 @@ _SYNTAX_COMMANDS = (
 
 @dataclass
 class _SyntaxTracker:
-    """Track command argument brace depth across document tokens."""
+    """Track command argument brace depth and environment nesting across document tokens."""
 
     depth: int = 0
     expecting_braces: int = 0
+    env_stack: list[str] = field(default_factory=list)
+
+    def handle_environment(self, value: str) -> None:
+        """Track entry and exit of LaTeX environments."""
+        name = value[value.index("{") + 1 : -1]
+        if value.startswith(r"\begin"):
+            self.env_stack.append(name)
+        elif value.startswith(r"\end"):
+            while self.env_stack and self.env_stack[-1] != name:
+                self.env_stack.pop()
+            if self.env_stack:
+                self.env_stack.pop()
+
+    @property
+    def in_non_prose_env(self) -> bool:
+        """Return True if currently inside a non-prose graphic or diagram environment."""
+        return any(env in _NON_PROSE_ENVIRONMENTS for env in self.env_stack)
 
     def handle_command(self, value: str) -> None:
         """Update expected brace count for recognized syntax commands."""
@@ -121,7 +155,7 @@ class _SyntaxTracker:
             stripped = value.strip()
             if stripped and stripped != "*":
                 self.expecting_braces = 0
-        return self.depth == 0 and self.expecting_braces == 0
+        return self.depth == 0 and self.expecting_braces == 0 and not self.in_non_prose_env
 
 
 def iter_prose_tokens(document: "Document") -> Iterable[tuple[Source, Token]]:
@@ -129,7 +163,9 @@ def iter_prose_tokens(document: "Document") -> Iterable[tuple[Source, Token]]:
     tracker = _SyntaxTracker()
 
     for source, token in document.traverse():
-        if token.kind == "command":
+        if token.kind == "environment":
+            tracker.handle_environment(token.value)
+        elif token.kind == "command":
             tracker.handle_command(token.value)
         elif token.kind == "brace":
             tracker.handle_brace(token.value)

@@ -16,14 +16,24 @@ def _evaluate(document: "Document") -> Iterable[Finding]:
         first_caption = fig_float.captions[0] if fig_float.captions else None
 
         for caption in fig_float.captions:
-            if any(img.start > caption.command_token.start for img in fig_float.image_tokens):
+            has_subsequent_image = (
+                any(img_idx > caption.traversal_idx for img_idx in fig_float.image_indices)
+                if fig_float.image_indices
+                else any(img.start > caption.command_token.start for img in fig_float.image_tokens)
+            )
+            if has_subsequent_image:
                 explanation = "Caption must be placed below the figure image content."
                 correction = "Move '\\caption{...}' below the image content."
                 yield fig_float.source.finding(caption.command_token.start, RULE.rule_id, explanation, correction)
 
         if first_caption is not None:
             for lbl in fig_float.labels:
-                if not lbl.is_inside_caption and lbl.command_token.start < first_caption.command_token.start:
+                is_before_caption = (
+                    lbl.traversal_idx < first_caption.traversal_idx
+                    if (lbl.traversal_idx != 0 or first_caption.traversal_idx != 0)
+                    else lbl.command_token.start < first_caption.command_token.start
+                )
+                if not lbl.is_inside_caption and is_before_caption:
                     explanation = "Figure label must be placed inside or after '\\caption'."
                     correction = "Move '\\label{...}' inside or immediately following '\\caption'."
                     yield fig_float.source.finding(lbl.command_token.start, RULE.rule_id, explanation, correction)

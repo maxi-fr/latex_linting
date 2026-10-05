@@ -8,6 +8,20 @@ from latex_linting.rules.model import Rule
 from latex_linting.source import Finding, Source
 
 _TABLE_ENVIRONMENTS = frozenset({"tabular", "tabular*", "tabularx", "tabulary", "longtable"})
+_DRAWING_ENVIRONMENTS = frozenset(
+    {
+        "tikzpicture",
+        "pgfpicture",
+        "pgfplots",
+        "axis",
+        "circuitikz",
+        "quantikz",
+        "tikzcd",
+        "forest",
+        "picture",
+        "asy",
+    }
+)
 _TITLE_AUTHOR_COMMANDS = frozenset(
     {
         r"\title",
@@ -35,27 +49,38 @@ _LINE_BREAK_COMMANDS = frozenset({r"\\", r"\newline", r"\linebreak"})
 
 
 class _LineBreakScanner:
-    """Track table context, title macros, and line breaks across document tokens."""
+    """Track table context, title macros, drawing environments, and line breaks across document tokens."""
 
     def __init__(self) -> None:
-        self.table_depth = 0
+        self.env_stack: list[str] = []
         self.title_depth = 0
-        self.titlepage_depth = 0
         self.expecting_title_brace = False
 
+    @property
+    def in_table(self) -> bool:
+        """Return True if currently inside a table environment."""
+        return any(env in _TABLE_ENVIRONMENTS for env in self.env_stack)
+
+    @property
+    def in_titlepage(self) -> bool:
+        """Return True if currently inside a titlepage environment."""
+        return "titlepage" in self.env_stack
+
+    @property
+    def in_drawing(self) -> bool:
+        """Return True if currently inside a drawing or diagram environment."""
+        return any(env in _DRAWING_ENVIRONMENTS for env in self.env_stack)
+
     def handle_environment(self, token: "Token") -> None:
-        """Update table and titlepage depth when entering or leaving environments."""
+        """Update environment stack when entering or leaving environments."""
         env_name = token.value[token.value.index("{") + 1 : -1]
         if token.value.startswith(r"\begin"):
-            if env_name in _TABLE_ENVIRONMENTS:
-                self.table_depth += 1
-            elif env_name == "titlepage":
-                self.titlepage_depth += 1
+            self.env_stack.append(env_name)
         elif token.value.startswith(r"\end"):
-            if env_name in _TABLE_ENVIRONMENTS:
-                self.table_depth = max(0, self.table_depth - 1)
-            elif env_name == "titlepage":
-                self.titlepage_depth = max(0, self.titlepage_depth - 1)
+            while self.env_stack and self.env_stack[-1] != env_name:
+                self.env_stack.pop()
+            if self.env_stack:
+                self.env_stack.pop()
 
     def handle_command(self, source: Source, token: "Token") -> Finding | None:
         """Check for forbidden line breaks in running text and track title macros."""
@@ -66,9 +91,10 @@ class _LineBreakScanner:
         if (
             token.math == "text"
             and token.value in _LINE_BREAK_COMMANDS
-            and self.table_depth == 0
+            and not self.in_table
             and self.title_depth == 0
-            and self.titlepage_depth == 0
+            and not self.in_titlepage
+            and not self.in_drawing
         ):
             return source.finding(
                 token.start,
@@ -135,9 +161,10 @@ RULE = Rule(
     limits=(
         r"Detects '\\', '\newline', and '\linebreak' in running text mode. Allows row breaks in "
         r"supported tables (tabular, tabular*, tabularx, tabulary, longtable), multiline math "
-        r"(align, gather, equation, etc.), titlepage environments, and title/metadata macros "
+        r"(align, gather, equation, etc.), titlepage environments, title/metadata macros "
         r"(\title, \author, \subtitle, \institute, \date, \lowertitleback, \uppertitleback, "
-        r"\publishers, \dedication, \reviewer, etc.). Comments and literal environments are excluded."
+        r"\publishers, \dedication, \reviewer, etc.), and drawing environments (tikzpicture, "
+        r"pgfplots, circuitikz, etc.). Comments and literal environments are excluded."
     ),
     evaluate=_evaluate,
 )

@@ -19,6 +19,7 @@ class CaptionInfo:
     command_token: Token
     text: str
     is_float_level: bool
+    traversal_idx: int = 0
 
 
 @dataclass(frozen=True)
@@ -28,6 +29,7 @@ class LabelInfo:
     command_token: Token
     target: str
     is_inside_caption: bool
+    traversal_idx: int = 0
 
 
 @dataclass(frozen=True)
@@ -43,6 +45,7 @@ class FigureFloat:
     labels: tuple[LabelInfo, ...]
     center_env_tokens: tuple[Token, ...]
     has_centering: bool
+    image_indices: tuple[int, ...] = ()
 
 
 def _skip_ignorable(tokens: Sequence[Token], idx: int) -> int:
@@ -104,12 +107,14 @@ def _parse_caption(
     brace_depth = 1
     idx += 1
     inner_tokens: list[Token] = []
+    inner_indices: list[int] = []
     while idx < len(tokens) and brace_depth > 0:
         cur = tokens[idx]
         if cur.kind == "brace":
             brace_depth += 1 if cur.value == "{" else -1
         if brace_depth > 0:
             inner_tokens.append(cur)
+            inner_indices.append(idx)
         idx += 1
 
     nested_labels: list[LabelInfo] = []
@@ -123,14 +128,16 @@ def _parse_caption(
         if cur.kind == "command" and cur.value == r"\label":
             target, next_inner = _extract_braced_argument(inner_tokens, inner_idx)
             if target:
-                nested_labels.append(LabelInfo(cur, target, is_inside_caption=True))
+                nested_labels.append(
+                    LabelInfo(cur, target, is_inside_caption=True, traversal_idx=inner_indices[inner_idx])
+                )
             inner_idx = next_inner
             continue
         text_parts.append(cur.value)
         inner_idx += 1
 
     caption_text = "".join(text_parts).strip()
-    caption_info = CaptionInfo(tokens[cmd_idx], caption_text, is_float_level)
+    caption_info = CaptionInfo(tokens[cmd_idx], caption_text, is_float_level, traversal_idx=cmd_idx)
     return caption_info, nested_labels, idx
 
 
@@ -143,6 +150,7 @@ class _FloatBuilder:
         self.end_token: Token | None = None
         self.env_name = env_name
         self.image_tokens: list[Token] = []
+        self.image_indices: list[int] = []
         self.captions: list[CaptionInfo] = []
         self.labels: list[LabelInfo] = []
         self.center_env_tokens: list[Token] = []
@@ -160,6 +168,7 @@ class _FloatBuilder:
             labels=tuple(self.labels),
             center_env_tokens=tuple(self.center_env_tokens),
             has_centering=self.has_centering,
+            image_indices=tuple(self.image_indices),
         )
 
 
@@ -205,17 +214,18 @@ _TWO_ARG_BOX_COMMANDS = frozenset({r"\savebox", r"\sbox", r"\parbox"})
 
 
 class _SourceFigureScanner:
-    """Scan tokens of a single source file to extract figure floats and outside images."""
+    """Scan traversed document tokens to extract figure floats and outside images."""
 
-    def __init__(self, source: Source, tokens: Sequence[Token]) -> None:
-        """Initialize figure float scanner with source, tokens, and metadata context tracking."""
-        self.source = source
-        self.tokens = tokens
+    def __init__(self, items: Sequence[tuple[Source, Token]]) -> None:
+        """Initialize figure float scanner with traversed (source, token) items."""
+        self.items = items
+        self.tokens = [t for _, t in items]
+        self.sources = [s for s, _ in items]
         self.floats: list[FigureFloat] = []
         self.outside_images: list[tuple[Source, Token]] = []
         self.env_stack: list[str] = []
         self.current_builder: _FloatBuilder | None = None
-        self.has_begin_document = any(t.kind == "environment" and t.value == r"\begin{document}" for t in tokens)
+        self.has_begin_document = any(t.kind == "environment" and t.value == r"\begin{document}" for t in self.tokens)
         self.in_preamble = self.has_begin_document
         self.box_depth = 0
         self.pending_box_args = 0
@@ -231,21 +241,22 @@ class _SourceFigureScanner:
         """Return True if currently inside preamble, titlepage, or title/box macro."""
         return self.in_preamble or self.box_depth > 0 or "titlepage" in self.env_stack
 
-    def _handle_begin(self, name: str, token: Token) -> None:
+    def _handle_begin(self, name: str, token: Token, source: Source, idx: int) -> None:
         """Process environment opening tokens and track document, float, or graphic environments."""
         if name == "document":
             self.in_preamble = False
         if name in _FIGURE_ENVIRONMENTS:
             if not self.in_figure_float:
-                self.current_builder = _FloatBuilder(self.source, token, name)
+                self.current_builder = _FloatBuilder(source, token, name)
         elif name == "center":
             if self.current_builder is not None:
                 self.current_builder.center_env_tokens.append(token)
         elif name == "tikzpicture":
             if not self.in_figure_float and not self.in_exempt_graphic_context:
-                self.outside_images.append((self.source, token))
+                self.outside_images.append((source, token))
             elif self.current_builder is not None:
                 self.current_builder.image_tokens.append(token)
+                self.current_builder.image_indices.append(idx)
         self.env_stack.append(name)
 
     def _handle_end(self, name: str, token: Token) -> None:
@@ -259,11 +270,11 @@ class _SourceFigureScanner:
         if self.env_stack:
             self.env_stack.pop()
 
-    def _handle_environment(self, token: Token) -> None:
+    def _handle_environment(self, token: Token, source: Source, idx: int) -> None:
         """Dispatch environment token to begin or end handlers."""
         name = token.value[token.value.index("{") + 1 : -1]
         if token.value.startswith(r"\begin"):
-            self._handle_begin(name, token)
+            self._handle_begin(name, token, source, idx)
         elif token.value.startswith(r"\end"):
             self._handle_end(name, token)
 
@@ -274,6 +285,7 @@ class _SourceFigureScanner:
 
         if cmd in (r"\input", r"\include"):
             self.current_builder.image_tokens.append(token)
+            self.current_builder.image_indices.append(idx)
             _, next_idx = _extract_braced_argument(self.tokens, idx)
             return next_idx
 
@@ -292,12 +304,12 @@ class _SourceFigureScanner:
         if cmd == r"\label":
             target, next_idx = _extract_braced_argument(self.tokens, idx)
             if target:
-                self.current_builder.labels.append(LabelInfo(token, target, is_inside_caption=False))
+                self.current_builder.labels.append(LabelInfo(token, target, is_inside_caption=False, traversal_idx=idx))
             return next_idx
 
         return idx + 1
 
-    def _handle_command(self, token: Token, idx: int) -> int:
+    def _handle_command(self, token: Token, source: Source, idx: int) -> int:
         """Process command tokens for metadata boxes, active floats, or outside graphics."""
         cmd = token.value
         if cmd in _TITLE_OR_METADATA_COMMANDS:
@@ -306,9 +318,10 @@ class _SourceFigureScanner:
 
         if cmd == r"\includegraphics":
             if not self.in_figure_float and not self.in_exempt_graphic_context:
-                self.outside_images.append((self.source, token))
+                self.outside_images.append((source, token))
             elif self.current_builder is not None:
                 self.current_builder.image_tokens.append(token)
+                self.current_builder.image_indices.append(idx)
             return idx + 1
 
         return self._handle_float_command(cmd, token, idx)
@@ -340,13 +353,14 @@ class _SourceFigureScanner:
         idx = 0
         while idx < len(self.tokens):
             token = self.tokens[idx]
+            source = self.sources[idx]
             if token.kind in ("comment", "literal"):
                 idx += 1
             elif token.kind == "environment":
-                self._handle_environment(token)
+                self._handle_environment(token, source, idx)
                 idx += 1
             elif token.kind == "command":
-                idx = self._handle_command(token, idx)
+                idx = self._handle_command(token, source, idx)
             elif token.kind == "text":
                 self._handle_text(token)
                 idx += 1
@@ -364,7 +378,9 @@ class _SourceFigureScanner:
 
 def scan_source_figures(source: Source) -> tuple[list[FigureFloat], list[tuple[Source, Token]]]:
     """Extract figure floats and outside figure content from a source file."""
-    return _SourceFigureScanner(source, scan(source.text)).scan()
+    tokens = scan(source.text)
+    items = [(source, t) for t in tokens]
+    return _SourceFigureScanner(items).scan()
 
 
 def collect_document_references(document: "Document") -> set[str]:
@@ -387,10 +403,7 @@ def collect_document_figures(
     document: "Document",
 ) -> tuple[list[FigureFloat], list[tuple[Source, Token]], Counter[str]]:
     """Collect all figure floats, outside image tokens, and document-wide label counts."""
-    all_floats: list[FigureFloat] = []
-    all_outside: list[tuple[Source, Token]] = []
     label_counts: Counter[str] = Counter()
-
     for source in document.sources:
         tokens = scan(source.text)
         for idx, token in enumerate(tokens):
@@ -399,8 +412,6 @@ def collect_document_figures(
                 if target:
                     label_counts[target] += 1
 
-        floats, outside = scan_source_figures(source)
-        all_floats.extend(floats)
-        all_outside.extend(outside)
-
+    items = list(document.traverse())
+    all_floats, all_outside = _SourceFigureScanner(items).scan()
     return all_floats, all_outside, label_counts
