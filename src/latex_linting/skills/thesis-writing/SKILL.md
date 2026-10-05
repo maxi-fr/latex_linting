@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Thesis writing
 
-When drafting or editing thesis text, adhere to the following rules and restrictions. Use [paper](./reference_paper.md) as a general guide for the writing style. After drafting, run `uv run latex-lint check <root-file>.tex` to verify mechanical formatting constraints.
+When drafting or editing thesis text, adhere to the following rules and restrictions. Use [paper](./reference_paper.md) as a general guide for the writing style. After drafting, run `uv run latex-lint check <root-file>.tex` to verify mechanical formatting constraints and `uv run latex-lint compile <root-file>.tex` to compile the document (output files will be placed in `out/` inside the folder of the main `.tex` file).
 
 ## Structure
 

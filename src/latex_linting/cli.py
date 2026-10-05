@@ -3,6 +3,7 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from latex_linting.compiler import compile_document
 from latex_linting.document import MissingIncludeError
 from latex_linting.formatter import format_files
 from latex_linting.main import check
@@ -14,6 +15,11 @@ from latex_linting.refs import (
 )
 from latex_linting.rules.catalogue import get_rule
 from latex_linting.skills_install import install_skills, resolve_install_destination
+
+
+def _handle_compile(args: argparse.Namespace) -> int:
+    """Handle the compile subcommand."""
+    return compile_document(args.root, out_dir=args.output_dir)
 
 
 def _handle_install_skills(args: argparse.Namespace) -> int:
@@ -83,9 +89,10 @@ def _handle_refs_fetch(args: argparse.Namespace) -> int:
     root = Path(args.root)
     base_dir = root.parent if root.is_file() else root
     refs_dir = args.references_dir if args.references_dir.is_absolute() else base_dir / args.references_dir
+    bib_path = args.bib if (args.bib is None or args.bib.is_absolute()) else base_dir / args.bib
     try:
         citations = extract_citations_from_project(root)
-        bib_entries = load_bib_entries_from_project(root, args.bib)
+        bib_entries = load_bib_entries_from_project(root, bib_path)
         result = fetch_missing_references(citations, bib_entries, refs_dir, force=args.force)
     except (OSError, UnicodeError, ValueError) as error:
         sys.stderr.write(f"latex-lint: {error}\n")
@@ -137,10 +144,30 @@ def _handle_refs_extract(args: argparse.Namespace) -> int:
     return 0
 
 
+def _handle_refs(args: argparse.Namespace) -> int:
+    """Handle refs subcommands (fetch, extract)."""
+    if args.refs_action == "fetch":
+        return _handle_refs_fetch(args)
+    return _handle_refs_extract(args)
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Parse arguments and dispatch CLI operations, returning 0, 1, or 2."""
     parser = argparse.ArgumentParser(prog="latex-lint", description="Check LaTeX thesis source conventions.")
     operations = parser.add_subparsers(dest="operation", required=True)
+    compile_parser = operations.add_parser(
+        "compile",
+        help="compile LaTeX document via pdflatex and biber recipe (<root> [-o/--output-dir PATH])",
+        description="Compile a LaTeX document using the recipe: pdflatex, biber, pdflatex, pdflatex.",
+    )
+    compile_parser.add_argument("root", help="path to root .tex document")
+    compile_parser.add_argument(
+        "--output-dir",
+        "-o",
+        type=Path,
+        default=None,
+        help="output directory for compiled files (default: out/ in the folder of the main tex file)",
+    )
     check_parser = operations.add_parser(
         "check",
         help="check an explicit UTF-8 root document (<root> [--ignore RULES])",
@@ -238,6 +265,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
 
     args = parser.parse_args(argv)
+    if args.operation == "compile":
+        return _handle_compile(args)
     if args.operation == "format":
         return _handle_format(args)
     if args.operation == "install-skills":
@@ -245,8 +274,5 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.operation == "rule":
         return _handle_rule(args, parser)
     if args.operation == "refs":
-        if args.refs_action == "fetch":
-            return _handle_refs_fetch(args)
-        if args.refs_action == "extract":
-            return _handle_refs_extract(args)
+        return _handle_refs(args)
     return _handle_check(args)

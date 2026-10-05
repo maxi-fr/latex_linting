@@ -77,7 +77,7 @@ $$y_k = x_k + \varepsilon, \quad \varepsilon \sim \mathcal{N}(0, \sigma_n^2 I) ,
 where the GPs' input $\xi_k := \begin{bmatrix} x_k^T & u_k^T \end{bmatrix}^T$ is the concatenation of the state and input at time $k$ and $\hat{\cdot}$ denotes an estimate (prediction). Note that in the way (4a) is formulated, the GPs are trained on the state differences $\Delta \hat{x}_{k+1} = \hat{x}_{k+1} - x_k$ and not on the states $\hat{x}_{k+1}$ directly. This formulation allows to efficiently exploit zero-mean priors and the fact that the state differences vary usually less than the states [27], [28].
 
 ---
-$^1$With a slight abuse of notation, we overload functions $f$, $m$ and $k$ and mean by $f(\Xi)$ and $m(\Xi)$ column vectors with $[f(\Xi)]_i = f(\xi^{(i)})$ and $[m(\Xi)]_i = m(\xi^{(i)})$ and by $k(\Xi, \Xi)$ a matrix with $[k(\Xi, \Xi)]_{ij} = k(\xi^{(i)}, \xi^{(j)})$, where $\xi^{(i)}, \xi^{(j)}$ are the $i$-th and $j$-th row of $\Xi$.  
+$^1$With a slight abuse of notation, we overload functions $f$, $m$ and $k$ and mean by $f(\Xi)$ and $m(\Xi)$ column vectors with $[f(\Xi)]_i = f(\xi^{(i)})$ and $[m(\Xi)]_i = m(\xi^{(i)})$ and by $k(\Xi, \Xi)$ a matrix with $[k(\Xi, \Xi)]_{ij} = k(\xi^{(i)}, \xi^{(j)})$, where $\xi^{(i)}, \xi^{(j)}$ are the $i$-th and $j$-th row of $\Xi$.
 $^2$This can be also a sampled-data version of a time-continuous system with sampling period $T_s > 0$ and sampling times $t_k = k T_s$.
 
 ## III. MODEL PREDICTIVE CONTROL
@@ -277,7 +277,7 @@ Finally, we present the closed-loop results when employing the iterated and the 
 However, we observe that using the direct model in the controller is associated with the highest computational load for solving the OCP (Fig. 4). Furthermore, the controller based on the direct model is, unlike the others, not real-time capable as the OCP-solution time exceeds the sampling time in some cases. The reasons have been discussed in Sec. IV-C. As shown, the controller based on the iterated $N$-step model performs worse than the one based on the direct model. With an increasing number of active training data points in the iterated $N$-step model, it is expected to improve its prediction capability and in consequence the closed-loop performance. However, its real-time capability will decrease with an increasing number of active training data points and will further be lost if this number exceeds a certain threshold.
 
 ---
-$^7$To compute the GP's inputs as in (4), we use the first open-loop control sequence obtained from employing the iterated $N$-step model in MPC.  
+$^7$To compute the GP's inputs as in (4), we use the first open-loop control sequence obtained from employing the iterated $N$-step model in MPC.
 $^8x_k^{\text{itGP}}$ and $x_k^{\text{dirGP}}$ denote the closed-loop states at time point $k$ when the controller based on the iterated and direct model is employed, respectively.
 
 #### TABLE I

@@ -396,7 +396,11 @@ def _parse_bib_file(path: Path) -> dict[str, BibEntry]:
 def load_bib_entries_from_project(root_path: Path, explicit_bib: Path | None = None) -> dict[str, BibEntry]:
     """Load BibTeX entries from project bibliography files or explicit path."""
     if explicit_bib is not None:
-        return _parse_bib_file(explicit_bib)
+        base_dir = root_path.parent if root_path.is_file() else root_path
+        resolved_bib = (
+            explicit_bib if (explicit_bib.is_absolute() or explicit_bib.exists()) else base_dir / explicit_bib
+        )
+        return _parse_bib_file(resolved_bib)
 
     if root_path.is_file():
         if root_path.suffix == ".bib":

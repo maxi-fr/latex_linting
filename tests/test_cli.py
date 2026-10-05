@@ -508,6 +508,7 @@ def test_cli_ticket_12_all_ignored(tmp_path: Path) -> None:
 def test_cli_help_shows_subcommand_options() -> None:
     result = run_cli("--help")
     assert result.returncode == 0
+    assert "compile" in result.stdout
     assert "<root>" in result.stdout
     assert "--ignore" in result.stdout
     assert "<rule_id>" in result.stdout
