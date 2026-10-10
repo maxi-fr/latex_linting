@@ -1,7 +1,7 @@
 ---
 name: citation-checker
 description: Audit citations in LaTeX documents, download missing reference papers, verify claims against paper content, and mark text with verification comments.
-disable-model-invocation: false
+disable-model-invocation: true
 ---
 
 # Citation checker

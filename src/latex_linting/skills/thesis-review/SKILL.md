@@ -1,7 +1,7 @@
 ---
 name: thesis-review
 description: Audit and verify LaTeX thesis drafts against academic writing standards and review criteria.
-disable-model-invocation: false
+disable-model-invocation: true
 ---
 
 # Thesis review
