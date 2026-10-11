@@ -3,6 +3,16 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from latex_linting.rules.typo_01 import _TYPO_01_COMMANDS, _inspect_preceding
+from latex_linting.rules.typo_02 import (
+    _CATEGORY_NOUN_PATTERN,
+    _NUMBER_UNIT_PATTERN,
+    _TIME_PATTERN,
+    _TITLE_PATTERN,
+)
+from latex_linting.rules.typo_03 import _ABBREVIATION_PATTERN
+from latex_linting.rules.typo_04 import _PARAMETERLESS_COMMANDS, _is_swallowed_space
+from latex_linting.rules.typo_05 import _ISO_DATE_PATTERN, _RANGE_PATTERN
 from latex_linting.scanner import Token, scan
 
 _ABBREVIATIONS = frozenset(
@@ -191,9 +201,15 @@ _ATTACHED_COMMAND_NAMES = frozenset(
 
 _PREFIX_SNIPPET_LENGTH = 25
 _MIN_INITIAL_INDEX = 2
+_MIN_DOUBLE_QUOTES = 2
 
 _SENTENCE_STARTER_QUOTES = frozenset({'"', "'", "\u201c", "\u2018", "\u00bb", "\u00ab"})
 _SENTENCE_STARTER_BRACKETS = frozenset({"(", "[", "{"})
+
+_SINGLE_QUOTE_RE = re.compile(
+    r"(?<![a-zA-Z0-9\\])(?:(?<=^)|(?<=[\s(\[{<:;~]))'([a-zA-Z0-9][^'\r\n]*?[a-zA-Z0-9.,!?:;])'(?=[ \t\r\n.,!?:;)\]}>]|$)"
+)
+_MULTI_SPACE_RE = re.compile(r"(?<=\S)[ \t]{2,}")
 
 
 def _is_escaped(text: str, idx: int) -> bool:
@@ -487,7 +503,110 @@ def _find_sentence_replacement(
     )
 
 
-def format_latex(text: str) -> str:
+def _format_command_syntax(text: str) -> str:
+    """Insert nonbreaking spaces before references and empty braces after parameterless commands."""
+    tokens = scan(text)
+    replacements: list[tuple[int, int, str]] = []
+
+    for token in tokens:
+        if token.kind == "command" and token.math == "text":
+            if token.value in _TYPO_01_COMMANDS and _inspect_preceding(text, token.start):
+                prefix = text[: token.start]
+                line_start = prefix.rfind("\n") + 1
+                line_before = prefix[line_start : token.start]
+                if not line_before.strip():
+                    prev_end = line_start - 1
+                    while prev_end > 0 and text[prev_end - 1] in " \t":
+                        prev_end -= 1
+                    replacements.append((prev_end, token.start, "~"))
+                else:
+                    spaces_len = len(line_before) - len(line_before.rstrip(" \t"))
+                    replacements.append((token.start - spaces_len, token.start, "~"))
+            elif token.value in _PARAMETERLESS_COMMANDS and _is_swallowed_space(text, token.end):
+                replacements.append((token.end, token.end, "{}"))
+
+    if not replacements:
+        return text
+
+    replacements.sort(key=lambda r: r[0])
+    chunks: list[str] = []
+    last_idx = 0
+    for start_idx, end_idx, repl in replacements:
+        chunks.append(text[last_idx:start_idx])
+        chunks.append(repl)
+        last_idx = end_idx
+    chunks.append(text[last_idx:])
+    return "".join(chunks)
+
+
+def _replace_double_quotes_in_line(line: str) -> str:
+    """Convert unescaped straight double quotes on one line into LaTeX quotes."""
+    indices = [i for i, ch in enumerate(line) if ch == '"' and not _is_escaped(line, i)]
+    if len(indices) < _MIN_DOUBLE_QUOTES:
+        return line
+    chars = list(line)
+    pair_count = len(indices) // 2
+    for p in range(pair_count - 1, -1, -1):
+        open_idx = indices[p * 2]
+        close_idx = indices[p * 2 + 1]
+        chars[close_idx] = "''"
+        chars[open_idx] = "``"
+    return "".join(chars)
+
+
+def _sub_abbreviation(match: re.Match[str]) -> str:
+    """Format abbreviation with a thin space."""
+    val = match.group(1)
+    return f"{val[0]}.\\,{val[-2]}."
+
+
+def _sub_numeric_range(match: re.Match[str], date_spans: Sequence[tuple[int, int]]) -> str:
+    """Replace single-hyphen numeric range with en-dash when not an ISO date."""
+    if any(start <= match.start(2) < end for start, end in date_spans):
+        return match.group(0)
+    return f"{match.group(1)}--{match.group(3)}"
+
+
+def _format_prose_segment(segment: str) -> str:
+    """Format an unmasked prose segment for typography and whitespace."""
+    segment = _ABBREVIATION_PATTERN.sub(_sub_abbreviation, segment)
+    segment = _CATEGORY_NOUN_PATTERN.sub(r"\1~\2", segment)
+    segment = _TITLE_PATTERN.sub(r"\1~\2", segment)
+    segment = _TIME_PATTERN.sub(lambda m: f"{m.group(1)}~{m.group(2) or 'Uhr'}", segment)
+    segment = _NUMBER_UNIT_PATTERN.sub(r"\1~\2", segment)
+
+    dates = [m.span() for m in _ISO_DATE_PATTERN.finditer(segment)]
+    segment = _RANGE_PATTERN.sub(lambda m: _sub_numeric_range(m, dates), segment)
+
+    lines = segment.split("\n")
+    segment = "\n".join(_replace_double_quotes_in_line(line) for line in lines)
+
+    segment = _SINGLE_QUOTE_RE.sub(r"`\1'", segment)
+
+    return _MULTI_SPACE_RE.sub(" ", segment)
+
+
+def _format_prose_typography(text: str) -> str:
+    """Apply typography rules to unmasked prose segments."""
+    mask = _build_protected_mask(text)
+    chunks: list[str] = []
+    idx = 0
+    text_len = len(text)
+    while idx < text_len:
+        if mask[idx]:
+            start = idx
+            while idx < text_len and mask[idx]:
+                idx += 1
+            chunks.append(text[start:idx])
+        else:
+            start = idx
+            while idx < text_len and not mask[idx]:
+                idx += 1
+            chunks.append(_format_prose_segment(text[start:idx]))
+    return "".join(chunks)
+
+
+def _split_sentences(text: str) -> str:
     """Format LaTeX source by placing a newline character after each sentence."""
     mask = _build_protected_mask(text)
     newline = "\r\n" if "\r\n" in text else "\n"
@@ -536,6 +655,14 @@ def format_latex(text: str) -> str:
         last_idx = end_idx
     chunks.append(text[last_idx:])
     return "".join(chunks)
+
+
+def format_latex(text: str) -> str:
+    """Format LaTeX source by repairing typography, whitespace, and placing one sentence per line."""
+    text = _format_command_syntax(text)
+    text = _format_prose_typography(text)
+    text = _split_sentences(text)
+    return re.sub(r"[ \t]+(?=\r?\n|$)", "", text)
 
 
 def _format_single_file(path: Path) -> int:

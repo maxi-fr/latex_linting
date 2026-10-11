@@ -52,8 +52,8 @@ def test_format_abbreviations_not_split() -> None:
         "This confirms the theory, e.g. under standard conditions."
     )
     expected = (
-        "As shown by Smith et al. in Fig. 1 and Tab. 2, the result is valid (cf. Sec. 3).\n"
-        "This confirms the theory, e.g. under standard conditions."
+        "As shown by Smith et al. in Fig.~1 and Tab.~2, the result is valid (cf. Sec.~3).\n"
+        "This confirms the theory, e.\\,g. under standard conditions."
     )
     assert format_latex(source) == expected
 
@@ -242,4 +242,93 @@ def test_attached_label_and_index() -> None:
 def test_escaped_braces_in_balanced_consumer() -> None:
     source = "Sentence with \\label{set:\\{a,b\\}} here. Second sentence."
     expected = "Sentence with \\label{set:\\{a,b\\}} here.\nSecond sentence."
+    assert format_latex(source) == expected
+
+
+def test_format_typo_01_reference_and_citation_ties() -> None:
+    source = (
+        "As seen in Figure \\ref{fig:arch} and Equation \\eqref{eq:1}.\n"
+        "According to Smith \\cite{smith2020} and Jones \\citep{jones2021}.\n"
+        "Broken across\n\\ref{fig:arch} line."
+    )
+    expected = (
+        "As seen in Figure~\\ref{fig:arch} and Equation~\\eqref{eq:1}.\n"
+        "According to Smith~\\cite{smith2020} and Jones~\\citep{jones2021}.\n"
+        "Broken across~\\ref{fig:arch} line."
+    )
+    assert format_latex(source) == expected
+
+
+def test_format_typo_01_sentence_boundaries_and_brackets_not_tied() -> None:
+    source = "End of sentence. \\ref{fig:arch} begins new one.\nIn parenthesis (\\ref{fig:arch}) passes."
+    expected = "End of sentence.\n\\ref{fig:arch} begins new one.\nIn parenthesis (\\ref{fig:arch}) passes."
+    assert format_latex(source) == expected
+
+
+def test_format_typo_02_fixed_expressions_and_units() -> None:
+    source = (
+        "In Figure 1, Table 2, Section 3, and Chapter 4.\n"
+        "Dr. Müller and Prof. Smith attended at 3 p.m. or 10 Uhr.\n"
+        "Values are 10 m, 5 kg, 20 s, 100 V, and 50 Hz."
+    )
+    expected = (
+        "In Figure~1, Table~2, Section~3, and Chapter~4.\n"
+        "Dr.~Müller and Prof.~Smith attended at 3~p.m. or 10~Uhr.\n"
+        "Values are 10~m, 5~kg, 20~s, 100~V, and 50~Hz."
+    )
+    assert format_latex(source) == expected
+
+
+def test_format_typo_03_abbreviations_thin_spaces() -> None:
+    source = (
+        "Consider, e.g., models and, i.e., conditions.\n"
+        "Spaced e. g. and e.~g. are fixed.\n"
+        "Sentence start: E.g., for example, and I.e., that is."
+    )
+    expected = (
+        "Consider, e.\\,g., models and, i.\\,g., conditions.\n"
+        "Spaced e.\\,g. and e.\\,g. are fixed.\n"
+        "Sentence start: E.\\,g., for example, and I.\\,e., that is."
+    )
+    # Wait, i.e. has last letter 'e'
+    source = "Consider, e.g., models and, i.e., conditions."
+    expected = "Consider, e.\\,g., models and, i.\\,e., conditions."
+    assert format_latex(source) == expected
+
+
+def test_format_typo_04_parameterless_commands() -> None:
+    source = "We use \\LaTeX for typing and \\BibTeX with \\TeX in code."
+    expected = "We use \\LaTeX{} for typing and \\BibTeX{} with \\TeX{} in code."
+    assert format_latex(source) == expected
+
+    already_handled = "\\LaTeX{} is good and \\TeX\\ is too. Punctuation \\LaTeX."
+    expected_already = "\\LaTeX{} is good and \\TeX\\ is too.\nPunctuation \\LaTeX."
+    assert format_latex(already_handled) == expected_already
+
+
+def test_format_typo_05_numeric_ranges_en_dash() -> None:
+    source = "Values 10-20 on pp. 5-10, but not date 2026-10-11 or compound word state-of-the-art."
+    expected = "Values 10--20 on pp.~5--10, but not date 2026-10-11 or compound word state-of-the-art."
+    assert format_latex(source) == expected
+
+
+def test_format_typo_06_quotes_and_apostrophes() -> None:
+    source = (
+        'This is "quoted" text and "results" vary.\n'
+        "He stated: 'Results are preliminary.'\n"
+        "Don't touch it's or students' data.\n"
+        'Names include Schr\\"odinger and G\\"odel.'
+    )
+    expected = (
+        "This is ``quoted'' text and ``results'' vary.\n"
+        "He stated: `Results are preliminary.'\n"
+        "Don't touch it's or students' data.\n"
+        'Names include Schr\\"odinger and G\\"odel.'
+    )
+    assert format_latex(source) == expected
+
+
+def test_format_whitespace_collapse_and_trim() -> None:
+    source = "    Multiple   spaces   between   words.    Line two with trailing space.    \n"
+    expected = "    Multiple spaces between words.\n    Line two with trailing space.\n"
     assert format_latex(source) == expected
