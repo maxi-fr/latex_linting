@@ -18,9 +18,9 @@ def test_format_exclamation_and_question() -> None:
     assert format_latex(source) == expected
 
 
-def test_format_preserve_intra_sentence_linebreaks() -> None:
+def test_format_combine_intra_sentence_linebreaks() -> None:
     source = "First sentence\nwrapped across lines. Second sentence."
-    expected = "First sentence\nwrapped across lines.\nSecond sentence."
+    expected = "First sentence wrapped across lines.\nSecond sentence."
     assert format_latex(source) == expected
 
 
@@ -331,4 +331,79 @@ def test_format_typo_06_quotes_and_apostrophes() -> None:
 def test_format_whitespace_collapse_and_trim() -> None:
     source = "    Multiple   spaces   between   words.    Line two with trailing space.    \n"
     expected = "    Multiple spaces between words.\n    Line two with trailing space.\n"
+    assert format_latex(source) == expected
+
+
+def test_format_combine_multiline_sentence() -> None:
+    source = "First sentence is split\nacross several lines\nand terminates here. Second sentence follows."
+    expected = "First sentence is split across several lines and terminates here.\nSecond sentence follows."
+    assert format_latex(source) == expected
+
+
+def test_format_combine_item_wrapped_sentences() -> None:
+    source = (
+        "\\begin{itemize}\n"
+        "    \\item First item\n"
+        "    wrapped across lines.\n"
+        "    \\item Second item sentence.\n"
+        "\\end{itemize}"
+    )
+    expected = (
+        "\\begin{itemize}\n"
+        "    \\item First item wrapped across lines.\n"
+        "    \\item Second item sentence.\n"
+        "\\end{itemize}"
+    )
+    assert format_latex(source) == expected
+
+
+def test_format_combine_with_citation_and_reference() -> None:
+    source = "Linear convergence was proved by Smith\n\\cite{smith2020} in Section \\ref{sec:1}.\nNext sentence."
+    expected = "Linear convergence was proved by Smith~\\cite{smith2020} in Section~\\ref{sec:1}.\nNext sentence."
+    assert format_latex(source) == expected
+
+
+def test_format_combine_preserves_comments() -> None:
+    source = "First sentence % comment on line\nwrapped across lines.\n% Independent comment\nNext sentence."
+    expected = "First sentence % comment on line\nwrapped across lines.\n% Independent comment\nNext sentence."
+    assert format_latex(source) == expected
+
+
+def test_format_combine_preserves_hard_line_breaks() -> None:
+    source = "First line \\\\\nsecond line of text.\nAnother line \\newline\nfourth line."
+    expected = "First line \\\\\nsecond line of text.\nAnother line \\newline\nfourth line."
+    assert format_latex(source) == expected
+
+
+def test_format_combine_preserves_heading_and_environment_boundaries() -> None:
+    source = (
+        "\\section{Introduction}\n"
+        "This is the first sentence.\n"
+        "The formula is given by:\n"
+        "\\[\n"
+        "  x = y\n"
+        "\\]\n"
+        "This concludes the section."
+    )
+    expected = (
+        "\\section{Introduction}\n"
+        "This is the first sentence.\n"
+        "The formula is given by:\n"
+        "\\[\n"
+        "  x = y\n"
+        "\\]\n"
+        "This concludes the section."
+    )
+    assert format_latex(source) == expected
+
+
+def test_format_combine_abbreviation_across_line() -> None:
+    source = "As demonstrated by Smith et al.\nin their recent paper, this holds. Next sentence."
+    expected = "As demonstrated by Smith et al. in their recent paper, this holds.\nNext sentence."
+    assert format_latex(source) == expected
+
+
+def test_format_combine_crlf_endings() -> None:
+    source = "First sentence\r\nwrapped across lines. Second sentence.\r\n"
+    expected = "First sentence wrapped across lines.\r\nSecond sentence.\r\n"
     assert format_latex(source) == expected

@@ -199,6 +199,51 @@ _ATTACHED_COMMAND_NAMES = frozenset(
     }
 )
 
+_STRUCTURAL_COMMANDS = _HEADING_COMMANDS | frozenset(
+    {
+        r"\addbibresource",
+        r"\addtocounter",
+        r"\appendix",
+        r"\backmatter",
+        r"\bibliography",
+        r"\bibliographystyle",
+        r"\centering",
+        r"\cleardoublepage",
+        r"\clearpage",
+        r"\DeclareMathOperator",
+        r"\def",
+        r"\documentclass",
+        r"\frontmatter",
+        r"\include",
+        r"\includegraphics",
+        r"\includeonly",
+        r"\input",
+        r"\label",
+        r"\listoffigures",
+        r"\listoftables",
+        r"\mainmatter",
+        r"\maketitle",
+        r"\newcommand",
+        r"\newpage",
+        r"\noindent",
+        r"\pagebreak",
+        r"\pagenumbering",
+        r"\pagestyle",
+        r"\raggedleft",
+        r"\raggedright",
+        r"\renewcommand",
+        r"\RequirePackage",
+        r"\setcounter",
+        r"\setlength",
+        r"\subfile",
+        r"\tableofcontents",
+        r"\thispagestyle",
+        r"\usepackage",
+    }
+)
+
+_HARD_BREAK_RE = re.compile(r"(?:\\\\(?:\[[^\]]*\])?|\\newline|\\linebreak)$")
+
 _PREFIX_SNIPPET_LENGTH = 25
 _MIN_INITIAL_INDEX = 2
 _MIN_DOUBLE_QUOTES = 2
@@ -220,6 +265,20 @@ def _is_escaped(text: str, idx: int) -> bool:
         backslashes += 1
         k -= 1
     return backslashes % 2 == 1
+
+
+def _has_unescaped_comment(line: str) -> bool:
+    """Return True if line contains an unescaped comment character."""
+    return any(char == "%" and not _is_escaped(line, idx) for idx, char in enumerate(line))
+
+
+def _starts_with_structural_command(line: str) -> bool:
+    """Return True if line starts with a structural LaTeX command."""
+    match = re.match(r"^\\([a-zA-Z*]+)", line)
+    if not match:
+        return False
+    cmd = "\\" + match.group(1).rstrip("*")
+    return cmd in _STRUCTURAL_COMMANDS
 
 
 def _consume_balanced(text: str, start: int, open_char: str, close_char: str) -> int:
@@ -606,6 +665,123 @@ def _format_prose_typography(text: str) -> str:
     return "".join(chunks)
 
 
+def _line_ends_with_terminal_punct(
+    text: str,
+    line_start: int,
+    line_content_end: int,
+    mask: Sequence[int],
+) -> bool:
+    """Return True if line ends with valid sentence-terminal punctuation and trailers."""
+    for pos in range(line_content_end - 1, line_start - 1, -1):
+        if mask[pos]:
+            continue
+        char = text[pos]
+        if char not in {".", "!", "?"}:
+            continue
+
+        if char in {"!", "?"}:
+            punct_end = pos + 1
+            while punct_end < line_content_end and text[punct_end] in {"!", "?"}:
+                punct_end += 1
+        elif _is_terminal_period(text, pos):
+            punct_end = pos + 1
+        else:
+            continue
+
+        after_trailers = _advance_past_trailers(text, punct_end)
+        if after_trailers == line_content_end:
+            return True
+
+    return False
+
+
+def _is_structural_boundary(before_stripped: str, after_stripped: str, trimmed_before: str) -> bool:
+    """Return True if structural markers prevent combining lines across the boundary."""
+    if re.search(r"\\(?:begin|end)\s*\{", before_stripped) or re.search(r"\\(?:begin|end)\s*\{", after_stripped):
+        return True
+    if re.match(r"^\\(?:item|bibitem|task)\b", after_stripped):
+        return True
+    if re.match(r"^[-*]\s+", after_stripped) or re.match(r"^\d+\.\s+", after_stripped):
+        return True
+    if trimmed_before.endswith((r"\[", r"\]", "$$")) or after_stripped.startswith((r"\[", r"\]", "$$")):
+        return True
+    return bool(_starts_with_structural_command(before_stripped) or _starts_with_structural_command(after_stripped))
+
+
+def _should_combine_boundary(
+    curr_line: tuple[int, int],
+    line_after: str,
+    text: str,
+    mask: Sequence[int],
+) -> bool:
+    """Return True if line_before and line_after belong to the same sentence."""
+    curr_line_start, nl_start_match = curr_line
+    line_before = text[curr_line_start:nl_start_match]
+    before_stripped = line_before.strip()
+    after_stripped = line_after.strip()
+    if not before_stripped or not after_stripped or mask[nl_start_match] != 0:
+        return False
+
+    if _has_unescaped_comment(line_before) or after_stripped.startswith("%"):
+        return False
+
+    trimmed_before = line_before.rstrip(" \t")
+    if _HARD_BREAK_RE.search(trimmed_before):
+        return False
+
+    if _is_structural_boundary(before_stripped, after_stripped, trimmed_before):
+        return False
+
+    line_content_end = curr_line_start + len(trimmed_before)
+    return not _line_ends_with_terminal_punct(text, curr_line_start, line_content_end, mask)
+
+
+def _combine_sentence_lines(text: str) -> str:
+    """Combine lines belonging to the same sentence into a single line."""
+    mask = _build_protected_mask(text)
+    newline_matches = list(re.finditer(r"\r?\n", text))
+    if not newline_matches:
+        return text
+
+    replacements: list[tuple[int, int, str]] = []
+    line_start = 0
+
+    for i, match in enumerate(newline_matches):
+        nl_start_match = match.start()
+        nl_end_match = match.end()
+        next_line_end = newline_matches[i + 1].start() if i + 1 < len(newline_matches) else len(text)
+
+        curr_line_start = line_start
+        line_before = text[curr_line_start:nl_start_match]
+        line_after = text[nl_end_match:next_line_end]
+        line_start = nl_end_match
+
+        if not _should_combine_boundary((curr_line_start, nl_start_match), line_after, text, mask):
+            continue
+
+        trimmed_before = line_before.rstrip(" \t")
+        nl_start = curr_line_start + len(trimmed_before)
+        nl_end = nl_end_match
+        while nl_end < next_line_end and text[nl_end] in " \t":
+            nl_end += 1
+
+        repl = "" if (trimmed_before.endswith("~") or (nl_end < len(text) and text[nl_end] == "~")) else " "
+        replacements.append((nl_start, nl_end, repl))
+
+    if not replacements:
+        return text
+
+    replacements.sort(key=lambda r: r[0])
+    chunks: list[str] = []
+    last_idx = 0
+    for start_idx, end_idx, repl in replacements:
+        chunks.append(text[last_idx:start_idx])
+        chunks.append(repl)
+        last_idx = end_idx
+    chunks.append(text[last_idx:])
+    return "".join(chunks)
+
+
 def _split_sentences(text: str) -> str:
     """Format LaTeX source by placing a newline character after each sentence."""
     mask = _build_protected_mask(text)
@@ -658,8 +834,9 @@ def _split_sentences(text: str) -> str:
 
 
 def format_latex(text: str) -> str:
-    """Format LaTeX source by repairing typography, whitespace, and placing one sentence per line."""
+    """Format LaTeX source by repairing typography, combining wrapped sentences, and placing one sentence per line."""
     text = _format_command_syntax(text)
+    text = _combine_sentence_lines(text)
     text = _format_prose_typography(text)
     text = _split_sentences(text)
     return re.sub(r"[ \t]+(?=\r?\n|$)", "", text)
