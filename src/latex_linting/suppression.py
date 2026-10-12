@@ -179,23 +179,32 @@ def _filter_and_track(
     used_disables: set[tuple[Directive, str]] = set()
 
     for finding in findings:
-        if finding.rule_id in ignored_set:
+        if finding.rule_id in ignored_set or (finding.rule_id.startswith("CHKTEX-") and "CHKTEX" in ignored_set):
             continue
-        if finding.rule_id in same_line_ignores.get(finding.line, ()):
+        line_ignores = same_line_ignores.get(finding.line, set())
+        if finding.rule_id in line_ignores:
             used_ignores.add((finding.line, finding.rule_id))
+            continue
+        if finding.rule_id.startswith("CHKTEX-") and "CHKTEX" in line_ignores:
+            used_ignores.add((finding.line, "CHKTEX"))
             continue
 
         finding_offset = source.offset_of(finding.line, finding.column)
         suppressing_directive = None
+        suppressed_rule_id = finding.rule_id
         for span in spans:
-            if span.rule_id == finding.rule_id and span.start <= finding_offset < span.end:
+            matches_rule = span.rule_id == finding.rule_id or (
+                finding.rule_id.startswith("CHKTEX-") and span.rule_id == "CHKTEX"
+            )
+            if matches_rule and span.start <= finding_offset < span.end:
                 if span.directive.offset == finding_offset:
                     continue
                 suppressing_directive = span.directive
+                suppressed_rule_id = span.rule_id
                 break
 
         if suppressing_directive is not None:
-            used_disables.add((suppressing_directive, finding.rule_id))
+            used_disables.add((suppressing_directive, suppressed_rule_id))
         else:
             kept.append(finding)
 

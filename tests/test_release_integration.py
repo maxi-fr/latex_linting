@@ -28,10 +28,8 @@ def _build_clean_thesis(tmp_path: Path) -> Path:
 
     ch1 = chapters_dir / "chapter1.tex"
     ch1.write_text(
-        r"""\chapter{Introduction to Neural Network Optimization}
-\label{cha:introduction}
-\section{Background and Context}
-\label{sec:background}
+        r"""\chapter{Introduction to Neural Network Optimization}\label{cha:introduction}
+\section{Background and Context}\label{sec:background}
 This framework demonstrates efficient training procedures across distributed nodes.
 We assume that the objective function is smooth and bounded.
 Recent advances in deep learning provide solid foundations~\cite{ref:smith2020}.
@@ -51,20 +49,16 @@ The parameter ratio is expressed as $a/b$ rather than a compound fraction.
 Trigonometric projections evaluate $\sin(x)$ along with constant offset $3.14$.
 We inspect Figure~\ref{fig:architecture} in Chapter~\ref{cha:introduction} for structural details.
 
-\section{System Architecture}
-\label{sec:architecture}
-\subsection{Processing Pipeline}
-\label{sec:pipeline}
+\section{System Architecture}\label{sec:architecture}
+\subsection{Processing Pipeline}\label{sec:pipeline}
 The input stage filters ambient noise before vector quantization.
 
-\subsection{Execution Engine}
-\label{sec:engine}
+\subsection{Execution Engine}\label{sec:engine}
 The pipeline executes concurrently across GPU clusters.
 \begin{figure}
   \centering
   \includegraphics{pipeline.png}
-  \caption{Overview of the distributed pipeline architecture.}
-  \label{fig:architecture}
+  \caption{Overview of the distributed pipeline architecture.}\label{fig:architecture}
 \end{figure}
 The diagram highlights all primary communication channels between nodes.
 """,
@@ -73,18 +67,15 @@ The diagram highlights all primary communication channels between nodes.
 
     ch2 = chapters_dir / "chapter2.tex"
     ch2.write_text(
-        r"""\chapter{Evaluation and Empirical Results}
-\label{cha:evaluation}
-\section{Experimental Benchmark Setup}
-\label{sec:benchmark}
+        r"""\chapter{Evaluation and Empirical Results}\label{cha:evaluation}
+\section{Experimental Benchmark Setup}\label{sec:benchmark}
 We evaluate the method described in Section~\ref{sec:background} under realistic workloads.
 Recall the relation defined in~\eqref{eq:mass_energy}, which bounds maximum throughput.
 As shown in Table~\ref{tab:results}, latency scales favorably with cluster size.
 
 \begin{table}
   \centering
-  \caption{Measured throughput and latency across configurations.}
-  \label{tab:results}
+  \caption{Measured throughput and latency across configurations.}\label{tab:results}
   \begin{tabular}{lrr}
     \toprule
     Configuration & Throughput & Latency \\
@@ -96,8 +87,7 @@ As shown in Table~\ref{tab:results}, latency scales favorably with cluster size.
 \end{table}
 All benchmark measurements reflect ten repeated trials with minimal variance.
 
-\section{Summary of Findings}
-\label{sec:summary}
+\section{Summary of Findings}\label{sec:summary}
 The findings confirm the efficiency of our distributed scheduling design.
 """,
         encoding="utf-8",
@@ -366,7 +356,7 @@ $\frac{1}{2}$ and $a * b$ and "quote"
     assert "TYPO-06" not in captured.out
 
     # CLI with all rules ignored -> exit code 0
-    exit_code_clean = cli_main(["check", "--ignore", "MATH-04,MATH-09,TYPO-06", str(root)])
+    exit_code_clean = cli_main(["check", "--no-chktex", "--ignore", "MATH-04,MATH-09,TYPO-06", str(root)])
     assert exit_code_clean == 0
     captured_clean = capsys.readouterr()
     assert captured_clean.out == ""

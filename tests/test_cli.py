@@ -246,7 +246,7 @@ def test_cli_cross_file_figure_reference(tmp_path: Path) -> None:
         "\\end{figure}\n",
         encoding="utf-8",
     )
-    result = run_cli("check", str(root))
+    result = run_cli("check", "--no-chktex", str(root))
     assert result.returncode == 0
     assert result.stdout == ""
     assert result.stderr == ""
@@ -314,7 +314,7 @@ def test_cli_table_rules_ignore_option(tmp_path: Path) -> None:
         "\\end{table}\n"
     )
     root.write_text(source, encoding="utf-8")
-    result = run_cli("check", "--ignore", "TAB-01,TAB-02,TAB-03", str(root))
+    result = run_cli("check", "--no-chktex", "--ignore", "TAB-01,TAB-02,TAB-03", str(root))
     assert result.returncode == 0
     assert result.stdout == ""
 
@@ -365,7 +365,7 @@ def test_cli_spacing_rules_all_ignored(tmp_path: Path) -> None:
         "This section concludes with narrative prose.\n"
     )
     root.write_text(source, encoding="utf-8")
-    result = run_cli("check", "--ignore", "TYPO-01,TYPO-02,TYPO-03,TYPO-04", str(root))
+    result = run_cli("check", "--no-chktex", "--no-lacheck", "--ignore", "TYPO-01,TYPO-02,TYPO-03,TYPO-04", str(root))
     assert result.returncode == 0
     assert result.stdout == ""
 
@@ -394,7 +394,7 @@ def test_cli_suppressing_missing_caption_or_label(tmp_path: Path) -> None:
         "This section concludes with narrative prose.\n"
     )
     root.write_text(suppressed_source, encoding="utf-8")
-    result = run_cli("check", str(root))
+    result = run_cli("check", "--no-chktex", str(root))
     assert result.returncode == 0
     assert result.stdout == ""
     assert result.stderr == ""
@@ -500,7 +500,7 @@ def test_cli_ticket_12_all_ignored(tmp_path: Path) -> None:
         "Next paragraph.\n"
     )
     root.write_text(source, encoding="utf-8")
-    result = run_cli("check", "--ignore", "TYPO-05,TYPO-06,TYPO-07,TYPO-08", str(root))
+    result = run_cli("check", "--no-chktex", "--ignore", "TYPO-05,TYPO-06,TYPO-07,TYPO-08", str(root))
     assert result.returncode == 0
     assert result.stdout == ""
 

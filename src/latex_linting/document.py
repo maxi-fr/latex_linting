@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from latex_linting.rules.model import Rule
+from latex_linting.external import run_chktex, run_lacheck
 from latex_linting.rules.catalogue import RULES
 from latex_linting.scanner import Token, scan
 from latex_linting.source import Finding, Source
@@ -322,13 +323,41 @@ def _traverse_node(node: DocumentNode) -> Iterable[tuple[Source, Token]]:
         token_idx += 1
 
 
-def ordered_findings(
+def _collect_external_findings(
+    document: Document,
+    *,
+    chktex: bool,
+    lacheck: bool,
+    filter_set: frozenset[str] | None,
+) -> list[Finding]:
+    """Collect findings from external linters when applicable."""
+    findings: list[Finding] = []
+    if document.root_node.source.filename.endswith(".bib"):
+        return findings
+
+    should_run_chk = chktex and (
+        filter_set is None or "CHKTEX" in filter_set or any(r.startswith("CHKTEX-") for r in filter_set)
+    )
+    if should_run_chk:
+        findings.extend(run_chktex(document))
+
+    should_run_la = lacheck and (filter_set is None or "LACHECK" in filter_set)
+    if should_run_la:
+        findings.extend(run_lacheck(document))
+
+    return findings
+
+
+def ordered_findings(  # noqa: PLR0913 -- finding collector accepts document, filters, and external linter flags
     document: Document,
     ignored_rules: Collection[str] | None = None,
     rule_filter: Collection[str] | None = None,
     enabled_rules: Collection[str] | None = None,
+    *,
+    chktex: bool = False,
+    lacheck: bool = False,
 ) -> list[Finding]:
-    """Collect and order findings across a document, included children, and bibliography files."""
+    """Collect and order findings across a document, included children, bibliography files, and external linters."""
     ignored_set = frozenset(ignored_rules) if ignored_rules is not None else frozenset()
     filter_set = frozenset(rule_filter) if rule_filter is not None else None
     enabled_set = frozenset(enabled_rules) if enabled_rules is not None else frozenset()
@@ -346,6 +375,7 @@ def ordered_findings(
     all_findings: list[Finding] = []
     for rule in rules_to_run:
         all_findings.extend(rule.evaluate(document))
+    all_findings.extend(_collect_external_findings(document, chktex=chktex, lacheck=lacheck, filter_set=filter_set))
 
     findings_by_file: dict[str, list[Finding]] = {}
     for finding in all_findings:
@@ -366,7 +396,11 @@ def ordered_findings(
         findings.extend(sorted_filtered)
 
     if filter_set is not None:
-        findings = [f for f in findings if f.rule_id in filter_set]
+        findings = [
+            f
+            for f in findings
+            if f.rule_id in filter_set or (f.rule_id.startswith("CHKTEX-") and "CHKTEX" in filter_set)
+        ]
 
     return findings
 

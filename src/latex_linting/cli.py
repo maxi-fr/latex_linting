@@ -56,7 +56,7 @@ def _handle_format(args: argparse.Namespace) -> int:
 
 
 def _handle_check(args: argparse.Namespace) -> int:
-    """Handle the check subcommand."""
+    """Handle the check subcommand, invoking internal rules and external linters."""
     ignored_rules = [part.strip() for part in args.ignore.split(",")] if args.ignore is not None else None
     rule_filter = [part.strip() for part in args.rule.split(",")] if args.rule is not None else None
     enabled_rules = [part.strip() for part in args.enable.split(",")] if args.enable is not None else None
@@ -66,6 +66,8 @@ def _handle_check(args: argparse.Namespace) -> int:
             ignored_rules=ignored_rules,
             rule_filter=rule_filter,
             enabled_rules=enabled_rules,
+            chktex=not args.no_chktex,
+            lacheck=not args.no_lacheck,
         )
     except MissingIncludeError as error:
         sys.stderr.write(f"latex-lint: {error}\n")
@@ -186,6 +188,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     check_parser.add_argument("--ignore", default=None, help="comma-separated rule IDs to ignore across the invocation")
     check_parser.add_argument("--rule", default=None, help="comma-separated rule IDs to run exclusively")
     check_parser.add_argument("--enable", default=None, help="comma-separated off-by-default rule IDs to enable")
+    check_parser.add_argument("--no-chktex", action="store_true", help="do not run ChkTeX linter")
+    check_parser.add_argument("--no-lacheck", action="store_true", help="do not run LaCheck linter")
     rule_parser = operations.add_parser(
         "rule",
         help="show an implemented rule and examples (<rule_id>)",

@@ -95,9 +95,11 @@ def get_rule(rule_id: str) -> Rule:
 
 
 def validate_rule_id(rule_id: str) -> str:
-    """Ensure a rule ID exists in the catalogue, raising ValueError if unknown."""
+    """Ensure a rule ID exists in the catalogue or matches external linter IDs, raising ValueError if unknown."""
     for rule in RULES:
         if rule.rule_id == rule_id:
             return rule_id
+    if rule_id in {"CHKTEX", "LACHECK"} or (rule_id.startswith("CHKTEX-") and rule_id[7:].isdigit()):
+        return rule_id
     msg = f"unknown rule ID: {rule_id}"
     raise ValueError(msg)

@@ -8,13 +8,16 @@ from latex_linting.source import Finding
 __all__ = ["Finding", "check"]
 
 
-def check(
+def check(  # noqa: PLR0913 -- public check interface accepts filters and external linter toggles
     root: str | Path,
     ignored_rules: Collection[str] | None = None,
     rule_filter: Collection[str] | None = None,
     enabled_rules: Collection[str] | None = None,
+    *,
+    chktex: bool = False,
+    lacheck: bool = False,
 ) -> list[Finding]:
-    """Check a LaTeX root document and its included files, applying suppressions."""
+    """Check a LaTeX root document and its included files, applying suppressions and external linters."""
     if ignored_rules is not None:
         for rule_id in ignored_rules:
             validate_rule_id(rule_id)
@@ -30,4 +33,6 @@ def check(
         ignored_rules=ignored_rules,
         rule_filter=rule_filter,
         enabled_rules=enabled_rules,
+        chktex=chktex,
+        lacheck=lacheck,
     )
