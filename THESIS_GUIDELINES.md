@@ -59,7 +59,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### STRUC-07: Conclusion Scope and Outlook
 
-- **Layer**: `[Review Agent]` `[Writing Skill]`
+- **Layer**: `[Review Agent]`
 - **Rule**: State no new results in the conclusion. The conclusion must only summarize key findings, synthesize insights, and provide an outlook on future work.
 - **Source**: `AGENTS.md` (Structure); IAT *Zusammenfassung.tex*.
 - **Review Criteria**: Verify that all statements and data in the conclusion refer back to previously discussed results.
@@ -127,9 +127,16 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 ### PROSE-08: Eliminate AI Tells and Slop
 
 - **Layer**: `[Review Agent]` `[Writing Skill]`
-- **Rule**: Follow the `/unslop` skill. Cut puffery ("pivotal", "deeply rooted", "testament to"), avoid superficial "-ing" clauses ("highlighting...", "ensuring..."), replace AI vocabulary ("delve", "crucial", "landscape", "tapestry"), and eliminate em dashes.
+- **Rule**: Follow the `/unslop` skill across all prose. Cut puffery ("pivotal", "deeply rooted", "testament to"), avoid superficial "-ing" clauses ("highlighting...", "ensuring..."), replace AI vocabulary ("delve", "crucial", "landscape", "tapestry"), and eliminate em dashes.
 - **Source**: `AGENTS.md` (Prose); `unslop` skill.
 - **Review Criteria**: Search for banned AI vocabulary words, promotional tone, and robotic formulaic transitions.
+
+### PROSE-09: Eliminate Conceptual Repetition
+
+- **Layer**: `[Review Agent]` `[Writing Skill]`
+- **Rule**: State each concept, premise, or finding once in its dedicated context. Do not re-explain, paraphrase, or summarize previously established points across subsequent paragraphs or sections; every sentence must introduce new information or advance the argument.
+- **Source**: `AGENTS.md` (Prose).
+- **Review Criteria**: Flag paragraphs or sections that repeat previously established premises or explanations without introducing new information.
 
 ---
 
@@ -249,7 +256,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### MATH-07: Typography of Mathematical Variables and Matrices
 
-- **Layer**: `[Review Agent]` `[Writing Skill]`
+- **Layer**: `[Review Agent]`
 - **Rule**:
   - Scalars: italic lowercase ($x, y$).
   - Vectors: bold upright lowercase ($\mathbf{x}$, `\ve{x}`).
@@ -328,7 +335,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### FIG-02: Mandatory Background Grid
 
-- **Layer**: `[Review Agent]` `[Writing Skill]`
+- **Layer**: `[Review Agent]`
 - **Rule**: Every plot and graph figure must display a background grid to aid data interpretation.
 - **Source**: `AGENTS.md` (Figures).
 - **Review Criteria**: Inspect generated plot figures and scripts to verify `ax.grid(True)` or `pgfplots` grid is enabled.
@@ -343,14 +350,14 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### FIG-04: Axis Labels with Physical Units (DIN 461)
 
-- **Layer**: `[Review Agent]` `[Writing Skill]`
+- **Layer**: `[Review Agent]`
 - **Rule**: Label every plot axis with the quantity name or symbol and its physical unit (e.g. $t$ in `\si{s}`, or $v$ / `\si{m/s}`).
 - **Source**: `AGENTS.md` (Figures); IAT *Hinweise_Allgemein.tex* (DIN 461).
 - **Review Criteria**: Inspect all plot axes to confirm both physical quantity and unit are clearly stated.
 
 ### FIG-05: Multi-Curve Legends
 
-- **Layer**: `[Review Agent]` `[Writing Skill]`
+- **Layer**: `[Review Agent]`
 - **Rule**: Every plot showing more than one curve must include a legend or direct in-plot curve labels.
 - **Source**: `AGENTS.md` (Figures).
 - **Review Criteria**: Check plots containing multiple lines for unambiguous legends or text labels.
@@ -382,7 +389,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### FIG-09: Vector Format Preference and Font Consistency
 
-- **Layer**: `[Review Agent]` `[Writing Skill]`
+- **Layer**: `[Review Agent]`
 - **Rule**: Prefer vector graphics (PDF, TikZ, pgfplots). Ensure fonts and font sizes within vector plots match the surrounding document typography.
 - **Source**: IAT *Hinweise_Allgemein.tex*, *Anhang.tex* (cha:Anhang-Grafiken).
 - **Review Criteria**: Verify diagrams and plots are rendered as vector PDFs, with text rendered in document fonts.
@@ -432,7 +439,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### CODE-01: Monospace Font for Code
 
-- **Layer**: `[Regex Linter]` `[Writing Skill]`
+- **Layer**: `[Regex Linter]`
 - **Rule**: All source code, terminal commands, function names, and file paths must be set in monospace (`\texttt{...}` or `\verb|...|`, or `listings` environments).
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Einbinden von Quellcode).
 - **Review Criteria**: Flag unformatted code or variable names in body text.

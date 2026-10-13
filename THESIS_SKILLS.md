@@ -11,17 +11,17 @@ The sources are in docs/sources/
 
 ## 1. Writing Skill (Core Drafting Guidelines)
 
+### STRUC-04: Narrative Problem-Solving Arc
+
+- **Rule**: Tell the story of the problem and its solution rather than dumping an inventory of technical facts like a status report or codebase documentation.
+- **Source**: `AGENTS.md` (Structure); IAT *Tipps.tex*, *Beurteilung.tex*.
+- **Review Criteria**: Ensure each chapter frames motivation, trade-offs, and conceptual steps rather than merely listing completed steps.
+
 ### STRUC-05: Mandatory Section Transitions
 
 - **Rule**: Bridge every section into the next with a transition sentence or paragraph. A reader must never land in a new section without knowing why it follows the preceding one.
 - **Source**: `AGENTS.md` (Structure).
 - **Review Criteria**: Check the opening paragraph of each section for an explicit link to the previous section or overarching thesis goal.
-
-### STRUC-07: Conclusion Scope and Outlook
-
-- **Rule**: State no new results in the conclusion. The conclusion must only summarize key findings, synthesize insights, and provide an outlook on future work.
-- **Source**: `AGENTS.md` (Structure); IAT *Zusammenfassung.tex*.
-- **Review Criteria**: Verify that all statements and data in the conclusion refer back to previously discussed results.
 
 ### PROSE-01: Concise and Active Prose (POEM Principle)
 
@@ -37,9 +37,15 @@ The sources are in docs/sources/
 
 ### PROSE-08: Eliminate AI Tells and Slop
 
-- **Rule**: Follow the `/unslop` skill. Remove AI language
+- **Rule**: Follow the `/unslop` skill across all prose. Remove promotional rhetoric ("pivotal", "delve", "crucial", "testament"), generic chatbot transitions, and robotic boilerplate. Prefer plain, concrete verbs and direct active voice.
 - **Source**: `AGENTS.md` (Prose); `unslop` skill.
 - **Review Criteria**: Search for banned AI vocabulary words, promotional tone, and robotic formulaic transitions.
+
+### PROSE-09: Eliminate Conceptual Repetition
+
+- **Rule**: State each concept, premise, or finding once in its dedicated context. Do not re-explain, paraphrase, or summarize previously established points across subsequent paragraphs or sections; every sentence must introduce new information or advance the argument.
+- **Source**: User.
+- **Review Criteria**: Flag paragraphs or sections that repeat previously established premises or explanations without introducing new information.
 
 ### CITE-01: Universal Substantiation of Claims
 
@@ -59,16 +65,6 @@ The sources are in docs/sources/
 - **Source**: `AGENTS.md` (Equations).
 - **Review Criteria**: Inspect displayed equations to verify they state a complete equation, definition, or inequality.
 
-### MATH-07: Typography of Mathematical Variables and Matrices
-
-- **Rule**:
-  - Scalars: italic lowercase ($x, y$).
-  - Vectors: bold upright lowercase ($\mathbf{x}$, `\ve{x}`).
-  - Matrices: bold upright uppercase ($\mathbf{A}$, `\mat{A}`).
-  - Greek letters: lowercase italic ($\alpha, \beta$), uppercase upright ($\Gamma, \Phi$).
-- **Source**: `AGENTS.md` (Equations); IAT *Hinweise_Allgemein.tex* (sec:Mathematische Formeln).
-- **Review Criteria**: Verify consistent semantic formatting of vectors, matrices, and scalars.
-
 ### MATH-10: Introduce Every Variable in Surrounding Text
 
 - **Rule**: Introduce and define every variable and symbol (including individual elements of a vector) in the text immediately before or after the equation where it first appears.
@@ -80,6 +76,55 @@ The sources are in docs/sources/
 - **Rule**: Prevent inline formulas from breaking across lines awkwardly. Use `\linebreak` or enclose critical formulas in `\mbox{$...$}`.
 - **Source**: `AGENTS.md` (Equations).
 - **Review Criteria**: Scan compiled output logs for bad breaks in formulas.
+
+---
+
+## 2. Reviewer Skill (Extra Audit & Verification Points)
+
+The reviewer skill evaluates all points from the **Writing Skill** above, plus the following 10 verification and audit points:
+
+### PROSE-06: Negative Results Analysis
+
+- **Rule**: When an approach fails or underperforms, provide a rigorous analysis explaining why the approach failed. Never sweep negative results under the rug.
+- **Source**: IAT *Tipps.tex* (Inhalt und Umfang der Arbeit).
+- **Review Criteria**: Ensure failed trials or rejected hypotheses include failure mechanisms, parametric limits, or root-cause explanations.
+
+### CITE-07: In-Text Citation Precision
+
+- **Rule**: When citing extensive works (books, monographs, long standards), provide specific page, chapter, or theorem numbers: `\cite[p.~123]{author2020}`.
+- **Source**: IAT *Hinweise_Allgemein.tex* (Quellenverweise im Text).
+- **Review Criteria**: Check that book citations provide page-level pinning for verification.
+
+### TAB-04: Explicit Units in Table Columns
+
+- **Rule**: Every physical quantity in a table must include its unit in the column header or in a dedicated unit column (e.g. "$m$ in `\unit{kg}`").
+- **Source**: IAT *Hinweise_Allgemein.tex* (sec:Tabellen).
+- **Review Criteria**: Check table headers for unambiguous physical units.
+
+### STRUC-07: Conclusion Scope and Outlook
+
+- **Rule**: State no new results in the conclusion. The conclusion must only summarize key findings, synthesize insights, and provide an outlook on future work.
+- **Source**: `AGENTS.md` (Structure); IAT *Zusammenfassung.tex*.
+- **Review Criteria**: Verify that all statements and data in the conclusion refer back to previously discussed results.
+
+### MATH-07: Typography of Mathematical Variables and Matrices
+
+- **Rule**:
+  - Scalars: italic lowercase ($x, y$).
+  - Vectors: bold upright lowercase ($\mathbf{x}$, `\ve{x}`).
+  - Matrices: bold upright uppercase ($\mathbf{A}$, `\mat{A}`).
+  - Greek letters: lowercase italic ($\alpha, \beta$), uppercase upright ($\Gamma, \Phi$).
+- **Source**: `AGENTS.md` (Equations); IAT *Hinweise_Allgemein.tex* (sec:Mathematische Formeln).
+- **Review Criteria**: Verify consistent semantic formatting of vectors, matrices, and scalars.
+
+### MATH-08: Index Typography (Counting vs Label vs Number)
+
+- **Rule**:
+  - Running index (counts): italic (e.g. $x_i, a_{jk}$).
+  - Words, abbreviations, or constant labels: upright text (e.g. $U_\mathrm{rms}$, $K_\mathrm{crit}$).
+  - Numbers: upright, never italic (e.g. $x_1$, not italic $1$).
+- **Source**: `AGENTS.md` (Equations); IAT *Hinweise_Allgemein.tex*.
+- **Review Criteria**: Flag multi-letter abbreviations, descriptive labels, or numbers in subscripts that are formatted in italic instead of upright text or numbers.
 
 ### FIG-02: Mandatory Background Grid
 
@@ -104,53 +149,3 @@ The sources are in docs/sources/
 - **Rule**: Prefer vector graphics (PDF, TikZ, pgfplots). Ensure fonts and font sizes within vector plots match the surrounding document typography.
 - **Source**: IAT *Hinweise_Allgemein.tex*, *Anhang.tex* (cha:Anhang-Grafiken).
 - **Review Criteria**: Verify diagrams and plots are rendered as vector PDFs, with text rendered in document fonts.
-
-### TYPO-12: Acronym and Symbol Table Maintenance
-
-- **Rule**: Manage abbreviations using the `acro` package. Define acronyms on first use, abbreviate thereafter. Synchronize and update the symbols and acronyms table for every new notation added.
-- **Source**: `AGENTS.md` (Equations); IAT *Tipps.tex*.
-- **Review Criteria**: Verify all acronyms appearing in the text are defined in the acronyms list.
-
-### MATH-08: Index Typography (Counting vs Label vs Number)
-
-- **Rule**:
-  - Running index (counts): italic (e.g. $x_i, a_{jk}$).
-  - Words, abbreviations, or constant labels: upright text (e.g. $U_\mathrm{rms}$, $K_\mathrm{crit}$).
-  - Numbers: upright, never italic (e.g. $x_1$, not italic $1$).
-- **Source**: `AGENTS.md` (Equations); IAT *Hinweise_Allgemein.tex*.
-
----
-
-## 2. Reviewer Skill (Extra Audit & Verification Points)
-
-The reviewer skill evaluates all points from the **Writing Skill** above, plus the following 6 verification and audit points:
-
-### STRUC-04: Narrative Problem-Solving Arc
-
-- **Rule**: Tell the story of the problem and its solution rather than dumping an inventory of technical facts like a status report.
-- **Source**: `AGENTS.md` (Structure); IAT *Tipps.tex*, *Beurteilung.tex*.
-- **Review Criteria**: Ensure each chapter frames motivation, trade-offs, and conceptual steps rather than merely listing completed steps.
-
-### PROSE-06: Negative Results Analysis
-
-- **Rule**: When an approach fails or underperforms, provide a rigorous analysis explaining why the approach failed. Never sweep negative results under the rug.
-- **Source**: IAT *Tipps.tex* (Inhalt und Umfang der Arbeit).
-- **Review Criteria**: Ensure failed trials or rejected hypotheses include failure mechanisms, parametric limits, or root-cause explanations.
-
-### CITE-07: In-Text Citation Precision
-
-- **Rule**: When citing extensive works (books, monographs, long standards), provide specific page, chapter, or theorem numbers: `\cite[p.~123]{author2020}`.
-- **Source**: IAT *Hinweise_Allgemein.tex* (Quellenverweise im Text).
-- **Review Criteria**: Check that book citations provide page-level pinning for verification.
-
-### CODE-01: Monospace Font for Code
-
-- **Rule**: All source code, terminal commands, function names, and file paths must be set in monospace (`\texttt{...}` or `\verb|...|`, or `listings` environments).
-- **Source**: IAT *Hinweise_Allgemein.tex* (sec:Einbinden von Quellcode).
-- **Review Criteria**: Flag unformatted code or variable names in body text.
-
-### TAB-04: Explicit Units in Table Columns
-
-- **Rule**: Every physical quantity in a table must include its unit in the column header or in a dedicated unit column (e.g. "$m$ in `\unit{kg}`").
-- **Source**: IAT *Hinweise_Allgemein.tex* (sec:Tabellen).
-- **Review Criteria**: Check table headers for unambiguous physical units.

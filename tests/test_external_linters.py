@@ -119,11 +119,13 @@ def test_bib_file_skips_external(tmp_path: Path) -> None:
     assert not any(f.rule_id.startswith("CHKTEX") or f.rule_id == "LACHECK" for f in findings)
 
 
-def test_missing_executable_warning(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_missing_executable_warning(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     root = tmp_path / "main.tex"
     root.write_text("Simple text\n", encoding="utf-8")
 
-    monkeypatch.setattr(shutil, "which", lambda cmd: None if cmd in {"chktex", "lacheck"} else shutil.which(cmd))
+    monkeypatch.setattr(shutil, "which", lambda cmd: None if cmd in {"chktex", "lacheck"} else shutil.which(str(cmd)))
     findings = check(root, chktex=True, lacheck=True)
     assert findings == []
     captured = capsys.readouterr()
