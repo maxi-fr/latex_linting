@@ -52,7 +52,6 @@ def compile_document(
         return 2
 
     base_dir = root_path.parent.resolve()
-    tex_filename = root_path.name
     doc_stem = root_path.stem
 
     if out_dir is not None:
@@ -73,8 +72,10 @@ def compile_document(
             pdflatex_bin,
             "-interaction=nonstopmode",
             "-halt-on-error",
+            "-synctex=1",
+            "-recorder",
             f"-output-directory={out_path}",
-            tex_filename,
+            str(root_path.resolve()),
         ]
         proc = subprocess.run(  # noqa: S603 -- invoke system pdflatex with validated arguments
             cmd,

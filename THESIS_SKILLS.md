@@ -13,15 +13,15 @@ The sources are in docs/sources/
 
 ### STRUC-04: Narrative Problem-Solving Arc
 
-- **Rule**: Tell the story of the problem and its solution rather than dumping an inventory of technical facts like a status report or codebase documentation.
+- **Rule**: Tell the story of the problem and its solution rather than dumping an inventory of technical facts like a status report or codebase documentation. Follow a strict top-down structure: present the high-level problem formulation and physical/biological concepts first, formulate continuous/theoretical equations next, and then present numerical discretization and simulation solver tools. Strictly separate the theoretical model from simulation tool mechanics (e.g., TVB).
 - **Source**: `AGENTS.md` (Structure); IAT *Tipps.tex*, *Beurteilung.tex*.
-- **Review Criteria**: Ensure each chapter frames motivation, trade-offs, and conceptual steps rather than merely listing completed steps.
+- **Review Criteria**: Ensure each chapter frames motivation, trade-offs, and conceptual steps rather than merely listing completed steps. Verify top-down progression and strict separation of the theoretical model from simulation tool mechanics (e.g., TVB).
 
 ### STRUC-05: Mandatory Section Transitions
 
-- **Rule**: Bridge every section into the next with a transition sentence or paragraph. A reader must never land in a new section without knowing why it follows the preceding one.
+- **Rule**: Bridge every section into the next with bidirectional transitions: an opening transition that links to the previous section or overarching goal (so the reader never lands in a new section without context), and a consistent closing transition summarizing the section's contribution and linking to the next section or overarching objective.
 - **Source**: `AGENTS.md` (Structure).
-- **Review Criteria**: Check the opening paragraph of each section for an explicit link to the previous section or overarching thesis goal.
+- **Review Criteria**: Check each section for bidirectional transitions: an opening link to the previous section or overarching thesis goal, and a closing summary linking to the next section or overarching objective.
 
 ### PROSE-01: Concise and Active Prose (POEM Principle)
 
@@ -67,9 +67,9 @@ The sources are in docs/sources/
 
 ### MATH-10: Introduce Every Variable in Surrounding Text
 
-- **Rule**: Introduce and define every variable and symbol (including individual elements of a vector) in the text immediately before or after the equation where it first appears.
+- **Rule**: Introduce and define every variable, parameter, symbol (including individual elements of a vector), and dummy function argument in the text immediately before or after the equation where it first appears. Defining a variable or parameter requires stating its mathematical space or domain (e.g., $A, B \in \mathbb{R}_{>0}$, $\mathbf{W} \in \mathbb{R}^{N \times N}$, $t \ge 0$) and dummy function arguments, not just providing a descriptive name.
 - **Source**: `AGENTS.md` (Equations); IAT *Hinweise_Allgemein.tex*.
-- **Review Criteria**: For every variable in a formula, verify its definition exists within one paragraph of the equation.
+- **Review Criteria**: For every variable, parameter, and dummy argument in a formula, verify its definition exists within one paragraph of the equation and explicitly states its mathematical space or domain.
 
 ### MATH-11: Prevent Awkward Formula Linebreaks
 
@@ -81,19 +81,13 @@ The sources are in docs/sources/
 
 ## 2. Reviewer Skill (Extra Audit & Verification Points)
 
-The reviewer skill evaluates all points from the **Writing Skill** above, plus the following 10 verification and audit points:
+The reviewer skill evaluates all points from the **Writing Skill** above, plus the following 9 verification and audit points:
 
 ### PROSE-06: Negative Results Analysis
 
 - **Rule**: When an approach fails or underperforms, provide a rigorous analysis explaining why the approach failed. Never sweep negative results under the rug.
 - **Source**: IAT *Tipps.tex* (Inhalt und Umfang der Arbeit).
 - **Review Criteria**: Ensure failed trials or rejected hypotheses include failure mechanisms, parametric limits, or root-cause explanations.
-
-### CITE-07: In-Text Citation Precision
-
-- **Rule**: When citing extensive works (books, monographs, long standards), provide specific page, chapter, or theorem numbers: `\cite[p.~123]{author2020}`.
-- **Source**: IAT *Hinweise_Allgemein.tex* (Quellenverweise im Text).
-- **Review Criteria**: Check that book citations provide page-level pinning for verification.
 
 ### TAB-04: Explicit Units in Table Columns
 

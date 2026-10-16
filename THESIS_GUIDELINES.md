@@ -37,16 +37,16 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 ### STRUC-04: Narrative Problem-Solving Arc
 
 - **Layer**: `[Review Agent]` `[Writing Skill]`
-- **Rule**: Tell the story of the problem and its solution rather than dumping an inventory of technical facts like a status report.
+- **Rule**: Tell the story of the problem and its solution rather than dumping an inventory of technical facts like a status report. Emphasize top-down structuring: present the high-level problem formulation and physical/biological concepts first, formulate continuous/theoretical equations next, and then present numerical discretization and simulation solver tools. Strictly separate the theoretical model from simulation tool mechanics (e.g., TVB).
 - **Source**: `AGENTS.md` (Structure); IAT *Tipps.tex*, *Beurteilung.tex*.
-- **Review Criteria**: Ensure each chapter frames motivation, trade-offs, and conceptual steps rather than merely listing completed steps.
+- **Review Criteria**: Ensure each chapter frames motivation, trade-offs, and conceptual steps rather than merely listing completed steps. Verify top-down progression (conceptual formulation -> theoretical equations -> numerical methods and tools) and ensure the theoretical model is strictly separated from simulation tool mechanics (e.g., TVB).
 
 ### STRUC-05: Mandatory Section Transitions
 
 - **Layer**: `[Review Agent]` `[Writing Skill]`
-- **Rule**: Bridge every section into the next with a transition sentence or paragraph. A reader must never land in a new section without knowing why it follows the preceding one.
+- **Rule**: Bridge every section into the next with bidirectional transitions: an opening transition that links to the previous section or overarching goal (so the reader never lands in a new section without context), and a consistent closing transition summarizing the section's contribution and linking to the next section or overarching objective.
 - **Source**: `AGENTS.md` (Structure).
-- **Review Criteria**: Check the opening paragraph of each section for an explicit link to the previous section or overarching thesis goal.
+- **Review Criteria**: Check each section for bidirectional transitions: an opening link to the previous section or overarching thesis goal, and a closing summary of contributions linking forward to the subsequent section or overarching objective.
 
 ### STRUC-06: Clean Section Terminations
 
@@ -186,13 +186,6 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 - **Source**: IAT *Hinweise_Allgemein.tex* (Zitierfähigkeit).
 - **Regex / BibTeX Criteria**: In `.bib`, flag entries with `url` missing `urldate`, or entries citing Wikipedia.
 
-### CITE-07: In-Text Citation Precision
-
-- **Layer**: `[Review Agent]` `[Writing Skill]`
-- **Rule**: When citing extensive works (books, monographs, long standards), provide specific page, chapter, or theorem numbers: `\cite[p.~123]{author2020}`.
-- **Source**: IAT *Hinweise_Allgemein.tex* (Quellenverweise im Text).
-- **Review Criteria**: Check that book citations provide page-level pinning for verification.
-
 ### CITE-08: Complete Bibliography Metadata
 
 - **Status**: Done
@@ -209,10 +202,10 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 - **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
-- **Rule**: Every displayed formula is part of a sentence and must terminate with punctuation (comma, semicolon, or period) separated from the math by a thin space `\,`.
+- **Rule**: Every displayed formula is part of a sentence and must terminate with punctuation (comma, semicolon, or period) separated from the math by a thin space `\,`. Formula punctuation must match sentence grammar: use a comma when followed by continuing clauses such as "where", "with", or "so that", and a period when concluding a complete sentence. Furthermore, sentences must never begin with an inline mathematical symbol.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Mathematische Formeln); `AGENTS.md`.
 - **Regex Pattern**: Check math environments (`equation`, `align`, `gather`) for missing punctuation before `\end{...}`: `(?<!\\\,[\.,;])\s*\\end\{(equation|align|gather)\*?\}`
-- **Review Criteria**: Verify displayed formulas are followed by grammatically appropriate punctuation.
+- **Review Criteria**: Verify displayed formulas are followed by grammatically appropriate punctuation matching sentence grammar (comma before continuing clauses like "where", "with", "so that"; period upon concluding a sentence), and ensure sentences never begin with an inline mathematical symbol.
 
 ### MATH-02: Conditional Equation Numbering
 
@@ -287,9 +280,9 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 ### MATH-10: Introduce Every Variable in Surrounding Text
 
 - **Layer**: `[Review Agent]` `[Writing Skill]`
-- **Rule**: Introduce and define every variable and symbol (including individual elements of a vector) in the text immediately before or after the equation where it first appears.
+- **Rule**: Introduce and define every variable, parameter, symbol (including individual elements of a vector), and dummy function argument in the text immediately before or after the equation where it first appears. Defining a variable or parameter requires stating its mathematical space or domain (e.g., $A, B \in \mathbb{R}_{>0}$, $\mathbf{W} \in \mathbb{R}^{N \times N}$, $t \ge 0$) and dummy function arguments, not just providing a descriptive name.
 - **Source**: `AGENTS.md` (Equations); IAT *Hinweise_Allgemein.tex*.
-- **Review Criteria**: For every variable in a formula, verify its definition exists within one paragraph of the equation.
+- **Review Criteria**: For every variable, parameter, and dummy argument in a formula, verify that its definition exists within one paragraph of the equation and explicitly states its mathematical space or domain.
 
 ### MATH-11: Prevent Awkward Formula Linebreaks
 
@@ -366,10 +359,10 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 - **Status**: Done
 - **Layer**: `[Regex Linter]` `[Review Agent]`
-- **Rule**: Every figure must carry a comprehensive caption describing what the figure shows so the figure is understandable on its own without reading the main text. The caption must end with a full stop.
+- **Rule**: Every figure must carry a comprehensive caption describing what the figure shows so the figure is understandable on its own without reading the main text. The caption must end with a full stop. Panel descriptions in multi-panel figures must use colon syntax (e.g., "Left: ... Right: ..."). Furthermore, any classification metrics or decision thresholds visualized in a figure must be explicitly defined in the body text before the figure callout.
 - **Source**: `AGENTS.md` (Figures); IAT *Tipps.tex*, *Anhang.tex*.
 - **Regex Pattern**: `\\caption\{(?![^{}]*\\caption)[^}]*[^.!?]\}`
-- **Review Criteria**: Ensure the caption explains curves, abbreviations, and experimental conditions shown.
+- **Review Criteria**: Ensure the caption explains curves, abbreviations, and experimental conditions shown. Verify that panel descriptions use colon syntax ("Left: ... Right: ...") and that any classification metrics or thresholds visualized in the figure are defined in the text before the figure callout.
 
 ### FIG-07: Caption Placement Below Figure
 
@@ -553,13 +546,14 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Gleitobjekte).
 - **Linter Check**: Check that all `\ref{...}` calls are preceded by a category noun matching the prefix, or a page word before `\pageref{...}`.
 
-### TYPO-11: Chronological Referencing (No Forward References to Math)
+### TYPO-11: Chronological Referencing
 
 - **Status**: Done
 - **Layer**: `[Regex Linter]` `[Writing Skill]`
-- **Rule**: Introduce equations before or at the point of reference. Avoid referring forward to equations that have not yet appeared in the text.
+- **Rule**: Broaden chronological referencing from equations to all document elements: avoid forward references to upcoming sections, figures, tables, equations, and unintroduced symbols. Everything must be introduced before being referenced.
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Mathematische Formeln).
 - **Linter Check**: Traverse document in reading order; flag equation references (via `\eqref` or `\ref` to equation labels) appearing before their `\label`.
+- **Review Criteria**: Verify chronological referencing across all document elements, ensuring no forward references to upcoming sections, figures, tables, equations, or unintroduced mathematical symbols.
 
 ### TYPO-12: Acronym and Symbol Table Maintenance
 

@@ -12,20 +12,16 @@ Review LaTeX thesis chapters, sections, or complete drafts against academic writ
 
 1. **Mechanical linting**: Run `uv run latex-lint check path/to/thesis.tex`. Resolve or record all mechanical issues first.
 2. **Core drafting audit**: Check the text against the 11 core rules in [`thesis-writing`](../thesis-writing/SKILL.md).
-3. **Specialized audit**: Check the text against the 10 extra review criteria below.
+3. **Specialized audit**: Check the text against the 9 extra review criteria below.
 4. **Report findings**: List issues grouped by rule ID, citing exact file and line locations (`file.tex:line`), the offending excerpt, and the concrete fix.
 
 ## Extra review criteria
 
-In addition to all core rules in [`thesis-writing`](../thesis-writing/SKILL.md), evaluate drafts against these 10 review-specific checks:
+In addition to all core rules in [`thesis-writing`](../thesis-writing/SKILL.md), evaluate drafts against these 9 review-specific checks:
 
 ### PROSE-06: Negative results analysis
 
 When an approach fails or underperforms, provide a rigorous analysis explaining failure mechanisms, parametric limits, or root causes.
-
-### CITE-07: In-text citation precision
-
-When citing extensive works (books, monographs, long standards), provide specific page, chapter, or theorem numbers (e.g. `\cite[p.~123]{author2020}`). Flag citations to extensive works lacking page-level pinning.
 
 ### TAB-04: Explicit units in table columns
 

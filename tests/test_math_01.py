@@ -278,3 +278,111 @@ def test_bracket_math_same_line_suppression(tmp_path: Path) -> None:
     root = tmp_path / "math.tex"
     root.write_text("\\[ x = y \\] % latex-lint:ignore=MATH-01\n", encoding="utf-8")
     assert check(root) == []
+
+
+def test_continuation_word_after_terminal_period_flagged(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n  E = mc^2 \\,.\n\\end{equation}\nwhere A and B are constants.\n",
+        encoding="utf-8",
+    )
+    findings = check(root)
+    assert len(findings) == 1
+    assert findings[0].rule_id == "MATH-01"
+    assert "continuation" in findings[0].explanation
+
+
+def test_so_that_continuation_after_terminal_period_flagged(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n  E = mc^2 \\,.\n\\end{equation}\nso that the system remains stable.\n",
+        encoding="utf-8",
+    )
+    findings = check(root)
+    assert len(findings) == 1
+    assert findings[0].rule_id == "MATH-01"
+    assert "continuation" in findings[0].explanation
+
+
+def test_continuation_word_after_terminal_comma_valid(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n  a = b \\,,\n\\end{equation}\nwhere A and B are constants.\n",
+        encoding="utf-8",
+    )
+    assert check(root) == []
+
+
+def test_capitalized_sentence_after_terminal_period_valid(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n  E = mc^2 \\,.\n\\end{equation}\nThis equation defines energy equivalence.\n",
+        encoding="utf-8",
+    )
+    assert check(root) == []
+
+
+def test_terminal_comma_at_end_of_file_valid(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n  a = b \\,,\n\\end{equation}\n",
+        encoding="utf-8",
+    )
+    assert check(root) == []
+
+
+def test_terminal_comma_without_following_text_valid(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n  a = b \\,,\n\\end{equation}\n\n",
+        encoding="utf-8",
+    )
+    assert check(root) == []
+
+
+def test_capitalized_sentence_after_terminal_comma_flagged(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n  a = b \\,,\n\\end{equation}\nThis equation defines energy equivalence.\n",
+        encoding="utf-8",
+    )
+    findings = check(root)
+    assert len(findings) == 1
+    assert findings[0].rule_id == "MATH-01"
+    assert "capitalized sentence" in findings[0].explanation
+
+
+def test_new_paragraph_after_terminal_comma_flagged(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n  a = b \\,,\n\\end{equation}\n\nwhere A and B are constants.\n",
+        encoding="utf-8",
+    )
+    findings = check(root)
+    assert len(findings) == 1
+    assert findings[0].rule_id == "MATH-01"
+    assert "new paragraph" in findings[0].explanation
+
+
+def test_heading_after_terminal_comma_flagged(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n  a = b \\,,\n\\end{equation}\n\\section{Discussion}\n",
+        encoding="utf-8",
+    )
+    findings = check(root)
+    assert len(findings) == 1
+    assert findings[0].rule_id == "MATH-01"
+    assert "heading" in findings[0].explanation
+
+
+def test_label_between_equation_and_continuation_word_flagged(tmp_path: Path) -> None:
+    root = tmp_path / "math.tex"
+    root.write_text(
+        "\\begin{equation}\n  E = mc^2 \\,.\n\\end{equation}\n\\label{eq:einstein}\nwhere A and B are constants.\n",
+        encoding="utf-8",
+    )
+    findings = check(root)
+    assert len(findings) == 1
+    assert findings[0].rule_id == "MATH-01"
+    assert "continuation" in findings[0].explanation

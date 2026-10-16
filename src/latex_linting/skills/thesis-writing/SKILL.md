@@ -16,7 +16,7 @@ Tell the story of the problem and its solution rather than dumping an inventory 
 
 ### STRUC-05: Mandatory section transitions
 
-Bridge every section into the next with an explicit transition sentence or paragraph in the opening. The reader must understand why each section follows the preceding one.
+Bridge every section into the next with bidirectional transitions: provide an opening transition that links to the previous section or overarching goal so the reader understands why each section follows the preceding one, and a consistent closing transition summarizing the section's contribution and linking to the next section or overarching objective.
 
 ## Prose and style
 
@@ -44,7 +44,7 @@ Back every technical claim, empirical premise, or numerical parameter choice wit
 
 ### CITE-05: Common knowledge boundary
 
-Apply the MIT common knowledge test: would a peer in your field at your academic stage know this fact without looking it up? Foundational facts (basic calculus, Ohm's law) need no citation. Specialized theorems, empirical lookup tables, and controller tuning formulas require explicit citations.
+Apply the MIT common knowledge test: would a peer in your field at your academic stage know this fact without looking it up? Foundational facts (basic calculus, Ohm's law) need no citation.
 
 ## Mathematics and notation
 
@@ -54,7 +54,7 @@ State every displayed formula as a complete relation with an operator ($=$, $\le
 
 ### MATH-10: Introduce every variable in surrounding text
 
-Define every variable, parameter, and vector element in the text immediately before or after the formula where it first appears. Never leave symbols undefined for the reader to infer.
+Define every variable, parameter, vector element, and dummy function argument in the text immediately before or after the formula where it first appears. Defining a variable or parameter requires stating its mathematical space or domain (e.g., $A \in \mathbb{R}_{>0}$, $t \ge 0$) and dummy function arguments, not just providing a descriptive name.
 
 ### MATH-11: Prevent awkward formula linebreaks
 
