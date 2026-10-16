@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from latex_linting.document import Document
-from latex_linting.source import Finding
+from latex_linting.source import Finding, Severity
 
 
 @dataclass(frozen=True)
@@ -19,3 +19,4 @@ class Rule:
     limits: str
     evaluate: Callable[["Document"], Iterable[Finding]]
     enabled_by_default: bool = True
+    severity: Severity = "error"

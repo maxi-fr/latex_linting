@@ -1,5 +1,8 @@
 from bisect import bisect_right
 from dataclasses import dataclass, field
+from typing import Literal
+
+Severity = Literal["error", "warning"]
 
 
 @dataclass(frozen=True)
@@ -13,6 +16,7 @@ class Finding:
     excerpt: str
     explanation: str
     correction: str
+    severity: Severity = "error"
 
 
 @dataclass(frozen=True)
@@ -36,10 +40,26 @@ class Source:
         """Return the zero-based character offset for a one-based line and column."""
         return self._line_starts[line - 1] + (column - 1)
 
-    def finding(self, offset: int, rule_id: str, explanation: str, correction: str) -> Finding:
-        """Locate a rule violation using an offset into the original text."""
+    def finding(
+        self,
+        offset: int,
+        rule_id: str,
+        explanation: str,
+        correction: str,
+        severity: Severity = "error",
+    ) -> Finding:
+        """Locate a rule violation using an offset into the original text, assigning severity."""
         line = self.line_number(offset)
         start = self._line_starts[line - 1]
         end = self.text.find("\n", start)
         excerpt = self.text[start : end if end != -1 else len(self.text)].rstrip("\r")
-        return Finding(rule_id, self.filename, line, offset - start + 1, excerpt, explanation, correction)
+        return Finding(
+            rule_id=rule_id,
+            filename=self.filename,
+            line=line,
+            column=offset - start + 1,
+            excerpt=excerpt,
+            explanation=explanation,
+            correction=correction,
+            severity=severity,
+        )

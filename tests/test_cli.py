@@ -4,7 +4,10 @@ from pathlib import Path
 
 import pytest
 
+from latex_linting.cli import main
 from latex_linting.main import check
+from latex_linting.rules.model import Rule
+from latex_linting.source import Finding
 
 
 def run_cli(*arguments: str) -> subprocess.CompletedProcess[str]:
@@ -60,6 +63,7 @@ def test_invalid_encoding(tmp_path: Path) -> None:
         "FIG-06",
         "FIG-07",
         "FIG-08",
+        "FLOAT-01",
         "MATH-01",
         "MATH-02",
         "MATH-03",
@@ -537,3 +541,74 @@ def test_cli_format_missing_file(tmp_path: Path) -> None:
     result = run_cli("format", str(tmp_path / "missing.tex"))
     assert result.returncode == 2
     assert "cannot find file" in result.stderr
+
+
+def test_cli_finding_and_rule_severity_models() -> None:
+    """Verify Finding and Rule severity defaults and assignments in CLI context."""
+    finding_default = Finding("R-1", "file.tex", 1, 1, "text", "expl", "corr")
+    assert finding_default.severity == "error"
+    finding_warn = Finding("R-1", "file.tex", 1, 1, "text", "expl", "corr", severity="warning")
+    assert finding_warn.severity == "warning"
+
+    rule_default = Rule("R-1", "expl", "corr", (), (), "limits", evaluate=lambda _d: ())
+    assert rule_default.severity == "error"
+    rule_warn = Rule("R-1", "expl", "corr", (), (), "limits", evaluate=lambda _d: (), severity="warning")
+    assert rule_warn.severity == "warning"
+
+
+def test_cli_check_warning_only_exits_zero(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Verify CLI check exits with 0 and displays [warning] when only warnings occur."""
+    root = tmp_path / "doc.tex"
+    root.write_text("Some text\n", encoding="utf-8")
+    warning_finding = Finding(
+        "WARN-01", str(root), 1, 1, "Some text", "Warning explanation", "Fix it", severity="warning"
+    )
+    monkeypatch.setattr("latex_linting.cli.check", lambda *_args, **_kwargs: [warning_finding])
+    code = main(["check", str(root)])
+    assert code == 0
+    captured = capsys.readouterr()
+    assert "[warning]" in captured.out
+    assert f"{warning_finding.filename}:1:1: WARN-01 [warning] Warning explanation" in captured.out
+
+
+def test_cli_check_error_exits_one(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Verify CLI check exits with 1 when error findings occur."""
+    root = tmp_path / "doc.tex"
+    root.write_text("Some text\n", encoding="utf-8")
+    error_finding = Finding("ERR-01", str(root), 1, 1, "Some text", "Error explanation", "Fix it", severity="error")
+    monkeypatch.setattr("latex_linting.cli.check", lambda *_args, **_kwargs: [error_finding])
+    code = main(["check", str(root)])
+    assert code == 1
+    captured = capsys.readouterr()
+    assert "[warning]" not in captured.out
+    assert f"{error_finding.filename}:1:1: ERR-01 Error explanation" in captured.out
+
+
+def test_cli_check_both_warning_and_error_exits_one(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Verify CLI check exits with 1 when both warning and error findings occur."""
+    root = tmp_path / "doc.tex"
+    root.write_text("Some text\n", encoding="utf-8")
+    warning_finding = Finding(
+        "WARN-01", str(root), 1, 1, "Some text", "Warning explanation", "Fix it", severity="warning"
+    )
+    error_finding = Finding("ERR-01", str(root), 1, 5, "Some text", "Error explanation", "Fix it", severity="error")
+    monkeypatch.setattr("latex_linting.cli.check", lambda *_args, **_kwargs: [warning_finding, error_finding])
+    code = main(["check", str(root)])
+    assert code == 1
+    captured = capsys.readouterr()
+    assert "[warning]" in captured.out
+    assert f"{warning_finding.filename}:1:1: WARN-01 [warning] Warning explanation" in captured.out
+    assert f"{error_finding.filename}:1:5: ERR-01 Error explanation" in captured.out
+
+
+def test_cli_rule_shows_severity() -> None:
+    """Verify the rule subcommand displays rule severity in brackets."""
+    result = run_cli("rule", "MATH-04")
+    assert result.returncode == 0
+    assert "MATH-04: [error]" in result.stdout

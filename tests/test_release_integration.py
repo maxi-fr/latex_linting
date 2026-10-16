@@ -11,7 +11,7 @@ ALL_RULE_IDS = frozenset(rule.rule_id for rule in RULES if rule.enabled_by_defau
 
 
 def _build_clean_thesis(tmp_path: Path) -> Path:
-    """Build a multi-file thesis fixture that complies with all 36 rules."""
+    """Build a multi-file thesis fixture that complies with all default rules."""
     root = tmp_path / "thesis.tex"
     chapters_dir = tmp_path / "chapters"
     chapters_dir.mkdir(parents=True, exist_ok=True)
@@ -97,7 +97,7 @@ The findings confirm the efficiency of our distributed scheduling design.
 
 
 def _build_violating_thesis(tmp_path: Path) -> Path:
-    """Build a multi-file thesis fixture containing violations of all 36 rules."""
+    """Build a multi-file thesis fixture containing violations of all default rules."""
     root = tmp_path / "thesis_violating.tex"
     chapters_dir = tmp_path / "chapters_violating"
     chapters_dir.mkdir(parents=True, exist_ok=True)
@@ -217,7 +217,7 @@ Here is inline fraction $\frac{1}{2}$ and unit $10 kg$ and function $sin(x)$ and
 
 \section{Float Violations}
 \label{sec:float_violations}
-\begin{figure}
+\begin{figure}[!tb]
   \begin{center}
     \label{fig:misordered}
     \includegraphics{pic.png}
@@ -263,12 +263,13 @@ def test_clean_multi_file_thesis(tmp_path: Path, capsys: pytest.CaptureFixture[s
 
 
 def test_violating_multi_file_thesis_covers_all_rules(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """Verify that all default rules, including warning severities, are triggered and matched in CLI output."""
     root = _build_violating_thesis(tmp_path)
 
     findings = check(root)
     reported_rule_ids = {f.rule_id for f in findings}
 
-    # Verify all 36 rules are triggered
+    # Verify all default rules are triggered
     missing_rules = ALL_RULE_IDS - reported_rule_ids
     assert not missing_rules, f"Rules not triggered in violating fixture: {missing_rules}"
 
@@ -281,7 +282,10 @@ def test_violating_multi_file_thesis_covers_all_rules(tmp_path: Path, capsys: py
 
     # CLI stdout must contain every finding reported by API
     for finding in findings:
-        expected_line = f"{finding.filename}:{finding.line}:{finding.column}: {finding.rule_id} {finding.explanation}"
+        severity_tag = f" [{finding.severity}]" if finding.severity == "warning" else ""
+        expected_line = (
+            f"{finding.filename}:{finding.line}:{finding.column}: {finding.rule_id}{severity_tag} {finding.explanation}"
+        )
         assert expected_line in captured.out
         assert finding.excerpt in captured.out
 

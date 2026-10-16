@@ -394,6 +394,16 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 - **Source**: IAT *Hinweise_Allgemein.tex* (sec:Latex-Bilder), *Anhang.tex*.
 - **Review Criteria**: Inspect plot scripts for line styles, markers, and color palettes that survive monochrome conversion.
 
+### FLOAT-01: Default Float Placement (No Optional Placement Arguments)
+
+- **Status**: Done
+- **Layer**: `[Regex Linter]`
+- **Severity**: Warning
+- **Rule**: Refrain from using optional placement arguments (such as `[!tb]`, `[htp]`, or `[H]`) on floats (`figure`, `figure*`, `table`, `table*`). Generally, rely on the document class and template defaults for float positioning.
+- **Source**: Thesis guidelines (Float Placement).
+- **Regex Pattern**: `\\begin\{(?:figure|table)\*?\}\s*\[[^\]]+\]`
+- **Review Criteria**: Flag any optional placement parameters in square brackets on figure and table environments.
+
 ---
 
 ## 6. Tables and Code Snippets

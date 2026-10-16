@@ -36,13 +36,13 @@ def _handle_install_skills(args: argparse.Namespace) -> int:
 
 
 def _handle_rule(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
-    """Handle the rule subcommand."""
+    """Handle the rule subcommand and display rule metadata including severity."""
     try:
         rule = get_rule(args.rule_id)
     except KeyError:
         parser.error(f"unknown rule ID: {args.rule_id}")
     sys.stdout.write(
-        f"{rule.rule_id}: {rule.explanation}\n{rule.correction}\n\n"
+        f"{rule.rule_id}: [{rule.severity}] {rule.explanation}\n{rule.correction}\n\n"
         "Passing examples:\n" + "\n".join(rule.passing_examples) + "\n\n"
         "Failing examples:\n" + "\n".join(rule.failing_examples) + "\n\n"
         f"Detection limits:\n{rule.limits}\n"
@@ -56,7 +56,7 @@ def _handle_format(args: argparse.Namespace) -> int:
 
 
 def _handle_check(args: argparse.Namespace) -> int:
-    """Handle the check subcommand, invoking internal rules and external linters."""
+    """Handle check subcommand, reporting findings with severity indicators and error exit codes."""
     ignored_rules = [part.strip() for part in args.ignore.split(",")] if args.ignore is not None else None
     rule_filter = [part.strip() for part in args.rule.split(",")] if args.rule is not None else None
     enabled_rules = [part.strip() for part in args.enable.split(",")] if args.enable is not None else None
@@ -79,11 +79,12 @@ def _handle_check(args: argparse.Namespace) -> int:
         sys.stderr.write(f"latex-lint: {error}\n")
         return 2
     for finding in findings:
+        severity_tag = f" [{finding.severity}]" if finding.severity == "warning" else ""
         sys.stdout.write(
-            f"{finding.filename}:{finding.line}:{finding.column}: {finding.rule_id} {finding.explanation}\n"
+            f"{finding.filename}:{finding.line}:{finding.column}: {finding.rule_id}{severity_tag} {finding.explanation}\n"
             f"  {finding.excerpt}\n  Suggestion: {finding.correction}\n"
         )
-    return int(bool(findings))
+    return int(any(f.severity == "error" for f in findings))
 
 
 def _handle_refs_fetch(args: argparse.Namespace) -> int:
@@ -155,7 +156,7 @@ def _handle_refs(args: argparse.Namespace) -> int:
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Parse arguments and dispatch CLI operations, returning 0, 1, or 2."""
-    parser = argparse.ArgumentParser(prog="latex-lint", description="Check LaTeX thesis source conventions.")
+    parser = argparse.ArgumentParser(prog="uv run latex-lint", description="Check LaTeX project source conventions.")
     operations = parser.add_subparsers(dest="operation", required=True)
     compile_parser = operations.add_parser(
         "compile",

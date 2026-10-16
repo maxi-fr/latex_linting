@@ -4,6 +4,8 @@ import pytest
 
 from latex_linting.main import check
 from latex_linting.rules.catalogue import RULES, get_rule
+from latex_linting.rules.model import Rule
+from latex_linting.source import Finding, Source
 
 
 @pytest.mark.parametrize("source", [r"$\frac{a}{b}$", r"\(\frac{a}{b}\)", r"\begin{math}\frac{a}{b}\end{math}"])
@@ -170,3 +172,41 @@ def test_context_transitions(prefix: str, tmp_path: Path) -> None:
     root = tmp_path / "transitions.tex"
     root.write_text(prefix + "\n$\\frac{a}{b}$", encoding="utf-8")
     assert [(finding.line, finding.column) for finding in check(root)] == [(2, 2)]
+
+
+def test_finding_severity_defaults_and_accepts_warning() -> None:
+    """Verify Finding severity defaults to error and can be set to warning."""
+    source = Source("test.tex", "sample text\n")
+    default_finding = source.finding(0, "RULE-01", "explanation", "correction")
+    assert default_finding.severity == "error"
+    explicit_finding = Finding("RULE-01", "test.tex", 1, 1, "sample", "explanation", "correction")
+    assert explicit_finding.severity == "error"
+    warning_finding = source.finding(0, "RULE-01", "explanation", "correction", severity="warning")
+    assert warning_finding.severity == "warning"
+    explicit_warning = Finding("RULE-01", "test.tex", 1, 1, "sample", "explanation", "correction", severity="warning")
+    assert explicit_warning.severity == "warning"
+
+
+def test_rule_severity_defaults_and_accepts_warning() -> None:
+    """Verify Rule severity defaults to error and can be set to warning."""
+    rule_error = Rule(
+        rule_id="TEST-01",
+        explanation="Test explanation",
+        correction="Test correction",
+        passing_examples=(),
+        failing_examples=(),
+        limits="None",
+        evaluate=lambda _doc: (),
+    )
+    assert rule_error.severity == "error"
+    rule_warning = Rule(
+        rule_id="TEST-02",
+        explanation="Test explanation",
+        correction="Test correction",
+        passing_examples=(),
+        failing_examples=(),
+        limits="None",
+        evaluate=lambda _doc: (),
+        severity="warning",
+    )
+    assert rule_warning.severity == "warning"
