@@ -138,6 +138,13 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 - **Source**: `AGENTS.md` (Prose).
 - **Review Criteria**: Flag paragraphs or sections that repeat previously established premises or explanations without introducing new information.
 
+### PROSE-10: Ensure Cohesion and Narrative Flow
+
+- **Layer**: `[Review Agent]` `[Writing Skill]`
+- **Rule**: Avoid writing paragraphs as sequences of loosely connected, self-contained statements. Instead, develop ideas as a continuous explanation in which each sentence builds naturally on the preceding one. Connect related concepts by making logical, causal, or functional relationships clear. Maintain thematic continuity by introducing new concepts through their relationship to established ideas. Integrate closely related statements into unified explanations, and vary sentence structures naturally to avoid mechanical, staccato rhythm.
+- **Source**: User.
+- **Review Criteria**: Flag paragraphs consisting of disjointed, self-contained statements, abrupt subject transitions, or repetitive sentence patterns lacking narrative flow and logical cohesion.
+
 ---
 
 ## 3. Claims, Citations, and Plagiarism
@@ -286,7 +293,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 
 ### MATH-11: Prevent Awkward Formula Linebreaks
 
-- **Layer**: `[Regex Linter]` `[Writing Skill]`
+- **Layer**: `[Review Agent]`
 - **Rule**: Prevent inline formulas from breaking across lines awkwardly. Use `\linebreak` or enclose critical formulas in `\mbox{$...$}`.
 - **Source**: `AGENTS.md` (Equations).
 - **Review Criteria**: Scan compiled output logs for bad breaks in formulas.

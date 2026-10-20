@@ -8,6 +8,7 @@ import pytest
 
 from latex_linting.cli import main
 from latex_linting.skills_install import (
+    generate_openai_yaml,
     get_preset_destinations,
     install_skills,
     resolve_install_destination,
@@ -58,6 +59,18 @@ def test_install_skills_copies_files(tmp_path: Path) -> None:
         assert skill_file.is_file()
         content = skill_file.read_text(encoding="utf-8")
         assert f"name: {skill_name}" in content or "name: thesis-" in content
+        openai_config = dest / skill_name / "agents" / "openai.yaml"
+        assert openai_config.is_file()
+        openai_text = openai_config.read_text(encoding="utf-8")
+        assert "display_name:" in openai_text
+        assert "allow_implicit_invocation: false" in openai_text
+    assert not (dest / "thesis-writing" / "reference_paper.md").exists()
+    writing_content = (dest / "thesis-writing" / "SKILL.md").read_text(encoding="utf-8")
+    assert "PROSE-10" in writing_content
+    assert "reference_paper.md" not in writing_content
+    assert "MATH-11" not in writing_content
+    review_content = (dest / "thesis-review" / "SKILL.md").read_text(encoding="utf-8")
+    assert "MATH-11" in review_content
 
 
 def test_install_skills_fails_if_exists_without_force(tmp_path: Path) -> None:
@@ -95,6 +108,9 @@ def test_cli_install_skills_default(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     assert (tmp_path / ".agents" / "skills" / "thesis-writing" / "SKILL.md").is_file()
     assert (tmp_path / ".agents" / "skills" / "thesis-review" / "SKILL.md").is_file()
     assert (tmp_path / ".agents" / "skills" / "citation-checker" / "SKILL.md").is_file()
+    assert (tmp_path / ".agents" / "skills" / "thesis-writing" / "agents" / "openai.yaml").is_file()
+    assert (tmp_path / ".agents" / "skills" / "thesis-review" / "agents" / "openai.yaml").is_file()
+    assert (tmp_path / ".agents" / "skills" / "citation-checker" / "agents" / "openai.yaml").is_file()
     assert "Installed thesis-writing" in out.getvalue()
     assert "Installed thesis-review" in out.getvalue()
     assert "Installed citation-checker" in out.getvalue()
@@ -156,6 +172,55 @@ def test_subprocess_cli_install_skills(tmp_path: Path) -> None:
     assert (target / "thesis-writing" / "SKILL.md").is_file()
     assert (target / "thesis-review" / "SKILL.md").is_file()
     assert (target / "citation-checker" / "SKILL.md").is_file()
+    assert (target / "thesis-writing" / "agents" / "openai.yaml").is_file()
+    assert (target / "thesis-review" / "agents" / "openai.yaml").is_file()
+    assert (target / "citation-checker" / "agents" / "openai.yaml").is_file()
     assert "Installed thesis-writing" in result.stdout
     assert "Installed thesis-review" in result.stdout
     assert "Installed citation-checker" in result.stdout
+
+
+def test_generate_openai_yaml_preserves_acronyms_and_handles_overrides(tmp_path: Path) -> None:
+    skill_dir = tmp_path / "custom-tdd-skill"
+    skill_dir.mkdir()
+    skill_file = skill_dir / "SKILL.md"
+    skill_file.write_text(
+        "---\n"
+        "name: custom-tdd-skill\n"
+        "description: First sentence of description. Second sentence here.\n"
+        "disable-model-invocation: true\n"
+        "openai:\n"
+        "  display_name: Custom TDD Overridden\n"
+        "  short_description: Explicit short description\n"
+        "---\n"
+        "# Custom TDD\n",
+        encoding="utf-8",
+    )
+    yaml_path = generate_openai_yaml(skill_dir)
+    assert yaml_path is not None
+    assert yaml_path.is_file()
+    text = yaml_path.read_text(encoding="utf-8")
+    assert 'display_name: "Custom TDD Overridden"' in text
+    assert 'short_description: "Explicit short description"' in text
+    assert "allow_implicit_invocation: false" in text
+
+
+def test_generate_openai_yaml_model_invoked_omits_policy(tmp_path: Path) -> None:
+    skill_dir = tmp_path / "auto-helper"
+    skill_dir.mkdir()
+    skill_file = skill_dir / "SKILL.md"
+    skill_file.write_text(
+        "---\n"
+        "name: auto-helper\n"
+        "description: Helps automatically during agent turns.\n"
+        "---\n"
+        "# Auto helper\n",
+        encoding="utf-8",
+    )
+    yaml_path = generate_openai_yaml(skill_dir)
+    assert yaml_path is not None
+    assert yaml_path.is_file()
+    text = yaml_path.read_text(encoding="utf-8")
+    assert 'display_name: "Auto Helper"' in text
+    assert 'short_description: "Helps automatically during agent turns."' in text
+    assert "policy:" not in text

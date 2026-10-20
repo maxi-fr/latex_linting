@@ -47,6 +47,16 @@ The sources are in docs/sources/
 - **Source**: User.
 - **Review Criteria**: Flag paragraphs or sections that repeat previously established premises or explanations without introducing new information.
 
+### PROSE-10: Ensure Cohesion and Narrative Flow
+
+- **Rule**: Avoid writing paragraphs as sequences of loosely connected, self-contained statements. Instead, develop ideas as a continuous explanation in which each sentence builds naturally on the preceding one:
+  - Connect related concepts: Make logical, causal, or functional relationships between ideas clear rather than merely stating facts in succession.
+  - Maintain thematic continuity: Introduce new concepts through their relationship to previously established ideas instead of abruptly switching subjects.
+  - Integrate information: Where appropriate, combine closely related statements into a unified explanation rather than treating each detail as an independent point.
+  - Vary sentence structure naturally: Avoid repetitive sentence patterns that create a mechanical, staccato rhythm.
+- **Source**: User.
+- **Review Criteria**: Flag paragraphs consisting of isolated, fragmented statements or mechanical, repetitive sentence patterns lacking narrative flow and logical cohesion.
+
 ### CITE-01: Universal Substantiation of Claims
 
 - **Rule**: Back every assertion, premise, or parameter choice with a citation, proof, or experimental data. Standard textbook steps need only a recognized keyword ("follows by integration by parts").
@@ -71,17 +81,11 @@ The sources are in docs/sources/
 - **Source**: `AGENTS.md` (Equations); IAT *Hinweise_Allgemein.tex*.
 - **Review Criteria**: For every variable, parameter, and dummy argument in a formula, verify its definition exists within one paragraph of the equation and explicitly states its mathematical space or domain.
 
-### MATH-11: Prevent Awkward Formula Linebreaks
-
-- **Rule**: Prevent inline formulas from breaking across lines awkwardly. Use `\linebreak` or enclose critical formulas in `\mbox{$...$}`.
-- **Source**: `AGENTS.md` (Equations).
-- **Review Criteria**: Scan compiled output logs for bad breaks in formulas.
-
 ---
 
 ## 2. Reviewer Skill (Extra Audit & Verification Points)
 
-The reviewer skill evaluates all points from the **Writing Skill** above, plus the following 9 verification and audit points:
+The reviewer skill evaluates all points from the **Writing Skill** above, plus the following 10 verification and audit points:
 
 ### PROSE-06: Negative Results Analysis
 
@@ -119,6 +123,12 @@ The reviewer skill evaluates all points from the **Writing Skill** above, plus t
   - Numbers: upright, never italic (e.g. $x_1$, not italic $1$).
 - **Source**: `AGENTS.md` (Equations); IAT *Hinweise_Allgemein.tex*.
 - **Review Criteria**: Flag multi-letter abbreviations, descriptive labels, or numbers in subscripts that are formatted in italic instead of upright text or numbers.
+
+### MATH-11: Prevent Awkward Formula Linebreaks
+
+- **Rule**: Prevent inline formulas from breaking across lines awkwardly. Use `\linebreak` or enclose critical formulas in `\mbox{$...$}`.
+- **Source**: `AGENTS.md` (Equations).
+- **Review Criteria**: Scan compiled output logs for bad breaks in formulas.
 
 ### FIG-02: Mandatory Background Grid
 

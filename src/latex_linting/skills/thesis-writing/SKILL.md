@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Thesis writing
 
-When drafting or editing thesis text, adhere to the following rules and restrictions. Use [paper](./reference_paper.md) as a general guide for the writing style. After drafting, run `uv run latex-lint check <root-file>.tex` to verify mechanical formatting constraints and `uv run latex-lint compile <root-file>.tex` to compile the document (output files will be placed in `out/` inside the folder of the main `.tex` file).
+When drafting or editing a text, adhere to the following rules and restrictions.
 
 ## Structure
 
@@ -30,11 +30,20 @@ Always use the identical technical term for the same concept, variable, or compo
 
 ### PROSE-08: Eliminate AI tells and slop
 
-Remove promotional rhetoric ("pivotal", "delve", "crucial", "testament"), generic chatbot transitions, and robotic boilerplate. Prefer plain, concrete verbs and direct active voice.
+Remove promotional rhetoric ("pivotal", "delve", "crucial", "testament"), generic chatbot transitions, and robotic boilerplate.
 
 ### PROSE-09: Eliminate conceptual repetition
 
 State each concept, premise, or finding once in its dedicated context. Do not re-explain, paraphrase, or summarize previously established points across subsequent paragraphs or sections; every sentence must introduce new information or advance the argument.
+
+### PROSE-10: Ensure cohesion and narrative flow
+
+Avoid writing paragraphs as sequences of loosely connected, self-contained statements. Instead, develop ideas as a continuous explanation in which each sentence builds naturally on the preceding one.
+
+- Connect related concepts: Make logical, causal, or functional relationships between ideas clear rather than merely stating facts in succession.
+- Maintain thematic continuity: Introduce new concepts through their relationship to previously established ideas instead of abruptly switching subjects.
+- Integrate information: Where appropriate, combine closely related statements into a unified explanation rather than treating each detail as an independent point.
+- Vary sentence structure naturally: Avoid repetitive sentence patterns that create a mechanical, staccato rhythm.
 
 ## Claims and citations
 
@@ -54,8 +63,4 @@ State every displayed formula as a complete relation with an operator ($=$, $\le
 
 ### MATH-10: Introduce every variable in surrounding text
 
-Define every variable, parameter, vector element, and dummy function argument in the text immediately before or after the formula where it first appears. Defining a variable or parameter requires stating its mathematical space or domain (e.g., $A \in \mathbb{R}_{>0}$, $t \ge 0$) and dummy function arguments, not just providing a descriptive name.
-
-### MATH-11: Prevent awkward formula linebreaks
-
-Keep inline mathematical formulas intact across line breaks. Use `\linebreak` hints or enclose unbreakable expressions in `\mbox{$...$}` to prevent operators or symbols from orphan splitting across lines.
+Define every variable, parameter, vector element, and dummy function argument in the text immediately before or after the formula where it first appears. Defining a variable or parameter includes stating its mathematical space or domain (e.g., $A \in \mathbb{R}_{>0}$, $t \ge 0$) and dummy function arguments.

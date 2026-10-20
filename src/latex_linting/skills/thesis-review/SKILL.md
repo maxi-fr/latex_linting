@@ -6,18 +6,18 @@ disable-model-invocation: true
 
 # Thesis review
 
-Review LaTeX thesis chapters, sections, or complete drafts against academic writing standards and verification criteria.
+Review LaTeX thesis chapters, sections. Be extra meticulous when it comes to stylistic rules as they can be more subjective/qualitative. A false positive prefered.
 
 ## Process
 
-1. **Mechanical linting**: Run `uv run latex-lint check path/to/thesis.tex`. Resolve or record all mechanical issues first.
-2. **Core drafting audit**: Check the text against the 11 core rules in [`thesis-writing`](../thesis-writing/SKILL.md).
-3. **Specialized audit**: Check the text against the 9 extra review criteria below.
+1. **Core drafting audit**: Check the text against the 11 core rules in [`thesis-writing`](../thesis-writing/SKILL.md).
+2. **Specialized audit**: Check the text against the 10 extra review criteria below.
+3. **Mechanical linting**: Run `uv run latex-lint check path/to/thesis.tex`. Resolve or record all mechanical issues first.
 4. **Report findings**: List issues grouped by rule ID, citing exact file and line locations (`file.tex:line`), the offending excerpt, and the concrete fix.
 
 ## Extra review criteria
 
-In addition to all core rules in [`thesis-writing`](../thesis-writing/SKILL.md), evaluate drafts against these 9 review-specific checks:
+In addition to all core rules in [`thesis-writing`](../thesis-writing/SKILL.md), evaluate drafts against these 10 review-specific checks:
 
 ### PROSE-06: Negative results analysis
 
@@ -47,6 +47,10 @@ Format indices according to their specific purpose:
 - Running indices (counting elements): italic (e.g. $x_i, a_{jk}$).
 - Words, abbreviations, or constant labels: upright text via `\mathrm{...}` or `\text{...}` (e.g. $U_\mathrm{rms}$, $K_\mathrm{crit}$).
 - Numeric indices: upright numbers, never italic (e.g. $x_1$, not italic $1$).
+
+### MATH-11: Prevent awkward formula linebreaks
+
+Keep inline mathematical formulas intact across line breaks. Use `\linebreak` hints or enclose unbreakable expressions in `\mbox{$...$}` to prevent operators or symbols from orphan splitting across lines.
 
 ### FIG-02: Mandatory background grid
 
