@@ -50,6 +50,9 @@ latex-lint rule MATH-04
 # Compile a LaTeX document via pdflatex -> biber -> pdflatex -> pdflatex:
 latex-lint compile path/to/thesis.tex
 
+# Compile with verbose compiler output:
+latex-lint compile -v path/to/thesis.tex
+
 # Compile with a custom output directory:
 latex-lint compile --output-dir custom_out path/to/thesis.tex
 

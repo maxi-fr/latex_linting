@@ -19,7 +19,7 @@ from latex_linting.skills_install import install_skills, resolve_install_destina
 
 def _handle_compile(args: argparse.Namespace) -> int:
     """Handle the compile subcommand."""
-    return compile_document(args.root, out_dir=args.output_dir)
+    return compile_document(args.root, out_dir=args.output_dir, verbose=args.verbose)
 
 
 def _handle_install_skills(args: argparse.Namespace) -> int:
@@ -160,7 +160,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     operations = parser.add_subparsers(dest="operation", required=True)
     compile_parser = operations.add_parser(
         "compile",
-        help="compile LaTeX document via pdflatex and biber recipe (<root> [-o/--output-dir PATH])",
+        help="compile LaTeX document via pdflatex and biber recipe (<root> [-o/--output-dir PATH] [-v/--verbose])",
         description="Compile a LaTeX document using the recipe: pdflatex, biber, pdflatex, pdflatex.",
     )
     compile_parser.add_argument("root", help="path to root .tex document")
@@ -170,6 +170,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         type=Path,
         default=None,
         help="output directory for compiled files (default: out/ in the folder of the main tex file)",
+    )
+    compile_parser.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="show full output from pdflatex and biber",
     )
     check_parser = operations.add_parser(
         "check",

@@ -120,6 +120,36 @@ No bib here.
     assert (tmp_path / "out" / "nobib.pdf").exists()
 
 
+def test_compile_quiet_by_default(tmp_path: Path) -> None:
+    tex_file = tmp_path / "main.tex"
+    tex_file.write_text(
+        r"""\documentclass{article}
+\begin{document}
+Quiet default.
+\end{document}
+""",
+        encoding="utf-8",
+    )
+    result = run_cli("compile", str(tex_file))
+    assert result.returncode == 0
+    assert result.stdout == ""
+
+
+def test_compile_verbose_flag(tmp_path: Path) -> None:
+    tex_file = tmp_path / "main.tex"
+    tex_file.write_text(
+        r"""\documentclass{article}
+\begin{document}
+Verbose flag.
+\end{document}
+""",
+        encoding="utf-8",
+    )
+    result = run_cli("compile", "-v", str(tex_file))
+    assert result.returncode == 0
+    assert "pdfTeX" in result.stdout
+
+
 def test_compile_syntax_error_fails(tmp_path: Path) -> None:
     tex_file = tmp_path / "broken.tex"
     tex_file.write_text(
@@ -132,6 +162,7 @@ def test_compile_syntax_error_fails(tmp_path: Path) -> None:
     )
     result = run_cli("compile", str(tex_file))
     assert result.returncode != 0
+    assert "Undefined control sequence" in result.stderr
     assert not (tmp_path / "out" / "broken.pdf").exists()
 
 
@@ -162,3 +193,4 @@ def test_compile_help() -> None:
     assert cmd_help.returncode == 0
     assert "root" in cmd_help.stdout
     assert "--output-dir" in cmd_help.stdout
+    assert "--verbose" in cmd_help.stdout

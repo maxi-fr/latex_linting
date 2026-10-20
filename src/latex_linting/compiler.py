@@ -9,7 +9,7 @@ def _run_biber(
     doc_stem: str,
     base_dir: Path,
     *,
-    capture_output: bool,
+    verbose: bool,
 ) -> None:
     """Run biber on the generated .bcf control file if present."""
     bcf_path = out_path / f"{doc_stem}.bcf"
@@ -31,19 +31,24 @@ def _run_biber(
     biber_proc = subprocess.run(  # noqa: S603 -- invoke system biber with validated arguments
         biber_cmd,
         cwd=base_dir,
-        capture_output=capture_output,
+        capture_output=not verbose,
         text=True,
         check=False,
     )
     if biber_proc.returncode != 0:
         sys.stderr.write(f"latex-lint: warning: biber exited with code {biber_proc.returncode}\n")
+        if not verbose:
+            if biber_proc.stdout:
+                sys.stderr.write(biber_proc.stdout)
+            if biber_proc.stderr:
+                sys.stderr.write(biber_proc.stderr)
 
 
 def compile_document(
     root: str | Path,
     out_dir: str | Path | None = None,
     *,
-    capture_output: bool = False,
+    verbose: bool = False,
 ) -> int:
     """Compile a LaTeX document using the recipe: pdflatex, biber, pdflatex, pdflatex."""
     root_path = Path(root)
@@ -80,17 +85,22 @@ def compile_document(
         proc = subprocess.run(  # noqa: S603 -- invoke system pdflatex with validated arguments
             cmd,
             cwd=base_dir,
-            capture_output=capture_output,
+            capture_output=not verbose,
             text=True,
             check=False,
         )
+        if proc.returncode != 0 and not verbose:
+            if proc.stdout:
+                sys.stderr.write(proc.stdout)
+            if proc.stderr:
+                sys.stderr.write(proc.stderr)
         return proc.returncode
 
     res = run_pdflatex()
     if res != 0:
         return res
 
-    _run_biber(out_path, doc_stem, base_dir, capture_output=capture_output)
+    _run_biber(out_path, doc_stem, base_dir, verbose=verbose)
 
     res = run_pdflatex()
     if res != 0:

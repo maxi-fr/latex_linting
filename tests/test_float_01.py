@@ -139,4 +139,3 @@ def test_float_unclosed_bracket_ignored(tmp_path: Path) -> None:
     )
     findings = [f for f in check(root) if f.rule_id == "FLOAT-01"]
     assert findings == []
-
