@@ -1,3 +1,4 @@
+import re
 from collections.abc import Collection, Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -307,6 +308,95 @@ def load_document(root: str | Path) -> Document:
     return Document(root_node, tuple(ctx.loaded_sources), tuple(ctx.bib_nodes))
 
 
+_MAGIC_ROOT_RE = re.compile(r"%\s*!\s*TEX\s+root\s*=\s*(.+?)\s*$", re.IGNORECASE)
+_MAX_ROOT_SEARCH_DEPTH = 10
+_MAX_MAGIC_SCAN_LINES = 10
+
+
+def has_documentclass(path: Path) -> bool:
+    """Return True if the LaTeX file contains a documentclass command."""
+    if not path.is_file():
+        return False
+    try:
+        content = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError):
+        return False
+    tokens = scan(content)
+    return any(t.kind == "command" and t.value == r"\documentclass" for t in tokens)
+
+
+def _check_magic_root(target_path: Path) -> Path | None:
+    """Check for a magic root comment in the initial lines of a LaTeX file."""
+    if not target_path.is_file():
+        return None
+    try:
+        with target_path.open(encoding="utf-8", errors="replace") as handle:
+            for _ in range(_MAX_MAGIC_SCAN_LINES):
+                line = handle.readline()
+                if not line:
+                    break
+                match = _MAGIC_ROOT_RE.match(line)
+                if match:
+                    raw_target = match.group(1).strip()
+                    cand = _find_candidate_file(target_path.parent / raw_target)
+                    if cand is not None:
+                        return cand.resolve()
+    except OSError:
+        return None
+    return None
+
+
+def _search_candidate_roots(candidates: Sequence[Path], target_resolved: Path) -> Path | None:
+    """Return the first candidate document that includes target_resolved."""
+    for cand in candidates:
+        if cand.resolve() == target_resolved:
+            continue
+        try:
+            doc = load_document(cand)
+            if any(Path(s.filename).resolve() == target_resolved for s in doc.sources):
+                return cand.resolve()
+        except (MissingIncludeError, ValueError, OSError):
+            continue
+    return None
+
+
+def _find_enclosing_root_in_dir(directory: Path, target_resolved: Path) -> Path | None:
+    """Search a single directory for candidate roots enclosing target_resolved."""
+    tex_files = sorted(directory.glob("*.tex"))
+    with_documentclass = [cand for cand in tex_files if has_documentclass(cand)]
+    found = _search_candidate_roots(with_documentclass, target_resolved)
+    if found is not None:
+        return found
+
+    without_documentclass = [cand for cand in tex_files if not has_documentclass(cand)]
+    return _search_candidate_roots(without_documentclass, target_resolved)
+
+
+def find_root_document(target_path: Path, root_hint: Path | None = None) -> Path | None:
+    """Locate the root LaTeX document enclosing a target file via hint, magic comment, or upward search."""
+    if root_hint is not None and root_hint.is_file():
+        return root_hint.resolve()
+
+    target_resolved = target_path.resolve()
+    if not target_path.is_file():
+        return target_resolved
+
+    magic_root = _check_magic_root(target_path)
+    if magic_root is not None:
+        return magic_root
+
+    current_dir = target_resolved.parent
+    for _ in range(_MAX_ROOT_SEARCH_DEPTH):
+        enclosing = _find_enclosing_root_in_dir(current_dir, target_resolved)
+        if enclosing is not None:
+            return enclosing
+        if current_dir.parent == current_dir:
+            break
+        current_dir = current_dir.parent
+
+    return target_resolved
+
+
 def _traverse_node(node: DocumentNode) -> Iterable[tuple[Source, Token]]:
     """Yield tokens and their originating source in document reading order."""
     token_idx = 0
@@ -348,20 +438,12 @@ def _collect_external_findings(
     return findings
 
 
-def ordered_findings(  # noqa: PLR0913 -- finding collector accepts document, filters, and external linter flags
-    document: Document,
-    ignored_rules: Collection[str] | None = None,
-    rule_filter: Collection[str] | None = None,
-    enabled_rules: Collection[str] | None = None,
-    *,
-    chktex: bool = False,
-    lacheck: bool = False,
-) -> list[Finding]:
-    """Collect and order findings across a document, included children, bibliography files, and external linters."""
-    ignored_set = frozenset(ignored_rules) if ignored_rules is not None else frozenset()
-    filter_set = frozenset(rule_filter) if rule_filter is not None else None
-    enabled_set = frozenset(enabled_rules) if enabled_rules is not None else frozenset()
-
+def _select_rules_to_run(
+    filter_set: frozenset[str] | None,
+    ignored_set: frozenset[str],
+    enabled_set: frozenset[str],
+) -> list["Rule"]:
+    """Select the active rules based on default status and user filters."""
     rules_to_run: list[Rule] = []
     for rule in RULES:
         if filter_set is not None:
@@ -371,6 +453,24 @@ def ordered_findings(  # noqa: PLR0913 -- finding collector accepts document, fi
             is_active = rule.enabled_by_default or (rule.rule_id in enabled_set)
             if is_active and rule.rule_id not in ignored_set:
                 rules_to_run.append(rule)
+    return rules_to_run
+
+
+def ordered_findings(  # noqa: PLR0913 -- finding collector accepts document, filters, file filter, and external linter flags
+    document: Document,
+    ignored_rules: Collection[str] | None = None,
+    rule_filter: Collection[str] | None = None,
+    enabled_rules: Collection[str] | None = None,
+    *,
+    chktex: bool = False,
+    lacheck: bool = False,
+    file_filter: Path | None = None,
+) -> list[Finding]:
+    """Collect and order findings across a document, included children, bibliography files, and external linters."""
+    ignored_set = frozenset(ignored_rules) if ignored_rules is not None else frozenset()
+    filter_set = frozenset(rule_filter) if rule_filter is not None else None
+    enabled_set = frozenset(enabled_rules) if enabled_rules is not None else frozenset()
+    rules_to_run = _select_rules_to_run(filter_set, ignored_set, enabled_set)
 
     all_findings: list[Finding] = []
     for rule in rules_to_run:
@@ -401,6 +501,10 @@ def ordered_findings(  # noqa: PLR0913 -- finding collector accepts document, fi
             for f in findings
             if f.rule_id in filter_set or (f.rule_id.startswith("CHKTEX-") and "CHKTEX" in filter_set)
         ]
+
+    if file_filter is not None:
+        target_resolved = file_filter.resolve()
+        findings = [f for f in findings if Path(f.filename).resolve() == target_resolved]
 
     return findings
 

@@ -210,11 +210,7 @@ def test_generate_openai_yaml_model_invoked_omits_policy(tmp_path: Path) -> None
     skill_dir.mkdir()
     skill_file = skill_dir / "SKILL.md"
     skill_file.write_text(
-        "---\n"
-        "name: auto-helper\n"
-        "description: Helps automatically during agent turns.\n"
-        "---\n"
-        "# Auto helper\n",
+        "---\nname: auto-helper\ndescription: Helps automatically during agent turns.\n---\n# Auto helper\n",
         encoding="utf-8",
     )
     yaml_path = generate_openai_yaml(skill_dir)

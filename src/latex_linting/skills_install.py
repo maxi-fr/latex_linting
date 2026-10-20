@@ -66,10 +66,12 @@ def generate_openai_yaml(skill_dir: Path) -> Path | None:
         f'  short_description: "{short_desc}"',
     ]
     if frontmatter.get("disable-model-invocation") is True:
-        lines.extend([
-            "policy:",
-            "  allow_implicit_invocation: false",
-        ])
+        lines.extend(
+            [
+                "policy:",
+                "  allow_implicit_invocation: false",
+            ]
+        )
 
     target_dir = skill_dir / "agents"
     target_dir.mkdir(parents=True, exist_ok=True)

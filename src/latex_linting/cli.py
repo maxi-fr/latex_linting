@@ -62,10 +62,11 @@ def _handle_check(args: argparse.Namespace) -> int:
     enabled_rules = [part.strip() for part in args.enable.split(",")] if args.enable is not None else None
     try:
         findings = check(
-            args.root,
+            args.path,
             ignored_rules=ignored_rules,
             rule_filter=rule_filter,
             enabled_rules=enabled_rules,
+            root=args.root,
             chktex=not args.no_chktex,
             lacheck=not args.no_lacheck,
         )
@@ -73,7 +74,7 @@ def _handle_check(args: argparse.Namespace) -> int:
         sys.stderr.write(f"latex-lint: {error}\n")
         return 2
     except (OSError, UnicodeError) as error:
-        sys.stderr.write(f"latex-lint: {args.root}: {error}\n")
+        sys.stderr.write(f"latex-lint: {args.path}: {error}\n")
         return 2
     except ValueError as error:
         sys.stderr.write(f"latex-lint: {error}\n")
@@ -179,8 +180,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     check_parser = operations.add_parser(
         "check",
-        help="check an explicit UTF-8 root document (<root> [--ignore RULES])",
-        description="Check an explicit UTF-8 root document and all included files.",
+        help="check a root document or specific .tex file (<path> [--root ROOT] [--ignore RULES])",
+        description="Check an explicit UTF-8 root document or a specific .tex file.",
         epilog=(
             "in-source rule suppression:\n"
             "  Use LaTeX comments to suppress rules directly in the document:\n"
@@ -191,7 +192,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    check_parser.add_argument("root", help="path to root .tex or .bib document")
+    check_parser.add_argument("path", help="path to root .tex document, specific .tex file, or .bib document")
+    check_parser.add_argument(
+        "--root",
+        "-r",
+        type=Path,
+        default=None,
+        help="explicit path to root .tex document when checking a specific subfile",
+    )
     check_parser.add_argument("--ignore", default=None, help="comma-separated rule IDs to ignore across the invocation")
     check_parser.add_argument("--rule", default=None, help="comma-separated rule IDs to run exclusively")
     check_parser.add_argument("--enable", default=None, help="comma-separated off-by-default rule IDs to enable")
