@@ -50,11 +50,12 @@ def test_resolve_destination_conflicting_raises(tmp_path: Path) -> None:
 
 
 def test_install_skills_copies_files(tmp_path: Path) -> None:
+    """Install every bundled skill with its explicit invocation policy and resources."""
     dest = tmp_path / "skills"
     installed = install_skills(dest)
     installed_names = {p.name for p in installed}
-    assert installed_names == {"thesis-writing", "thesis-review", "citation-checker"}
-    for skill_name in ["thesis-writing", "thesis-review", "citation-checker"]:
+    assert installed_names == {"thesis-writing", "thesis-review", "citation-checker", "notation-design"}
+    for skill_name in ["thesis-writing", "thesis-review", "citation-checker", "notation-design"]:
         skill_file = dest / skill_name / "SKILL.md"
         assert skill_file.is_file()
         content = skill_file.read_text(encoding="utf-8")
@@ -71,6 +72,11 @@ def test_install_skills_copies_files(tmp_path: Path) -> None:
     assert "MATH-11" not in writing_content
     review_content = (dest / "thesis-review" / "SKILL.md").read_text(encoding="utf-8")
     assert "MATH-11" in review_content
+    assert "PROSE-11" in review_content
+    notation_dir = dest / "notation-design"
+    assert (notation_dir / "references" / "research.md").is_file()
+    assert (notation_dir / ".." / "thesis-review" / "SKILL.md").is_file()
+    assert (notation_dir / ".." / "thesis-writing" / "SKILL.md").is_file()
 
 
 def test_install_skills_fails_if_exists_without_force(tmp_path: Path) -> None:
@@ -87,6 +93,7 @@ def test_install_skills_fails_if_exists_without_force(tmp_path: Path) -> None:
 
 
 def test_install_skills_force_overwrites(tmp_path: Path) -> None:
+    """Overwrite existing skills while installing the complete bundled collection."""
     dest = tmp_path / "skills"
     target_writing = dest / "thesis-writing"
     target_writing.mkdir(parents=True)
@@ -94,7 +101,7 @@ def test_install_skills_force_overwrites(tmp_path: Path) -> None:
     old_file.write_text("old content", encoding="utf-8")
 
     installed = install_skills(dest, force=True)
-    assert len(installed) == 3
+    assert len(installed) == 4
     assert "old content" not in old_file.read_text(encoding="utf-8")
 
 

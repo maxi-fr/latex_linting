@@ -11,13 +11,24 @@ Review LaTeX thesis chapters, sections. Be extra meticulous when it comes to sty
 ## Process
 
 1. **Core drafting audit**: Check the text against the 11 core rules in [`thesis-writing`](../thesis-writing/SKILL.md).
-2. **Specialized audit**: Check the text against the 10 extra review criteria below.
+2. **Specialized audit**: Check the text against the 11 extra review criteria below.
 3. **Mechanical linting**: Run `uv run latex-lint check path/to/thesis.tex`. Resolve or record all mechanical issues first.
 4. **Report findings**: List issues grouped by rule ID, citing exact file and line locations (`file.tex:line`), the offending excerpt, and the concrete fix.
 
 ## Extra review criteria
 
-In addition to all core rules in [`thesis-writing`](../thesis-writing/SKILL.md), evaluate drafts against these 10 review-specific checks:
+In addition to all core rules in [`thesis-writing`](../thesis-writing/SKILL.md), evaluate drafts against these 11 review-specific checks:
+
+### PROSE-11: Precise agency in methodological prose
+
+Describe research actions so that the object, operation, and relevant data are clear. Prefer impersonal constructions for reporting procedures and results. Use “we” when guiding the reader through a derivation or comparable reasoning. A method, model, or algorithm may serve as the subject when the sentence describes its actual mathematical or computational operation. Rephrase abstract process subjects when they obscure what is done.
+
+Two examples:
+
+- Vague process subject: “Identification uses one-step pairs.”
+  Prefer: “The model is identified from one-step pairs extracted from the standardized training trajectories.”
+- Precise operational description: “MPC uses an internal prediction model to predict future system behaviour.”
+  Keep: the subject and verb accurately describe the method’s operation.
 
 ### PROSE-06: Negative results analysis
 

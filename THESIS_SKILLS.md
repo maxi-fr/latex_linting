@@ -85,7 +85,15 @@ The sources are in docs/sources/
 
 ## 2. Reviewer Skill (Extra Audit & Verification Points)
 
-The reviewer skill evaluates all points from the **Writing Skill** above, plus the following 10 verification and audit points:
+The reviewer skill evaluates all points from the **Writing Skill** above, plus the following 11 verification and audit points:
+
+### PROSE-11: Precise Agency in Methodological Prose
+
+- **Rule**: Describe research actions so that the object, operation, and relevant data are clear. Prefer impersonal constructions for reporting procedures and results. Use “we” when guiding the reader through a derivation or comparable reasoning. A method, model, or algorithm may serve as the subject when the sentence describes its actual mathematical or computational operation. Rephrase abstract process subjects when they obscure what is done.
+  - Vague process subject: “Identification uses one-step pairs.” Prefer: “The model is identified from one-step pairs extracted from the standardized training trajectories.”
+  - Precise operational description: “MPC uses an internal prediction model to predict future system behaviour.” Keep: the subject and verb accurately describe the method’s operation.
+- **Source**: User.
+- **Review Criteria**: Flag vague process subjects that obscure what is done or lack clear object and data referents. Allow methods, models, or algorithms as subjects when accurately describing mathematical or computational operations. Ensure impersonal constructions are used for procedures and results, and reserve “we” for derivations or comparable reasoning.
 
 ### PROSE-06: Negative Results Analysis
 

@@ -59,6 +59,9 @@ latex-lint compile --output-dir custom_out path/to/thesis.tex
 # Format LaTeX files with one sentence per line:
 latex-lint format path/to/chapter.tex
 
+# Print feedback comments with relevant context:
+latex-lint feedback path/to/thesis.tex
+
 # Install bundled agent skills into project .agents/skills/:
 latex-lint install-skills
 
@@ -70,6 +73,16 @@ latex-lint install-skills --dest path/to/skills --force
 ```
 
 When running within a `uv` project without global installation, prefix commands with `uv run` (e.g. `uv run latex-lint check path/to/thesis.tex`).
+
+#### Interactive notation design
+
+The bundled `notation-design` skill is explicitly invoked. After installing the
+skills, invoke `$notation-design` with a manuscript path to discuss conflicting
+symbols, index roles, transformations, and related representations across chapters.
+The agent tests proposals against manuscript examples and the thesis-review rules.
+Ask it to gather or finish the discussion to save the accepted conventions,
+proposed mappings, exceptions, and open questions as Markdown. Manuscript edits
+are a separate request.
 
 #### Explicit root selection
 

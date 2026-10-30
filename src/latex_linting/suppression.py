@@ -7,7 +7,7 @@ from latex_linting.scanner import Token
 from latex_linting.source import Finding, Source
 
 _DIRECTIVE_PREFIX = re.compile(r"^%\s*latex-lint\s*:")
-_DIRECTIVE_RE = re.compile(r"^%\s*latex-lint\s*:\s*([a-zA-Z_-]+)\s*=\s*(.+?)\s*$")
+_DIRECTIVE_RE = re.compile(r"^%\s*latex-lint\s*:\s*([a-zA-Z_-]+)\s*=\s*([^%]+?)\s*(?:%.*)?$")
 _VALID_ACTIONS = frozenset({"ignore", "disable", "enable"})
 
 

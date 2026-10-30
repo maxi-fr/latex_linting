@@ -145,6 +145,13 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 - **Source**: User.
 - **Review Criteria**: Flag paragraphs consisting of disjointed, self-contained statements, abrupt subject transitions, or repetitive sentence patterns lacking narrative flow and logical cohesion.
 
+### PROSE-11: Precise Agency in Methodological Prose
+
+- **Layer**: `[Review Agent]`
+- **Rule**: Describe research actions so that the object, operation, and relevant data are clear. Prefer impersonal constructions for reporting procedures and results. Use “we” when guiding the reader through a derivation or comparable reasoning. A method, model, or algorithm may serve as the subject when the sentence describes its actual mathematical or computational operation. Rephrase abstract process subjects when they obscure what is done.
+- **Source**: User.
+- **Review Criteria**: Flag vague process subjects that obscure what is done or lack clear object and data referents (e.g., “Identification uses one-step pairs.” -> prefer “The model is identified from one-step pairs extracted from the standardized training trajectories.”). Allow methods, models, or algorithms as subjects when accurately describing mathematical or computational operations (e.g., “MPC uses an internal prediction model to predict future system behaviour.” -> keep: the subject and verb accurately describe the method’s operation). Ensure impersonal constructions are used for reporting procedures and results, and reserve “we” for derivations or comparable reasoning.
+
 ---
 
 ## 3. Claims, Citations, and Plagiarism
@@ -196,7 +203,7 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 ### CITE-07: Consecutive Duplicate Citations
 
 - **Status**: Done
-- **Layer**: [Regex Linter] [Writing Skill]
+- **Layer**: `[Regex Linter]` `[Writing Skill]`
 - **Rule**: If the same reference is cited in subsequent sentences (or within the same sentence) without another reference in between within the same paragraph, cite the reference only once. The earlier citation is redundant because the subsequent citation is sufficient.
 - **Source**: User.
 - **Review Criteria**: Flag consecutive occurrences of the exact same citation key or set of keys in running text within the same paragraph when no intervening reference appears.

@@ -4,7 +4,8 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from latex_linting.compiler import compile_document
-from latex_linting.document import MissingIncludeError
+from latex_linting.document import MissingIncludeError, load_document
+from latex_linting.feedback import extract_feedback_lines
 from latex_linting.formatter import format_files
 from latex_linting.main import check
 from latex_linting.refs import (
@@ -53,6 +54,24 @@ def _handle_rule(args: argparse.Namespace, parser: argparse.ArgumentParser) -> i
 def _handle_format(args: argparse.Namespace) -> int:
     """Handle the format subcommand."""
     return format_files(args.paths)
+
+
+def _handle_feedback(args: argparse.Namespace) -> int:
+    """Handle the feedback subcommand, printing comments with context."""
+    path = Path(args.path)
+    try:
+        document = load_document(path)
+        lines = extract_feedback_lines(document)
+    except MissingIncludeError as error:
+        sys.stderr.write(f"latex-lint: {error}\n")
+        return 2
+    except (OSError, UnicodeError, ValueError) as error:
+        sys.stderr.write(f"latex-lint: {path}: {error}\n")
+        return 2
+
+    for line in lines:
+        sys.stdout.write(f"{line}\n")
+    return 0
 
 
 def _handle_check(args: argparse.Namespace) -> int:
@@ -283,15 +302,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="path(s) to .tex file(s) to format in-place",
     )
 
+    feedback_parser = operations.add_parser(
+        "feedback",
+        help="print comments with context and line numbers (<path>)",
+        description="Print thesis feedback comments with relevant context and line numbers.",
+    )
+    feedback_parser.add_argument("path", help="path to root .tex document or specific .tex file")
+
     args = parser.parse_args(argv)
-    if args.operation == "compile":
-        return _handle_compile(args)
-    if args.operation == "format":
-        return _handle_format(args)
-    if args.operation == "install-skills":
-        return _handle_install_skills(args)
     if args.operation == "rule":
         return _handle_rule(args, parser)
-    if args.operation == "refs":
-        return _handle_refs(args)
-    return _handle_check(args)
+    dispatch = {
+        "compile": _handle_compile,
+        "format": _handle_format,
+        "feedback": _handle_feedback,
+        "install-skills": _handle_install_skills,
+        "refs": _handle_refs,
+    }
+    handler = dispatch.get(args.operation, _handle_check)
+    return handler(args)

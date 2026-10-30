@@ -15,9 +15,7 @@ def test_root_document_reports_all_findings(tmp_path: Path) -> None:
     root = tmp_path / "main.tex"
     sub = tmp_path / "chapter.tex"
     root.write_text(
-        "\\documentclass{report}\n"
-        "$\\frac{1}{2}$\n"
-        "\\input{chapter.tex}\n",
+        "\\documentclass{report}\n$\\frac{1}{2}$\n\\input{chapter.tex}\n",
         encoding="utf-8",
     )
     sub.write_text("$\\frac{3}{4}$\n", encoding="utf-8")
@@ -33,9 +31,7 @@ def test_subfile_reports_only_its_findings(tmp_path: Path) -> None:
     root = tmp_path / "main.tex"
     sub = tmp_path / "chapter.tex"
     root.write_text(
-        "\\documentclass{report}\n"
-        "$\\frac{1}{2}$\n"
-        "\\input{chapter.tex}\n",
+        "\\documentclass{report}\n$\\frac{1}{2}$\n\\input{chapter.tex}\n",
         encoding="utf-8",
     )
     sub.write_text("$\\frac{3}{4}$\n", encoding="utf-8")
@@ -52,14 +48,11 @@ def test_subfile_resolves_cross_file_figure_label(tmp_path: Path) -> None:
     ch1 = tmp_path / "ch1.tex"
     ch2 = tmp_path / "ch2.tex"
     root.write_text(
-        "\\documentclass{report}\n"
-        "\\input{ch1.tex}\n"
-        "\\input{ch2.tex}\n",
+        "\\documentclass{report}\n\\input{ch1.tex}\n\\input{ch2.tex}\n",
         encoding="utf-8",
     )
     ch1.write_text(
-        "\\section{First}\n"
-        "As seen in Figure~\\ref{fig:myplot}.\n",
+        "\\section{First}\nAs seen in Figure~\\ref{fig:myplot}.\n",
         encoding="utf-8",
     )
     ch2.write_text(
@@ -80,13 +73,11 @@ def test_subfile_excludes_root_violations(tmp_path: Path) -> None:
     root = tmp_path / "main.tex"
     sub = tmp_path / "chapter.tex"
     root.write_text(
-        "\\documentclass[draft]{report}\n"
-        "\\input{chapter.tex}\n",
+        "\\documentclass[draft]{report}\n\\input{chapter.tex}\n",
         encoding="utf-8",
     )
     sub.write_text(
-        "\\section{Chapter}\n"
-        "Clean prose here.\n",
+        "\\section{Chapter}\nClean prose here.\n",
         encoding="utf-8",
     )
 
@@ -104,14 +95,11 @@ def test_subfile_magic_comment_root(tmp_path: Path) -> None:
     chapters.mkdir()
     sub = chapters / "intro.tex"
     root.write_text(
-        "\\documentclass{report}\n"
-        "$\\frac{1}{2}$\n"
-        "\\input{chapters/intro.tex}\n",
+        "\\documentclass{report}\n$\\frac{1}{2}$\n\\input{chapters/intro.tex}\n",
         encoding="utf-8",
     )
     sub.write_text(
-        "% !TeX root = ../main.tex\n"
-        "$\\frac{3}{4}$\n",
+        "% !TeX root = ../main.tex\n$\\frac{3}{4}$\n",
         encoding="utf-8",
     )
 
@@ -126,9 +114,7 @@ def test_subfile_explicit_root_cli(tmp_path: Path) -> None:
     root = tmp_path / "main.tex"
     sub = tmp_path / "chapter.tex"
     root.write_text(
-        "\\documentclass{report}\n"
-        "$\\frac{1}{2}$\n"
-        "\\input{chapter.tex}\n",
+        "\\documentclass{report}\n$\\frac{1}{2}$\n\\input{chapter.tex}\n",
         encoding="utf-8",
     )
     sub.write_text("$\\frac{3}{4}$\n", encoding="utf-8")
@@ -153,9 +139,7 @@ def test_subfile_cli_filtering(tmp_path: Path) -> None:
     root = tmp_path / "main.tex"
     sub = tmp_path / "chapter.tex"
     root.write_text(
-        "\\documentclass{report}\n"
-        "$\\frac{1}{2}$\n"
-        "\\input{chapter.tex}\n",
+        "\\documentclass{report}\n$\\frac{1}{2}$\n\\input{chapter.tex}\n",
         encoding="utf-8",
     )
     sub.write_text("$\\frac{3}{4}$\n", encoding="utf-8")
@@ -172,8 +156,7 @@ def test_subfile_deeply_nested_directory(tmp_path: Path) -> None:
     sub_dir.mkdir(parents=True)
     sub = sub_dir / "section.tex"
     root.write_text(
-        "\\documentclass{report}\n"
-        "\\input{chapters/deep/section.tex}\n",
+        "\\documentclass{report}\n\\input{chapters/deep/section.tex}\n",
         encoding="utf-8",
     )
     sub.write_text("$\\frac{3}{4}$\n", encoding="utf-8")
@@ -187,8 +170,7 @@ def test_subfile_suppression_applies_within_file(tmp_path: Path) -> None:
     root = tmp_path / "main.tex"
     sub = tmp_path / "chapter.tex"
     root.write_text(
-        "\\documentclass{report}\n"
-        "\\input{chapter.tex}\n",
+        "\\documentclass{report}\n\\input{chapter.tex}\n",
         encoding="utf-8",
     )
     sub.write_text("$\\frac{3}{4}$ % latex-lint:ignore=MATH-04\n", encoding="utf-8")
@@ -200,10 +182,7 @@ def test_subfile_suppression_applies_within_file(tmp_path: Path) -> None:
 def test_bib_file_direct_check_preserves_findings(tmp_path: Path) -> None:
     bib = tmp_path / "refs.bib"
     bib.write_text(
-        "@article{knuth1984,\n"
-        "  author = {Donald E. Knuth},\n"
-        "  title = {Literate Programming}\n"
-        "}\n",
+        "@article{knuth1984,\n  author = {Donald E. Knuth},\n  title = {Literate Programming}\n}\n",
         encoding="utf-8",
     )
 
