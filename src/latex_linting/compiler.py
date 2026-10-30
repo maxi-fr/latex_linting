@@ -1,3 +1,4 @@
+import contextlib
 import shutil
 import subprocess
 import sys
@@ -178,6 +179,18 @@ def _run_followup_passes(
     return 0
 
 
+def _cleanup_stray_artifacts(base_dir: Path, out_path: Path) -> None:
+    """Ensure stray root artifacts like pdfa.xmpi are moved into out_path."""
+    stray_xmpi = base_dir / "pdfa.xmpi"
+    if stray_xmpi.exists():
+        out_xmpi = out_path / "pdfa.xmpi"
+        if not out_xmpi.exists():
+            with contextlib.suppress(OSError):
+                shutil.move(str(stray_xmpi), str(out_xmpi))
+        else:
+            stray_xmpi.unlink(missing_ok=True)
+
+
 def compile_document(
     root: str | Path,
     out_dir: str | Path | None = None,
@@ -199,17 +212,20 @@ def compile_document(
     base_dir = root_path.parent.resolve()
     out_path = _resolve_out_path(base_dir, out_dir, force=force)
 
-    res = _run_pdflatex(pdflatex_bin, root_path, out_path, base_dir, verbose=verbose)
-    if res != 0:
-        return res
+    try:
+        res = _run_pdflatex(pdflatex_bin, root_path, out_path, base_dir, verbose=verbose)
+        if res != 0:
+            return res
 
-    if force:
-        return _run_full_recipe(pdflatex_bin, root_path, out_path, base_dir, verbose=verbose)
+        if force:
+            return _run_full_recipe(pdflatex_bin, root_path, out_path, base_dir, verbose=verbose)
 
-    return _run_followup_passes(
-        pdflatex_bin,
-        root_path,
-        out_path,
-        base_dir,
-        verbose=verbose,
-    )
+        return _run_followup_passes(
+            pdflatex_bin,
+            root_path,
+            out_path,
+            base_dir,
+            verbose=verbose,
+        )
+    finally:
+        _cleanup_stray_artifacts(base_dir, out_path)
