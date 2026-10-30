@@ -10,7 +10,9 @@ from latex_linting.source import Source
 _DIRECTIVE_RE = re.compile(r"^latex-lint\s*:\s*(?:ignore|disable|enable)(?:=.*)?$", re.IGNORECASE)
 _CITE_RE = re.compile(r"^(?:cite-checked|citation-checked)(?:\s*:.*)?$", re.IGNORECASE)
 _MAGIC_RE = re.compile(r"^!\s*TEX\s+", re.IGNORECASE)
-_SECTION_CMD_RE = re.compile(r"\\(?:part|chapter|section|subsection|subsubsection|paragraph|subparagraph)\*?(?![a-zA-Z])")
+_SECTION_CMD_RE = re.compile(
+    r"\\(?:part|chapter|section|subsection|subsubsection|paragraph|subparagraph)\*?(?![a-zA-Z])"
+)
 _LABEL_CMD_RE = re.compile(r"^\s*\\label\{[^}]*\}\s*(?:%.*)?$")
 _BLANK_LINE_RE = re.compile(r"^\s*$")
 _PREAMBLE_CMD_RE = re.compile(r"^\s*\\(?:documentclass|usepackage|begin\{document\}|end\{document\})(?![a-zA-Z])")
@@ -77,9 +79,7 @@ def _process_standalone_block(
         block_end += 1
 
     feedback_lines = [
-        (idx, lines[idx - 1])
-        for idx in range(start_line, block_end)
-        if is_feedback_comment(comments[idx].value)
+        (idx, lines[idx - 1]) for idx in range(start_line, block_end) if is_feedback_comment(comments[idx].value)
     ]
     if not feedback_lines:
         return block_end, None

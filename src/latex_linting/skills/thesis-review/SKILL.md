@@ -69,7 +69,7 @@ Include a visible background grid on every plot and coordinate graph figure to a
 
 ### FIG-04: Axis labels with physical units (DIN 461)
 
-Label every plot axis with the quantity name or symbol and its physical unit formatted per DIN 461 (e.g. "$v$ in m/s" or "$v / (\si{m/s})$"). Never leave bare numbers on an axis without units.
+Label every plot axis with the quantity name or symbol and its physical unit formatted per DIN 461 (e.g. "$v$ in $(\si{m/s})$" or "$v / (\si{m/s})$"). Never leave bare numbers on an axis without units unless the value has no units.
 
 ### FIG-05: Multi-curve legends
 

@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from latex_linting.document import Document, DocumentNode
 from latex_linting.rules.model import Rule
 from latex_linting.scanner import Token
-from latex_linting.source import Finding, Source
+from latex_linting.source import Finding
 
 _CITATION_COMMANDS = frozenset(
     {
@@ -86,7 +86,31 @@ _MATH_ENVIRONMENTS = frozenset(
     }
 )
 
+_ABBREVIATIONS = (
+    "Dr.",
+    "Prof.",
+    "cf.",
+    "e.g.",
+    "et al.",
+    "i.e.",
+    "vs.",
+    "Fig.",
+    "Figs.",
+    "Sec.",
+    "Eq.",
+    "Eqs.",
+    "Ref.",
+    "Tab.",
+    "p.",
+    "pp.",
+    "vol.",
+    "no.",
+    "approx.",
+    "al.",
+)
+
 _BLANK_LINE_RE = re.compile(r"(?:\r?\n)[ \t]*(?:\r?\n)")
+_BOUNDARY_RE = re.compile(r"([.!?])(?:['\"\u201d\u2019)]*)(?:\s+|$)")
 
 
 def _skip_token_comments_and_spaces(tokens: Sequence[Token], idx: int) -> int:
@@ -136,6 +160,25 @@ def _parse_citation_keys_at(tokens: Sequence[Token], start_idx: int) -> tuple[li
     return keys, content_idx
 
 
+def _count_sentence_boundaries(text: str) -> int:
+    """Count terminal sentence punctuation marks in text outside comments and abbreviations."""
+    clean_text = re.sub(r"%[^\r\n]*", "", text)
+    count = 0
+    for match in _BOUNDARY_RE.finditer(clean_text):
+        idx = match.start(1)
+        prefix = clean_text[: idx + 1]
+        if prefix.endswith(".."):
+            continue
+        if any(prefix.endswith(abbr) for abbr in _ABBREVIATIONS):
+            continue
+        if re.search(r"\b[A-Z]\.$", prefix):
+            continue
+        if re.search(r"\d\.$", prefix):
+            continue
+        count += 1
+    return count
+
+
 def _is_reset_token(token: Token) -> bool:
     """Return True if token marks a paragraph break, heading, or non-math environment."""
     if token.kind == "text":
@@ -153,7 +196,7 @@ def _evaluate_node(node: "DocumentNode") -> Iterable[Finding]:
     source = node.source
     tokens = node.tokens
     idx = 0
-    last_cite: tuple[Source, Token, frozenset[str]] | None = None
+    last_cite: tuple[Token, frozenset[str], int] | None = None
 
     while idx < len(tokens):
         token = tokens[idx]
@@ -170,17 +213,28 @@ def _evaluate_node(node: "DocumentNode") -> Iterable[Finding]:
                 continue
 
             key_set = frozenset(keys)
+            cite_start = token.start
+            cite_end = tokens[next_idx - 1].end if next_idx > 0 else token.end
+
             if last_cite is not None:
-                prev_source, prev_token, prev_key_set = last_cite
+                prev_token, prev_key_set, prev_end = last_cite
+                between_text = source.text[prev_end:cite_start]
+                sentence_boundaries = _count_sentence_boundaries(between_text)
+
+                if sentence_boundaries > 1:
+                    last_cite = (token, key_set, cite_end)
+                    idx = max(next_idx, idx + 1)
+                    continue
+
                 if key_set == prev_key_set:
                     keys_str = ", ".join(sorted(prev_key_set))
                     explanation = (
                         f"Redundant consecutive citation of '{keys_str}' without an intervening reference; "
                         "the earlier citation is redundant because the subsequent citation is sufficient."
                     )
-                    yield prev_source.finding(prev_token.start, RULE.rule_id, explanation, RULE.correction)
+                    yield source.finding(prev_token.start, RULE.rule_id, explanation, RULE.correction)
 
-            last_cite = (source, token, key_set)
+            last_cite = (token, key_set, cite_end)
             idx = max(next_idx, idx + 1)
             continue
 
@@ -223,7 +277,8 @@ RULE = Rule(
     limits=(
         r"Detects consecutive identical citations (\cite, \citep, \citet, \autocite, \parencite, "
         r"\textcite, \footcite, \fullcite, \nocite, \citeauthor, \citeyear, and capitalized variants) "
-        r"sharing the exact same citation key or set of keys in running text within the same paragraph. "
+        r"sharing the exact same citation key or set of keys in subsequent sentences or within the "
+        r"same sentence, without an intervening reference or intermediate non-citing sentence. "
         r"Resets on paragraph breaks (blank lines or \par), headings, division commands, page breaks, "
         r"and non-math environment boundaries. Flags the earlier citation command."
     ),

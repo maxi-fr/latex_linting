@@ -30,7 +30,7 @@ Always use the identical technical term for the same concept, variable, or compo
 
 ### PROSE-08: Eliminate AI tells and slop
 
-Remove promotional rhetoric ("pivotal", "delve", "crucial", "testament"), generic chatbot transitions, and robotic boilerplate.
+Remove promotional rhetoric, generic chatbot transitions, and robotic boilerplate. Most importantly AI writing can seem nice but on closer inspection you can notice that it doesn't move the argument forward.
 
 ### PROSE-09: Eliminate conceptual repetition
 

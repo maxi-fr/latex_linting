@@ -86,6 +86,18 @@ def test_cite_07_intervening_reference_passes(tmp_path: Path) -> None:
     assert findings == []
 
 
+def test_cite_07_intervening_sentence_without_citation_passes(tmp_path: Path) -> None:
+    root = tmp_path / "thesis.tex"
+    root.write_text(
+        "Sentence one establishes the foundational architecture~\\cite{smith2020}. "
+        "Sentence two describes the training procedures and numerical setup without citing. "
+        "Sentence three evaluates the model performance~\\cite{smith2020}.\n",
+        encoding="utf-8",
+    )
+    findings = [f for f in check(root) if f.rule_id == "CITE-07"]
+    assert findings == []
+
+
 def test_cite_07_intervening_reference_same_sentence_passes(tmp_path: Path) -> None:
     root = tmp_path / "thesis.tex"
     root.write_text(
@@ -129,9 +141,7 @@ def test_cite_07_par_command_resets(tmp_path: Path) -> None:
 def test_cite_07_heading_resets(tmp_path: Path) -> None:
     root = tmp_path / "thesis.tex"
     root.write_text(
-        "Sentence one~\\cite{smith2020}.\n"
-        "\\section{New Section}\n"
-        "Sentence two~\\cite{smith2020}.\n",
+        "Sentence one~\\cite{smith2020}.\n\\section{New Section}\nSentence two~\\cite{smith2020}.\n",
         encoding="utf-8",
     )
     findings = [f for f in check(root) if f.rule_id == "CITE-07"]
@@ -167,8 +177,7 @@ def test_cite_07_float_caption_resets(tmp_path: Path) -> None:
 def test_cite_07_suppression(tmp_path: Path) -> None:
     root = tmp_path / "thesis.tex"
     root.write_text(
-        "Sentence one~\\cite{smith2020}. % latex-lint: ignore=CITE-07\n"
-        "Sentence two~\\cite{smith2020}.\n",
+        "Sentence one~\\cite{smith2020}. % latex-lint: ignore=CITE-07\nSentence two~\\cite{smith2020}.\n",
         encoding="utf-8",
     )
     findings = [f for f in check(root) if f.rule_id == "CITE-07"]

@@ -31,8 +31,7 @@ def test_empty_and_filtered_comments(tmp_path: Path) -> None:
 def test_inline_comment(tmp_path: Path) -> None:
     tex = tmp_path / "doc.tex"
     tex.write_text(
-        "\\documentclass{report}\n"
-        "We introduce the model here. % check this claim\n",
+        "\\documentclass{report}\nWe introduce the model here. % check this claim\n",
         encoding="utf-8",
     )
     doc = load_document(tex)
@@ -154,20 +153,15 @@ def test_document_with_included_files(tmp_path: Path) -> None:
     ch2_tex = tmp_path / "ch2.tex"
 
     main_tex.write_text(
-        "\\documentclass{report}\n"
-        "\\input{ch1.tex}\n"
-        "\\input{ch2.tex}\n",
+        "\\documentclass{report}\n\\input{ch1.tex}\n\\input{ch2.tex}\n",
         encoding="utf-8",
     )
     ch1_tex.write_text(
-        "\\chapter{One}\n"
-        "% Check chapter 1 overview.\n"
-        "Chapter 1 content.\n",
+        "\\chapter{One}\n% Check chapter 1 overview.\nChapter 1 content.\n",
         encoding="utf-8",
     )
     ch2_tex.write_text(
-        "\\chapter{Two}\n"
-        "Sentence in ch2. % inline note in ch2\n",
+        "\\chapter{Two}\nSentence in ch2. % inline note in ch2\n",
         encoding="utf-8",
     )
     doc = load_document(main_tex)
@@ -182,9 +176,7 @@ def test_document_with_included_files(tmp_path: Path) -> None:
 def test_cli_feedback_command(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     tex = tmp_path / "doc.tex"
     tex.write_text(
-        "\\documentclass{report}\n"
-        "\\section{Method}\n"
-        "% Clarify methodology.\n",
+        "\\documentclass{report}\n\\section{Method}\n% Clarify methodology.\n",
         encoding="utf-8",
     )
     exit_code = main(["feedback", str(tex)])
