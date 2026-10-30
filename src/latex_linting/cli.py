@@ -20,7 +20,7 @@ from latex_linting.skills_install import install_skills, resolve_install_destina
 
 def _handle_compile(args: argparse.Namespace) -> int:
     """Handle the compile subcommand."""
-    return compile_document(args.root, out_dir=args.output_dir, verbose=args.verbose)
+    return compile_document(args.root, out_dir=args.output_dir, verbose=args.verbose, force=args.force)
 
 
 def _handle_install_skills(args: argparse.Namespace) -> int:
@@ -196,6 +196,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         "-v",
         action="store_true",
         help="show full output from pdflatex and biber",
+    )
+    compile_parser.add_argument(
+        "--force",
+        "-f",
+        "--full",
+        action="store_true",
+        dest="force",
+        help="force full compilation from scratch (clean cache and rerun all passes)",
     )
     check_parser = operations.add_parser(
         "check",

@@ -183,6 +183,26 @@ def test_compile_missing_pdflatex(tmp_path: Path, capsys: pytest.CaptureFixture[
     assert "'pdflatex' executable not found" in captured.err
 
 
+def test_compile_force_flag(tmp_path: Path) -> None:
+    tex_file = tmp_path / "main.tex"
+    tex_file.write_text(
+        r"""\documentclass{article}
+\begin{document}
+Force compile test.
+\end{document}
+""",
+        encoding="utf-8",
+    )
+    out_dir = tmp_path / "out"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    stray_file = out_dir / "stray.tmp"
+    stray_file.write_text("old", encoding="utf-8")
+    result = run_cli("compile", "--force", str(tex_file))
+    assert result.returncode == 0
+    assert (out_dir / "main.pdf").exists()
+    assert not stray_file.exists()
+
+
 def test_compile_help() -> None:
     main_help = run_cli("--help")
     assert main_help.returncode == 0
@@ -194,3 +214,4 @@ def test_compile_help() -> None:
     assert "root" in cmd_help.stdout
     assert "--output-dir" in cmd_help.stdout
     assert "--verbose" in cmd_help.stdout
+    assert "--force" in cmd_help.stdout
