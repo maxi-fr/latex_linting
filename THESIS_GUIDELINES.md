@@ -193,6 +193,14 @@ Each point is ordered within its domain and tagged with its enforcement layer:
 - **Source**: IAT *Hinweise_Allgemein.tex* (Zitierfähigkeit).
 - **Regex / BibTeX Criteria**: In `.bib`, flag entries with `url` missing `urldate`, or entries citing Wikipedia.
 
+### CITE-07: Consecutive Duplicate Citations
+
+- **Status**: Done
+- **Layer**: [Regex Linter] [Writing Skill]
+- **Rule**: If the same reference is cited in subsequent sentences (or within the same sentence) without another reference in between within the same paragraph, cite the reference only once. The earlier citation is redundant because the subsequent citation is sufficient.
+- **Source**: User.
+- **Review Criteria**: Flag consecutive occurrences of the exact same citation key or set of keys in running text within the same paragraph when no intervening reference appears.
+
 ### CITE-08: Complete Bibliography Metadata
 
 - **Status**: Done

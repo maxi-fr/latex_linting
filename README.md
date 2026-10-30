@@ -237,6 +237,10 @@ PROSE-04 is enabled by default and checks American headline capitalization in su
 
 CITE-04 is enabled by default and detects recognized citation commands (`\cite`, `\citep`, `\citet`, `\autocite`, etc., including optional arguments like `[p.~5]`) immediately following a sentence's terminal period in text mode, recommending moving the citation before the period. Common abbreviations like `et al.` are excluded from sentence-terminal detection. Findings attach to the citation command backslash.
 
+### CITE-07 support
+
+CITE-07 is enabled by default and detects consecutive citations sharing the exact same citation key or key set in running text within the same paragraph without an intervening reference. Because only the subsequent citation is necessary to substantiate the claims, the earlier citation is flagged as redundant. Paragraph breaks (blank lines or \par), headings, division commands, page breaks, and non-math environments reset tracking.
+
 ### CITE-08 support
 
 CITE-08 is enabled by default and validates the completeness of mandatory BibLaTeX metadata fields per entry type in `.bib` files. It checks `author` (or `editor`, `organization`, or `institution` where appropriate), `title`, and `year` (or `date`/`urldate`) across all entry types; `journal` (or `journaltitle`), `volume`, `pages`, and `doi` for `@article`; `publisher` and `doi` or `isbn` for `@book`; `booktitle`, `pages`, and `doi` or `isbn` for `@inproceedings`; and respective publication venues for other types. Non-citation entries (`@comment`, `@string`, `@preamble`) are ignored. Bibliography files are discovered automatically via `\addbibresource`, `\bibliography`, or `\addglobalbib` in the LaTeX document hierarchy, or can be checked directly by passing a `.bib` file to `latex-lint check`. Missing required fields are reported at the entry's `@` declaration, allowing same-line `% latex-lint: ignore=CITE-08` suppressions when DOI or ISBN identifiers are unassigned.

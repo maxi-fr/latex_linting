@@ -131,6 +131,7 @@ def _build_violating_thesis(tmp_path: Path) -> Path:
     # PROSE-02: 'This demonstrates'
     # PROSE-03: ', that'
     # CITE-04: citation after period
+    # CITE-07: consecutive duplicate citation
     # TYPO-01: regular space before cite/ref
     # TYPO-02: 'Figure 1' without nonbreaking space
     # TYPO-03: 'e.g.' without thin space
@@ -153,6 +154,7 @@ def _build_violating_thesis(tmp_path: Path) -> Path:
 This demonstrates standalone demonstratives.
 We observe, that commas before that are flagged.
 Sentence terminal period.\cite{ref:bad_cite}
+Consecutive duplicate citation follows~\cite{ref:bad_cite}.
 Reference without nonbreaking space \ref{sec:isolated}.
 Fixed expression Figure 1 needs a tilde.
 Abbreviation e.g. needs thin space.

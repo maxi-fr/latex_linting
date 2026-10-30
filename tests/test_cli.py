@@ -59,6 +59,7 @@ def test_invalid_encoding(tmp_path: Path) -> None:
     "rule_id",
     [
         "CITE-04",
+        "CITE-07",
         "FIG-03",
         "FIG-06",
         "FIG-07",
